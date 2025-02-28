@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.River0ArcMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.River0Arc">
+            <id property="gid" column="gid" jdbcType="INTEGER"/>
+            <result property="fnode" column="fnode_" jdbcType="DOUBLE"/>
+            <result property="tnode" column="tnode_" jdbcType="DOUBLE"/>
+            <result property="lpoly" column="lpoly_" jdbcType="DOUBLE"/>
+            <result property="rpoly" column="rpoly_" jdbcType="DOUBLE"/>
+            <result property="length" column="length" jdbcType="DOUBLE"/>
+            <result property="river0" column="river0_" jdbcType="DOUBLE"/>
+            <result property="river0Id" column="river0_id" jdbcType="DOUBLE"/>
+            <result property="type" column="type" jdbcType="SMALLINT"/>
+            <result property="geom" column="geom" jdbcType="OTHER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        gid,fnode_,tnode_,lpoly_,rpoly_,`length`,
+        river0_,river0_id,`type``,geom
+    </sql>
+
+    <select id="selectPagesByRiverClass" resultType="java.util.Map">
+        select * from river0_arc
+        <where>
+            <if test="River0ArcClass.gid!=null">
+                gid = #{River0ArcClass.gid};
+            </if>
+            <if test="River0ArcClass.fnode!=null">
+                fnode_ = #{River0ArcClass.fnode};
+            </if>
+            <if test="River0ArcClass.tnode!=null">
+                tnode_ = #{River0ArcClass.tnode};
+            </if>
+            <if test="River0ArcClass.lpoly!=null">
+                lpoly_ = #{River0ArcClass.lpoly};
+            </if>
+            <if test="River0ArcClass.length!=null">
+                `length` = #{River0ArcClass.length};
+            </if>
+            <if test="River0ArcClass.river0!=null">
+                river0_ = #{River0ArcClass.river0};
+            </if>
+            <if test="River0ArcClass.river0Id!=null">
+                river0_id = #{River0ArcClass.river0Id};
+            </if>
+            <if test="River0ArcClass.type!=null">
+                type = #{River0ArcClass.type};
+            </if>
+        </where>
+    </select>
+</mapper>

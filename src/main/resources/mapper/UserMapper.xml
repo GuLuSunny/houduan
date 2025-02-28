@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.User">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="username" column="username" jdbcType="VARCHAR"/>
+            <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="tel" column="tel" jdbcType="VARCHAR"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="email" column="email" jdbcType="VARCHAR"/>
+            <result property="productionCompany" column="production_company" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="memo" column="memo" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,username,password,
+        tel,address,email,
+        production_company,status,create_time,
+        memo
+    </sql>
+    <update id="deleteUserListsByCondition">
+        UPDATE  "user"  SET  status= 1
+        <where>
+            <if test="userIds != null and userIds.size()>0">
+                AND id in
+                <foreach item="id" index="index" collection="userIds" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="userClass.username != null and userClass.username.trim() != ''">
+                AND username LIKE CONCAT('%', #{userClass.username},'%')
+            </if>
+            <if test="userClass.tel != null and userClass.tel.trim() != ''">
+                AND tel LIKE CONCAT('%', #{userClass.tel},'%')
+            </if>
+            <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
+                AND production_company LIKE CONCAT('%', #{userClass.productionCompany},'%')
+            </if>
+        </where>
+    </update>
+    <update id="updateUserInfo" parameterType="com.ydsw.domain.User">
+        update "user"
+        <trim prefix="set" suffixOverrides=",">
+            <if test="userClass.username != null and userClass.username.trim() != ''">
+                username= #{userClass.username},
+            </if>
+            <if test="userClass.password != null and userClass.password.trim() != ''">
+                password= #{userClass.password},
+            </if>
+            <if test="userClass.email != null and userClass.email.trim() != ''">
+                email= #{userClass.email},
+            </if>
+            <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
+                production_company= #{userClass.productionCompany},
+            </if>
+            <if test="userClass.address != null and userClass.address.trim() != ''">
+                address= #{userClass.address},
+            </if>
+            <if test="userClass.tel != null and userClass.tel.trim() != ''">
+                tel= #{userClass.tel},
+            </if>
+        </trim>
+        where id=#{userClass.id}
+    </update>
+    <select id="selectUserPageByCondition" resultType="java.util.Map">
+        SELECT id,username,tel,address,email,productionCompany ,roleId,roleInfo
+        FROM "user_role_info"
+        <where>
+            <!-- 动态解析JSONObject中的条件 -->
+            <if test="userClass.username != null and userClass.username.trim() != ''">
+                AND username LIKE CONCAT('%', #{userClass.username},'%')
+            </if>
+            <if test="userClass.tel != null and userClass.tel.trim() != ''">
+                AND tel LIKE CONCAT('%', #{userClass.tel},'%')
+            </if>
+            <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
+                AND productionCompany LIKE CONCAT('%', #{userClass.productionCompany},'%')
+            </if>
+        </where>
+    </select>
+    <select id="selectUserByCondition" resultType="java.util.Map">
+        SELECT id,password,username,tel,address,email,production_company as productionCompany
+        FROM "user"
+        <where>
+            <!-- 动态解析JSONObject中的条件 -->
+            <if test="userClass.id != null">
+                AND id LIKE CONCAT('%', #{userClass.id},'%')
+            </if>
+            <if test="userClass.username != null and userClass.username.trim() != ''">
+                AND username = #{userClass.username}
+            </if>
+            <if test="userClass.tel != null and userClass.tel.trim() != ''">
+                AND tel LIKE CONCAT('%', #{userClass.tel},'%')
+            </if>
+            <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
+                AND productionCompany LIKE CONCAT('%', #{userClass.productionCompany},'%')
+            </if>
+            and status=#{userClass.status}
+        </where>
+    </select>
+</mapper>

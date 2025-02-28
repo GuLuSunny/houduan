@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.SateliteRemoteSensingMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.SateliteRemoteSensing">
+        <id property="id" column="id" />
+        <result property="deviceName" column="device_name" />
+        <result property="observationTime" column="observation_time" />
+        <result property="createTime" column="create_time" />
+        <result property="type" column="type" />
+        <result property="typeDetail" column="type_detail" />
+        <result property="filepath" column="filepath" />
+        <result property="filename" column="filename" />
+        <result property="createUserid" column="create_userid" />
+        <result property="userName" column="user_name" />
+        <result property="status" column="status" />
+        <result property="contactPhone" column="contact_phone" />
+        <result property="contactAddress" column="contact_address" />
+        <result property="productionUnit" column="production_unit" />
+        <result property="contactEmail" column="contact_email" />
+        <result property="open" column="open" />
+        <result property="dataIntroduction" column="data_introduction" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_name,observation_time,create_time,type,type_detail,
+        filepath,filename,create_userid,user_name,status,
+        contact_phone,contact_address,production_unit,contact_email,open,
+        data_introduction
+    </sql>
+    <select id="findDataPageByCondition" resultType="java.util.Map">
+        SELECT
+        group_concat( SateliteRemoteSensing.id ORDER BY SateliteRemoteSensing.filepath SEPARATOR ',' ) AS id,
+        SateliteRemoteSensing.filepath AS filepath,
+        SateliteRemoteSensing.data_introduction AS "dataIntroduction" ,
+        SateliteRemoteSensing.user_name AS "userName" ,
+        SateliteRemoteSensing.observation_time AS "observationTime",
+        SateliteRemoteSensing.contact_phone AS "contactPhone" ,
+        SateliteRemoteSensing.production_unit AS "productionUnit",
+        SateliteRemoteSensing.open
+        FROM satelite_remote_sensing as "SateliteRemoteSensing"
+        <where>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="opens != null">
+                AND  open=#{opens}
+            </if>
+            <if test="time != null and time.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{time},'%')
+            </if>
+            and SateliteRemoteSensing.filepath IS NOT NULL and SateliteRemoteSensing.status=0
+        </where>
+        GROUP BY
+        SateliteRemoteSensing.filepath,
+        SateliteRemoteSensing.data_introduction,
+        SateliteRemoteSensing.user_name ,
+        SateliteRemoteSensing.contact_phone,
+        SateliteRemoteSensing.production_unit,
+        SateliteRemoteSensing.observation_time,
+        SateliteRemoteSensing.open
+    </select>
+    <select id="getSateliteRemoteSensingDatasPage" resultType="java.util.Map">
+        select id, device_name as "deviceName", observation_time as "observationTime", type,
+               type_detail as "typeDetail", user_name as "userName", filepath,data_introduction as "dataIntroduction"
+        from satelite_remote_sensing
+        <where>
+            <if test="sateliteRemoteSensingClass.observationTime!=null and sateliteRemoteSensingClass.observationTime.trim()!=''">
+                and observation_time LIKE CONCAT('%',#{sateliteRemoteSensingClass.observationTime},'%')
+            </if>
+            <if test="sateliteRemoteSensingClass.filepath!=null and sateliteRemoteSensingClass.filepath.trim()!=''">
+                and filename  LIKE CONCAT('%',#{sateliteRemoteSensingClass.filepath},'%')
+            </if>
+            <if test="sateliteRemoteSensingClass.deviceName!=null and sateliteRemoteSensingClass.deviceName.trim()!=''">
+                and device_name=#{sateliteRemoteSensingClass.deviceName}
+            </if>
+            <if test="sateliteRemoteSensingClass.type!=null and sateliteRemoteSensingClass.type.trim()!=''">
+                and type=#{sateliteRemoteSensingClass.type}
+            </if>
+            and status = 0
+            order by observation_time
+        </where>
+    </select>
+    <update id="updateOpenStatusByFilepathsAndDate">
+        UPDATE satelite_remote_sensing
+        SET open = #{openValue}
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+    <update id="deleteById" >
+        update satelite_remote_sensing set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="type != null and type.trim() !=''">
+                AND  type LIKE CONCAT('%', #{type},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="deviceName != null and deviceName.trim() != ''">
+                AND device_name = #{deviceName}
+            </if>
+            and status=0
+        </where>
+    </update>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM satelite_remote_sensing where status=0
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM satelite_remote_sensing where status=0
+    </select>
+</mapper>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.RoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.Role">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="roleinfo" column="roleinfo" jdbcType="VARCHAR"/>
+            <result property="roleEng" column="role_eng" jdbcType="VARCHAR"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,roleinfo,role_eng,
+        remark
+    </sql>
+
+    <delete id="deleteRoleDataById">
+        DELETE FROM role
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </delete>
+    <select id="getRoleRightListPage" resultType="java.util.Map">
+        SELECT roleId,roleInfo,roleEng,rightId,rightInfo,rightEng,rightApi FROM role_purview_info
+        <where>
+            <!-- 动态解析JSONObject中的条件 -->
+            <if test="roleClass.roleinfo != null and roleClass.roleinfo.trim() != ''">
+                AND roleInfo LIKE CONCAT('%', #{roleClass.roleinfo},'%')
+            </if>
+            <if test="roleClass.roleEng != null and roleClass.roleEng.trim() != ''">
+                AND roleEng LIKE CONCAT('%', #{roleClass.roleEng},'%')
+            </if>
+        </where>
+    </select>
+</mapper>

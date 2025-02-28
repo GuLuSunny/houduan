@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.TbWaterLevelMapper">
+
+    <resultMap id="BaseResultMap" type="TbWaterLevel">
+        <id property="id" column="id" />
+        <result property="deviceId" column="device_id" />
+        <result property="waterLevel" column="water_level" />
+        <result property="observationTime" column="observation_time" />
+        <result property="createTime" column="create_time" />
+        <result property="type" column="type" />
+        <result property="userName" column="user_name" />
+        <result property="filepath" column="filepath" />
+        <result property="filename" column="filename" />
+        <result property="createUserid" column="create_userid" />
+        <result property="status" column="status" />
+        <result property="contactPhone" column="contact_phone" />
+        <result property="contactAddress" column="contact_address" />
+        <result property="productionUnit" column="production_unit" />
+        <result property="contactEmail" column="contact_email" />
+        <result property="open" column="open" />
+        <result property="dataIntroduction" column="data_introduction" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_id,water_level,observation_time,create_time,type,
+        user_name,filepath,filename,create_userid,status,
+        contact_phone,contact_address,production_unit,contact_email,open,
+        data_introduction
+    </sql>
+    <select id="selectObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM tb_water_level
+        <where>
+            <if test="filepath!=null and filepath.trim()!=''">
+                (filepath !=Null or filepath !='' )
+            </if>
+            and status = 0
+        </where>
+    </select>
+
+    <select id="selectObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM tb_water_level
+        <where>
+            <if test="filepath!=null and filepath.trim()!=''">
+                (filepath !=NULL or filepath !='' )
+            </if>
+            and status = 0
+        </where>
+    </select>
+
+    <select id="selectWaterLevelByObservationTime" resultType="java.util.Map">
+        select water_level as waterlevel,observation_time "observationTime",device_id as "deviceId" from tb_water_level
+        <where>
+            <if test="time!=null and time.trim()!=''">
+                observation_time =#{time}
+            </if>
+            <if test="deviceId!=null">
+                and device_id=#{deviceId}
+            </if>
+            and status = 0
+        </where>
+    </select>
+
+    <select id="selectWaterLevelByObservationTime2">
+        select water_level as waterlevel,observation_time as "observationTime" from tb_water_level
+         <where>
+             <if test="timeEarliest!=null and timeEarliest.trim()!='' and timeLatest!=null and timeLatest.trim()!=''">
+                 and observation_time between #{timeEarliest} and #{timeLatest}
+             </if>
+            <if test="deviceId!=null">
+                and device_id=#{deviceId}
+            </if>
+             and status = 0
+         </where>
+    </select>
+
+    <update id="deleteWaterLevelByIdList" >
+        update tb_water_level
+        set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="observationTime!=null and observationTime.trim()!=''">
+                and observation_time LIKE CONCAT('%',#{observationTime},'%')
+            </if>
+            <if test="filepath!=null and filepath.trim()!=''">
+                and filename LIKE CONCAT('%',#{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+
+    <select id="selectWaterLevelPageByObservationTime" resultType="java.util.Map">
+        select id,water_level as waterlevel,observation_time "observationTime",type,user_name "userName",filepath
+        from tb_water_level
+        <where>
+            <if test="tbWaterLevelClass.observationTime!=null and tbWaterLevelClass.observationTime.trim()!=''">
+                and observation_time LIKE CONCAT('%',#{tbWaterLevelClass.observationTime},'%')
+            </if>
+            <if test="tbWaterLevelClass.filepath!=null and tbWaterLevelClass.filepath.trim()!=''">
+                and filename  LIKE CONCAT('%',#{tbWaterLevelClass.filepath},'%')
+            </if>
+            <if test="tbWaterLevelClass.deviceId!=null">
+                and device_id=#{tbWaterLevelClass.deviceId}
+            </if>
+            and status = 0
+            order by observation_time
+        </where>
+    </select>
+    <select id="findDataPageByCondition" resultType="java.util.Map">
+        SELECT
+        group_concat( TbWaterLevel.id ORDER BY TbWaterLevel.filepath SEPARATOR ',' ) AS id,
+        TbWaterLevel.observation_time "observationTime",
+        TbWaterLevel.filepath,
+        TbWaterLevel.data_introduction "dataIntroduction" ,
+        TbWaterLevel.user_name "userName" ,
+        TbWaterLevel.contact_phone "contactPhone" ,
+        TbWaterLevel.production_unit "productionUnit",
+        TbWaterLevel.open
+        FROM
+        tb_water_level AS TbWaterLevel
+        <where>
+            <if test="time != null and time.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{time},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="opens != null">
+                AND  open=#{opens}
+            </if>
+            and TbWaterLevel.filepath IS NOT NULL and TbWaterLevel.status=0
+        </where>
+        GROUP BY
+        TbWaterLevel.filepath,
+        TbWaterLevel.data_introduction,
+        TbWaterLevel.user_name ,
+        TbWaterLevel.contact_phone,
+        TbWaterLevel.production_unit,
+        TbWaterLevel.observation_time,
+        TbWaterLevel.open
+    </select>
+    <update id="updateOpenStatusByFilepathsAndDate">
+        UPDATE tb_water_level
+        SET open = #{openValue}
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+</mapper>

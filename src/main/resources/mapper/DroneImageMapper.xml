@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.DroneImageMapper">
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.DroneImage">
+        <id property="id" column="id" />
+        <result property="deviceName" column="device_name" />
+        <result property="observationTime" column="observation_time" />
+        <result property="createTime" column="create_time" />
+        <result property="type" column="type" />
+        <result property="typeDetail" column="type_detail" />
+        <result property="filepath" column="filepath" />
+        <result property="filename" column="filename" />
+        <result property="createUserid" column="create_userid" />
+        <result property="userName" column="user_name" />
+        <result property="status" column="status" />
+        <result property="contactPhone" column="contact_phone" />
+        <result property="contactAddress" column="contact_address" />
+        <result property="productionUnit" column="production_unit" />
+        <result property="contactEmail" column="contact_email" />
+        <result property="open" column="open" />
+        <result property="dataIntroduction" column="data_introduction" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_name,observation_time,create_time,type,type_detail,
+        filepath,filename,create_userid,user_name,status,
+        contact_phone,contact_address,production_unit,contact_email,open,
+        data_introduction
+    </sql>
+    <select id="findDataPageByCondition" resultType="java.util.Map">
+        SELECT
+        group_concat( DroneImage.id ORDER BY DroneImage.filepath SEPARATOR ',' ) AS id,
+        DroneImage.filepath AS filepath,
+        DroneImage.data_introduction AS "dataIntroduction" ,
+        DroneImage.observation_time AS "observationTime",
+        DroneImage.user_name AS "userName" ,
+        DroneImage.contact_phone AS "contactPhone" ,
+        DroneImage.production_unit AS "productionUnit",
+        DroneImage.open
+        FROM drone_image AS "DroneImage"
+        <where>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="opens != null">
+                AND  open=#{opens}
+            </if>
+            <if test="time != null and time.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{time},'%')
+            </if>
+            and DroneImage.filepath IS NOT NULL and DroneImage.status=0
+        </where>
+        GROUP BY
+        DroneImage.filepath,
+        DroneImage.data_introduction,
+        DroneImage.user_name ,
+        DroneImage.contact_phone,
+        DroneImage.production_unit,
+        DroneImage.observation_time,
+        DroneImage.open
+    </select>
+    <select id="getDroneImageDatasPage" resultType="java.util.Map">
+        select id, device_name as "deviceName", observation_time as "observationTime", type,
+               user_name as "userName", filepath,data_introduction as "dataIntroduction"
+        from drone_image
+        <where>
+            <if test="droneImageClass.observationTime!=null and droneImageClass.observationTime.trim()!=''">
+                and observation_time LIKE CONCAT('%',#{droneImageClass.observationTime},'%')
+            </if>
+            <if test="droneImageClass.filepath!=null and droneImageClass.filepath.trim()!=''">
+                and filename  LIKE CONCAT('%',#{droneImageClass.filepath},'%')
+            </if>
+            <if test="droneImageClass.deviceName!=null and droneImageClass.deviceName.trim()!=''">
+                and device_name=#{droneImageClass.deviceName}
+            </if>
+            <if test="droneImageClass.type!=null and droneImageClass.type.trim()!=''">
+                and type=#{droneImageClass.type}
+            </if>
+            and status = 0
+            order by observation_time
+        </where>
+    </select>
+    <update id="updateOpenStatusByFilepathsAndDate">
+        UPDATE drone_image
+        SET open = #{openValue}
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+    <update id="deleteById" >
+        update drone_image set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="type != null and type.trim() !=''">
+                AND  type LIKE CONCAT('%', #{type},'%')
+            </if>
+            <if test="deviceName != null and deviceName.trim() != ''">
+                AND device_name = #{deviceName}
+            </if>
+            and status=0
+        </where>
+    </update>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM drone_image where status=0
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM drone_image where status=0
+    </select>
+</mapper>

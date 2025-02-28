@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.WaterPhysicochemistryMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.WaterPhysicochemistry">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"/>
+        <result property="waterTemperature" column="water_temperature" jdbcType="VARCHAR"/>
+        <result property="ph" column="ph" jdbcType="VARCHAR"/>
+        <result property="turbidity" column="turbidity" jdbcType="VARCHAR"/>
+        <result property="conductivity" column="conductivity" jdbcType="VARCHAR"/>
+        <result property="dissolvedOxygen" column="dissolved_oxygen" jdbcType="VARCHAR"/>
+        <result property="transparency" column="transparency" jdbcType="VARCHAR"/>
+        <result property="codmn" column="codmn" jdbcType="VARCHAR"/>
+        <result property="tss" column="tss" jdbcType="VARCHAR"/>
+        <result property="tn" column="tn" jdbcType="VARCHAR"/>
+        <result property="tp" column="tp" jdbcType="VARCHAR"/>
+        <result property="chlorophyll" column="chlorophyll" jdbcType="VARCHAR"/>
+        <result property="observationTime" column="observation_time" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="filepath" column="filepath" jdbcType="VARCHAR"/>
+        <result property="createUserid" column="create_userid" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="contactPhone" column="contact_phone" jdbcType="VARCHAR"/>
+        <result property="contactAddress" column="contact_address" jdbcType="VARCHAR"/>
+        <result property="productionUnit" column="production_unit" jdbcType="VARCHAR"/>
+        <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
+        <result property="open" column="open" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_id,water_temperature,
+        ph,turbidity,conductivity,
+        dissolved_oxygen,transparency,codmn,
+        tss,tn,tp,
+        chlorophyll,observation_time,create_time,
+        type,user_name,filepath,
+        create_userid,status,contact_phone,
+        contact_address,production_unit,contact_email,
+        open
+    </sql>
+    <select id="getDatas" resultType="com.ydsw.domain.WaterPhysicochemistry">
+        SELECT * FROM water_physicochemistry
+        <where>
+                <if test="time != null and time.trim() != ''">
+                    AND observation_time LIKE CONCAT('%', #{time}, '%')
+                </if>
+                <if test="device != null and device.trim() != ''">
+                    AND device_id = #{device}
+                </if>
+                AND status=0
+            </where>
+    </select>
+
+    <select id="getWaterPhysicochemistryDatasPage" resultType="java.util.Map">
+        select id,observation_time as "observationTime",water_temperature as "waterTemperature",ph,turbidity,
+               conductivity,dissolved_oxygen as "dissolvedOxygen",
+               transparency,codmn,tss,tn,tp,chlorophyll,filepath,device_id as "deviceId"
+        from water_physicochemistry
+            <where>
+                <if test="waterPhysicochemistry.observationTime != null and waterPhysicochemistry.observationTime.trim() != ''">
+                    and observation_time LIKE CONCAT('%', #{waterPhysicochemistry.observationTime}, '%')
+                </if>
+                <if test="waterPhysicochemistry.filepath!=null and waterPhysicochemistry.filepath.trim()!=''">
+                    and filename  LIKE CONCAT('%',#{waterPhysicochemistry.filepath},'%')
+                </if>
+                <if test="waterPhysicochemistry.deviceId != null and waterPhysicochemistry.deviceId.trim() != ''">
+                    AND device_id = #{waterPhysicochemistry.deviceId}
+                </if>
+                AND status=0
+            </where>
+        order by id,observation_time
+    </select>
+
+    <select id="selectObservationTime" resultType="java.lang.String">
+        SELECT DISTINCT observation_time  FROM water_physicochemistry
+    </select>
+    <select id="findDataPageByCondition" resultType="java.util.Map">
+        SELECT
+        group_concat( waterPhysicochemistry.id ORDER BY waterPhysicochemistry.filepath ASC SEPARATOR ',' ) AS id,
+        waterPhysicochemistry.observation_time  AS "observationTime",
+        waterPhysicochemistry.filepath AS filepath,
+        waterPhysicochemistry.data_introduction AS "dataIntroduction" ,
+        waterPhysicochemistry.user_name AS "userName" ,
+        waterPhysicochemistry.contact_phone AS "contactPhone" ,
+        waterPhysicochemistry.production_unit AS "productionUnit",
+        waterPhysicochemistry.open
+        FROM
+        water_physicochemistry AS "waterPhysicochemistry"
+        <where>
+            <if test="time != null and time.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{time},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="opens != null">
+                AND  open=#{opens}
+            </if>
+            and waterPhysicochemistry.filepath IS NOT NULL and waterPhysicochemistry.status=0
+        </where>
+        GROUP BY
+        waterPhysicochemistry.filepath,
+        waterPhysicochemistry.data_introduction,
+        waterPhysicochemistry.user_name ,
+        waterPhysicochemistry.contact_phone,
+        waterPhysicochemistry.production_unit,
+        waterPhysicochemistry.observation_time,
+        waterPhysicochemistry.open
+    </select>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM water_physicochemistry where status=0
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM water_physicochemistry where status=0
+    </select>
+    <select id="fetchObservationTimeByDay" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 10) FROM water_physicochemistry where status=0
+    </select>
+
+    <update id="deleteById" >
+        update water_physicochemistry set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="deviceId != null and deviceId.trim() != ''">
+                AND device_id = #{deviceId}
+            </if>
+            and status=0
+        </where>
+    </update>
+    <update id="updateOpenStatusByFilepathsAndDate">
+        UPDATE water_physicochemistry
+        SET open = #{openValue}
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+</mapper>

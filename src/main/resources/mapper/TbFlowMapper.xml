@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.TbFlowMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.TbFlow">
+        <id property="id" column="id" />
+        <result property="deviceId" column="device_id" />
+        <result property="flow" column="flow" />
+        <result property="observationTime" column="observation_time" />
+        <result property="createTime" column="create_time" />
+        <result property="type" column="type" />
+        <result property="userName" column="user_name" />
+        <result property="filepath" column="filepath" />
+        <result property="filename" column="filename" />
+        <result property="createUserid" column="create_userid" />
+        <result property="status" column="status" />
+        <result property="contactPhone" column="contact_phone" />
+        <result property="contactAddress" column="contact_address" />
+        <result property="productionUnit" column="production_unit" />
+        <result property="contactEmail" column="contact_email" />
+        <result property="open" column="open" />
+        <result property="dataIntroduction" column="data_introduction" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_id,flow,observation_time,create_time,type,
+        user_name,filepath,filename,create_userid,status,
+        contact_phone,contact_address,production_unit,contact_email,open,
+        data_introduction
+    </sql>
+
+
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM tb_flow
+        <where>
+            <if test="filepath!=null and filepath.trim()!=''">
+                (filepath !=Null or filepath !='' )
+            </if>
+            and status = 0
+        </where>
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM tb_flow
+        <where>
+            <if test="filepath!=null and filepath.trim()!=''">
+                (filepath !=Null or filepath !='' )
+            </if>
+            and status = 0
+        </where>
+    </select>
+    <select id="selectFlowByObservationTime2" resultType="java.util.Map">
+        SELECT flow,observation_time,device_id FROM tb_flow WHERE observation_time BETWEEN #{timeEarliest} AND
+        #{timeLatest}
+        <if test="device != null and device.trim() != ''">
+            AND device_id = #{device}
+        </if>
+    </select>
+    <select id="findFlowByYearAndDevice" resultType="java.util.Map">
+        SELECT SUBSTRING(observation_time, 1, 4) AS year , id,device_id as "deviceId",flow,observation_time as
+        "observationTime"
+        FROM tb_flow WHERE SUBSTRING(observation_time, 1, 4) = #{year} and status=0
+        <if test="deviceId != null and deviceId.trim() != ''">
+            AND device_id = #{deviceId}
+        </if>
+    </select>
+    <select id="findFlowByYearMonthAndDevice" resultType="java.util.Map">
+        SELECT SUBSTRING(observation_time, 1, 7) AS year , id,device_id as "deviceId",flow,observation_time as
+        "observationTime"
+        FROM tb_flow WHERE SUBSTRING(observation_time, 1, 7) = #{yearMonth} and status=0
+        <if test="deviceId != null and deviceId.trim() != ''">
+            AND device_id = #{deviceId}
+        </if>
+    </select>
+    <!-- 前端传入deviceName转化为相应设备id号 -->
+    <select id="getDeviceIdByDeviceName" resultType="Integer" parameterType="String">
+        SELECT id
+        FROM device
+        WHERE device_name = #{deviceName}
+    </select>
+
+    <select id="getTbFlowDatasPage" resultType="java.util.Map">
+        select id, device_id as "deviceId", flow, observation_time as "observationTime", type,
+               user_name as "userName",
+        filepath
+        from tb_flow
+        <where>
+            <if test="tbFlowClass.observationTime != null and tbFlowClass.observationTime.trim() != ''">
+                and observation_time LIKE CONCAT('%', #{tbFlowClass.observationTime}, '%')
+            </if>
+            <if test="tbFlowClass.filepath != null and tbFlowClass.filepath.trim() != ''">
+                and filename LIKE CONCAT('%', #{tbFlowClass.filepath}, '%')
+            </if>
+            <if test="tbFlowClass.deviceId != null">
+                AND device_id = #{tbFlowClass.deviceId}
+            </if>
+            AND status = 0
+        </where>
+        order by observation_time
+    </select>
+    <select id="findDataPageByCondition" resultType="java.util.Map">
+        SELECT
+        group_concat( tbFlow.id ORDER BY tbFlow.filepath ASC SEPARATOR ',' ) AS id,
+        tbFlow.observation_time AS "observationTime",
+        tbFlow.filepath AS "filepath",
+        tbFlow.data_introduction AS "dataIntroduction" ,
+        tbFlow.user_name AS "userName" ,
+        tbFlow.contact_phone AS "contactPhone" ,
+        tbFlow.production_unit AS "productionUnit",
+        tbFlow.open
+        FROM
+        tb_flow AS "tbFlow"
+        <where>
+            <if test="time != null and time.trim() !=''">
+                AND observation_time LIKE CONCAT('%', #{time},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="opens != null">
+                AND open=#{opens}
+            </if>
+            and tbFlow.filepath IS NOT NULL and tbFlow.status=0
+        </where>
+        GROUP BY
+        tbFlow.filepath,
+        tbFlow.data_introduction,
+        tbFlow.user_name ,
+        tbFlow.contact_phone,
+        tbFlow.production_unit,
+        tbFlow.observation_time,
+        tbFlow.open
+    </select>
+    <select id="selectFlowByObservationTimeAndDeviceId" resultType="java.util.Map">
+        select tb_flow.observation_time as "observationTime",device_id as "deviceId" from tb_flow
+        <where>
+            <if test="observationTime!=null and observationTime.trim()!=''">
+                observation_time =#{observationTime}
+            </if>
+            <if test="deviceId!=null">
+                and device_id=#{deviceId}
+            </if>
+            and status=0
+        </where>
+    </select>
+
+    <update id="deleteById">
+        update tb_flow set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="deviceId != null and deviceId.trim() != ''">
+                AND device_id = #{deviceId}
+            </if>
+            and status=0
+        </where>
+    </update>
+    <update id="updateOpenStatusByFilepathsAndDate">
+        UPDATE tb_flow
+        SET open = #{openValue}
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+</mapper>

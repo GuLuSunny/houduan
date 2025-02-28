@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: Ydsw
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+  #配置数据源
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    #url: jdbc:postgresql://localhost:5432/ydsw?&rewriteBatchedStatements=true&allowMultiQueries=true
+    url: jdbc:postgresql://47.122.28.51:5432/ydsw?&rewriteBatchedStatements=true&allowMultiQueries=true
+    username: ydsweditor
+    password: hgg123.
+    driver-class-name: org.postgresql.Driver
+  devtools:
+    add-properties: false
+    restart:
+      additional-paths: src/main/java
+server:
+  port: 8090
+#mybatis-plus配置
+mybatis-plus:
+  mapper-locations:  classpath*:/mapper/**Mapper.xml #将xml文件放进resource下的mapper中
+  type-aliases-package: com.ydsw.pojo;com.ydsw.domain #实体类位置，多个package用逗号或者分号分割
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+  # 或者设置日志文件的目录
+  logging:
+    file:
+      path: /logfile/
+  #  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

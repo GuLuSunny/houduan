@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.SpectralReflectanceMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.SpectralReflectance">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="wavelength" column="wavelength" jdbcType="VARCHAR"/>
+            <result property="deviceId" column="device_id" jdbcType="VARCHAR"/>
+            <result property="data" column="data" jdbcType="VARCHAR"/>
+            <result property="observationTime" column="observation_time" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="filepath" column="filepath" jdbcType="VARCHAR"/>
+        <result property="createUserid" column="create_userid" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="contactPhone" column="contact_phone" jdbcType="VARCHAR"/>
+        <result property="contactAddress" column="contact_address" jdbcType="VARCHAR"/>
+        <result property="productionUnit" column="production_unit" jdbcType="VARCHAR"/>
+        <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
+        <result property="open" column="open" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,wavelength,device_id,
+        data,observation_time,create_time,
+        type,user_name,filepath,
+        create_userid,status,contact_phone,
+        contact_address,production_unit,contact_email,
+        open
+    </sql>
+    <select id="selectObservationTime" resultType="java.lang.String">
+        SELECT DISTINCT observation_time  FROM spectral_reflectance where status=0
+    </select>
+
+    <select id="selectByTimeAndDevice" resultType="java.util.Map">
+        select wavelength,device_id,"data",observation_time from spectral_reflectance
+        <where>
+            <if test="time!=null and time.trim()!=''">
+                 observation_time =#{time}
+            </if>
+            <if test="device!=null">
+                and device_id = #{device}
+            </if>
+            <if test="wavelength!=null">
+                and wavelength
+            </if>
+            and status=0
+            order by wavelength
+        </where>
+    </select>
+
+    <select id="selectByTime" resultType="java.util.Map">
+        select wavelength,device_id,"data" from spectral_reflectance
+        <where>
+            <if test="time!=null and time.trim()!=''">
+                observation_time = #{time}
+            </if>
+            and status=0
+            order by wavelength
+        </where>
+    </select>
+
+    <select id="selecetSpectralReflectancPageByObservationAndOrderBywavelength" resultType="java.util.Map">
+        select wavelength,filepath,observationTime, deviceId , "data", id
+        FROM spectral_reflectance_view
+        <where>
+            <if test="spectralReflectanceClass.observationTime != null and spectralReflectanceClass.observationTime.trim() !=''">
+                AND observationTime LIKE CONCAT('%', #{spectralReflectanceClass.observationTime},'%')
+            </if>
+            <if test="spectralReflectanceClass.filepath != null and spectralReflectanceClass.filepath.trim() !=''">
+                AND filepath LIKE CONCAT('%', #{spectralReflectanceClass.filepath},'%')
+            </if>
+        </where>
+       </select>
+    <select id="findDataPageByCondition" resultType="java.util.Map">
+        SELECT
+        group_concat( spectralReflectance.id ORDER BY spectralReflectance.filepath SEPARATOR ',' ) AS id,
+        spectralReflectance.observation_time AS "observationTime",
+        spectralReflectance.filepath AS "filepath",
+        spectralReflectance.data_introduction AS "dataIntroduction" ,
+        spectralReflectance.user_name AS "userName" ,
+        spectralReflectance.contact_phone AS "contactPhone" ,
+        spectralReflectance.production_unit AS "productionUnit",
+        spectralReflectance.open
+        FROM
+        spectral_reflectance AS "spectralReflectance"
+        <where>
+            <if test="time != null and time.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{time},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            <if test="opens != null">
+                AND  open=#{opens}
+            </if>
+            and spectralReflectance.filepath IS NOT NULL and spectralReflectance.status=0
+        </where>
+        GROUP BY
+        spectralReflectance.filepath,
+        spectralReflectance.data_introduction,
+        spectralReflectance.user_name ,
+        spectralReflectance.contact_phone,
+        spectralReflectance.production_unit,
+        spectralReflectance.observation_time,
+        spectralReflectance.open
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM spectral_reflectance where status=0
+    </select>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM spectral_reflectance where status=0
+    </select>
+    <select id="fetchObservationTimeByDay" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 10) FROM spectral_reflectance where status=0
+    </select>
+
+    <update id="deleteById" >
+        update spectral_reflectance set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+    <update id="updateOpenStatusByFilepathsAndDate">
+        UPDATE spectral_reflectance
+        SET open = #{openValue}
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+            </if>
+            <if test="filepath != null and filepath.trim() !=''">
+                AND  filename LIKE CONCAT('%', #{filepath},'%')
+            </if>
+            and status=0
+        </where>
+    </update>
+
+</mapper>
