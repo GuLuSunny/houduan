@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.SluiceMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.Sluice">
+            <id property="gid" column="gid" />
+            <result property="objectid" column="objectid" />
+            <result property="provincial" column="provincial" />
+            <result property="city" column="city" />
+            <result property="county" column="county" />
+            <result property="irrname" column="irrname" />
+            <result property="irrtype" column="irrtype" />
+            <result property="name" column="name" />
+            <result property="angle" column="angle" />
+            <result property="remark" column="remark" />
+            <result property="geog" column="geog" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        gid,objectid,provincial,city,county,irrname,
+        irrtype,name,angle,remark,geog
+    </sql>
+    <select id="selectBySluice" resultType="com.ydsw.domain.Sluice" parameterType="com.ydsw.domain.Sluice">
+        select * from sluice
+        <where>
+            <if test="sluiceClass.gid!=null">
+                and gid=#{sluiceClass.gid}
+            </if>
+            <if test="sluiceClass.objectid!=null">
+                and objectid=#{sluiceClass.objectid}
+            </if>
+            <if test="sluiceClass.provincial!=null and sluiceClass.provincial.trim()!=''">
+                and provincial=#{sluiceClass.provincial}
+            </if>
+            <if test="sluiceClass.city!=null and sluiceClass.city.trim()!=''">
+                and city=#{sluiceClass.city}
+            </if>
+            <if test="sluiceClass.county!=null and sluiceClass.county.trim()!=''">
+                and county=#{sluiceClass.county}
+            </if>
+            <if test="sluiceClass.irrname!=null and sluiceClass.irrname.trim()!=''">
+                and irrname=#{sluiceClass.irrname}
+            </if>
+            <if test="sluiceClass.irrtype!=null and sluiceClass.irrtype.trim()!=''">
+                and irrtype=#{sluiceClass.irrtype}
+            </if>
+            <if test="sluiceClass.name!=null and sluiceClass.name.trim()!=''">
+                and `name`=#{channelClass.name}
+            </if>
+            <if test="sluiceClass.angle!=null">
+                and angle=#{sluiceClass.angle}
+            </if>
+        </where>
+    </select>
+</mapper>

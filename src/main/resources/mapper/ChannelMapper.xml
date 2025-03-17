@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.ChannelMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.Channel">
+            <id property="gid" column="gid" />
+            <result property="objectid" column="objectid" />
+            <result property="provincial" column="provincial" />
+            <result property="city" column="city" />
+            <result property="county" column="county" />
+            <result property="irrname" column="irrname" />
+            <result property="irrtype" column="irrtype" />
+            <result property="name" column="name" />
+            <result property="angle" column="angle" />
+            <result property="remark" column="remark" />
+            <result property="shapeLeng" column="shape_leng" />
+            <result property="geom" column="geom" />
+            <result property="canalType" column="canal_type" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        gid,objectid,provincial,city,county,irrname,
+        irrtype,name,angle,remark,shape_leng,
+        geom,canal_type
+    </sql>
+    <select id="selectAllChannelByConditions" resultType="com.ydsw.domain.Channel"
+            parameterType="com.ydsw.domain.Channel">
+        select * from channel
+        <where>
+            <if test="channelClass.gid!=null">
+                and gid=#{channelClass.gid}
+            </if>
+            <if test="channelClass.objectid!=null">
+                and objectid=#{channelClass.objectid}
+            </if>
+            <if test="channelClass.provincial!=null and channelClass.provincial.trim()!=''">
+                and provincial=#{channelClass.provincial}
+            </if>
+            <if test="channelClass.city!=null and channelClass.city.trim()!=''">
+                and city=#{channelClass.city}
+            </if>
+            <if test="channelClass.county!=null and channelClass.county.trim()!=''">
+                and county=#{channelClass.county}
+            </if>
+            <if test="channelClass.irrname!=null and channelClass.irrname.trim()!=''">
+                and irrname=#{channelClass.irrname}
+            </if>
+            <if test="channelClass.irrtype!=null and channelClass.irrtype.trim()!=''">
+                and irrtype=#{channelClass.irrtype}
+            </if>
+            <if test="channelClass.name!=null and channelClass.name.trim()!=''">
+                and `name`=#{channelClass.name}
+            </if>
+            <if test="channelClass.canalType!=null and channelClass.canalType.trim()!=''">
+                and canal_type=#{channelClass.canalType}
+            </if>
+            <if test="channelClass.angle!=null">
+                and angle=#{channelClass.angle}
+            </if>
+            <if test="channelClass.shapeLeng!=null">
+                and shape_leng=#{channelClass.shapeLeng}
+            </if>
+        </where>
+    </select>
+</mapper>
