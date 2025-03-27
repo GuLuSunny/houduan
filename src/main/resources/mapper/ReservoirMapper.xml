@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.ReservoirMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.Reservoir">
+            <id property="gid" column="gid" />
+            <result property="objectid" column="objectid" />
+            <result property="provincial" column="provincial" />
+            <result property="city" column="city" />
+            <result property="county" column="county" />
+            <result property="irrname" column="irrname" />
+            <result property="irrtype" column="irrtype" />
+            <result property="name" column="name" />
+            <result property="angle" column="angle" />
+            <result property="remark" column="remark" />
+            <result property="shapeLeng" column="shape_leng" />
+            <result property="shapeArea" column="shape_area" />
+            <result property="geom" column="geom" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        gid,objectid,provincial,city,county,irrname,
+        irrtype,name,angle,remark,shape_leng,
+        shape_area,geom
+    </sql>
+    <select id="selectReservoirByConditons" resultType="com.ydsw.domain.Reservoir"
+            parameterType="com.ydsw.domain.Reservoir">
+select * from reservoir
+        <where>
+        <if test="reservoirClass.gid!=null">
+            and gid=#{reservoirClass.gid}
+        </if>
+        <if test="reservoirClass.objectid!=null">
+            and objectid=#{reservoirClass.objectid}
+        </if>
+        <if test="reservoirClass.provincial!=null and reservoirClass.provincial.trim()!=''">
+            and provincial=#{reservoirClass.provincial}
+        </if>
+        <if test="reservoirClass.city!=null and reservoirClass.city.trim()!=''">
+            and city=#{reservoirClass.city}
+        </if>
+        <if test="reservoirClass.county!=null and reservoirClass.county.trim()!=''">
+            and county=#{reservoirClass.county}
+        </if>
+        <if test="reservoirClass.irrname!=null and reservoirClass.irrname.trim()!=''">
+            and irrname=#{reservoirClass.irrname}
+        </if>
+        <if test="reservoirClass.irrtype!=null and reservoirClass.irrtype.trim()!=''">
+            and irrtype=#{reservoirClass.irrtype}
+        </if>
+        <if test="reservoirClass.name!=null and reservoirClass.name.trim()!=''">
+            and "name"=#{reservoirClass.name}
+        </if>
+        <if test="reservoirClass.angle!=null">
+            and angle=#{reservoirClass.angle}
+        </if>
+        <if test="reservoirClass.shapeLeng!=null">
+            and shape_leng=#{reservoirClass.shapeLeng}
+        </if>
+        <if test="reservoirClass.shapeArea!=null">
+            and shape_area=#{reservoirClass.shapeArea}
+        </if>
+        </where>
+    </select>
+</mapper>

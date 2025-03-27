@@ -10,11 +10,11 @@ import lombok.Data;
 
 /**
  * 
- * @TableName channel
+ * @TableName reservoir
  */
-@TableName(value ="channel")
+@TableName(value ="reservoir")
 @Data
-public class Channel implements Serializable {
+public class Reservoir implements Serializable {
     /**
      * 
      */
@@ -84,14 +84,14 @@ public class Channel implements Serializable {
     /**
      * 
      */
-    @TableField(value = "geom")
-    private Object geom;
+    @TableField(value = "shape_area")
+    private BigDecimal shapeArea;
 
     /**
      * 
      */
-    @TableField(value = "canal_type")
-    private String canalType;
+    @TableField(value = "geom")
+    private Object geom;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
@@ -107,7 +107,7 @@ public class Channel implements Serializable {
         if (getClass() != that.getClass()) {
             return false;
         }
-        Channel other = (Channel) that;
+        Reservoir other = (Reservoir) that;
         return (this.getGid() == null ? other.getGid() == null : this.getGid().equals(other.getGid()))
             && (this.getObjectid() == null ? other.getObjectid() == null : this.getObjectid().equals(other.getObjectid()))
             && (this.getProvincial() == null ? other.getProvincial() == null : this.getProvincial().equals(other.getProvincial()))
@@ -119,8 +119,8 @@ public class Channel implements Serializable {
             && (this.getAngle() == null ? other.getAngle() == null : this.getAngle().equals(other.getAngle()))
             && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
             && (this.getShapeLeng() == null ? other.getShapeLeng() == null : this.getShapeLeng().equals(other.getShapeLeng()))
-            && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()))
-            && (this.getCanalType() == null ? other.getCanalType() == null : this.getCanalType().equals(other.getCanalType()));
+            && (this.getShapeArea() == null ? other.getShapeArea() == null : this.getShapeArea().equals(other.getShapeArea()))
+            && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()));
     }
 
     @Override
@@ -138,8 +138,8 @@ public class Channel implements Serializable {
         result = prime * result + ((getAngle() == null) ? 0 : getAngle().hashCode());
         result = prime * result + ((getRemark() == null) ? 0 : getRemark().hashCode());
         result = prime * result + ((getShapeLeng() == null) ? 0 : getShapeLeng().hashCode());
+        result = prime * result + ((getShapeArea() == null) ? 0 : getShapeArea().hashCode());
         result = prime * result + ((getGeom() == null) ? 0 : getGeom().hashCode());
-        result = prime * result + ((getCanalType() == null) ? 0 : getCanalType().hashCode());
         return result;
     }
 
@@ -160,8 +160,8 @@ public class Channel implements Serializable {
         sb.append(", angle=").append(angle);
         sb.append(", remark=").append(remark);
         sb.append(", shapeLeng=").append(shapeLeng);
+        sb.append(", shapeArea=").append(shapeArea);
         sb.append(", geom=").append(geom);
-        sb.append(", canalType=").append(canalType);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

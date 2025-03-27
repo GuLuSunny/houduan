@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
+import java.math.BigDecimal;
+
 import lombok.Data;
 
 /**
@@ -65,7 +67,7 @@ public class PumpingStation implements Serializable {
      * 
      */
     @TableField(value = "angle")
-    private Integer angle;
+    private BigDecimal angle;
 
     /**
      * 
