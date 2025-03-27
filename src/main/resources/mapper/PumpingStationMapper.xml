@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.PumpingStationMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.PumpingStation">
+            <id property="gid" column="gid" />
+            <result property="objectid" column="objectid" />
+            <result property="provincial" column="provincial" />
+            <result property="city" column="city" />
+            <result property="county" column="county" />
+            <result property="irrname" column="irrname" />
+            <result property="irrtype" column="irrtype" />
+            <result property="name" column="name" />
+            <result property="angle" column="angle" />
+            <result property="remark" column="remark" />
+            <result property="geog" column="geog" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        gid,objectid,provincial,city,county,irrname,
+        irrtype,name,angle,remark,geog
+    </sql>
+    <select id="selectAllPumpingStationByCondition" resultType="com.ydsw.domain.PumpingStation"
+            parameterType="com.ydsw.domain.PumpingStation">
+        select * from pumping_station
+        <where>
+            <if test="pumpingStationClass.gid!=null">
+                and gid=#{pumpingStationClass.gid}
+            </if>
+            <if test="pumpingStationClass.objectid!=null">
+                and objectid=#{pumpingStationClass.objectid}
+            </if>
+            <if test="pumpingStationClass.provincial!=null and pumpingStationClass.provincial.trim()!=''">
+                and provincial=#{pumpingStationClass.provincial}
+            </if>
+            <if test="pumpingStationClass.city!=null and pumpingStationClass.city.trim()!=''">
+                and city=#{pumpingStationClass.city}
+            </if>
+            <if test="pumpingStationClass.county!=null and pumpingStationClass.county.trim()!=''">
+                and county=#{pumpingStationClass.county}
+            </if>
+            <if test="pumpingStationClass.irrname!=null and pumpingStationClass.irrname.trim()!=''">
+                and irrname=#{pumpingStationClass.irrname}
+            </if>
+            <if test="pumpingStationClass.irrtype!=null and pumpingStationClass.irrtype.trim()!=''">
+                and irrtype=#{pumpingStationClass.irrtype}
+            </if>
+            <if test="pumpingStationClass.name!=null and pumpingStationClass.name.trim()!=''">
+                and "name"=#{pumpingStationClass.name}
+            </if>
+            <if test="pumpingStationClass.angle!=null">
+                and angle=#{pumpingStationClass.angle}
+            </if>
+        </where>
+    </select>
+</mapper>

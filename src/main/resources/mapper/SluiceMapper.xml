@@ -47,7 +47,7 @@
                 and irrtype=#{sluiceClass.irrtype}
             </if>
             <if test="sluiceClass.name!=null and sluiceClass.name.trim()!=''">
-                and `name`=#{channelClass.name}
+                and "name"=#{sluiceClass.name}
             </if>
             <if test="sluiceClass.angle!=null">
                 and angle=#{sluiceClass.angle}
