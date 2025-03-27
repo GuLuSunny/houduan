@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.LakesMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.Lakes">
+            <id property="gid" column="gid" />
+            <result property="objectid" column="objectid" />
+            <result property="provincial" column="provincial" />
+            <result property="city" column="city" />
+            <result property="county" column="county" />
+            <result property="irrname" column="irrname" />
+            <result property="irrtype" column="irrtype" />
+            <result property="name" column="name" />
+            <result property="angle" column="angle" />
+            <result property="remark" column="remark" />
+            <result property="shapeLeng" column="shape_leng" />
+            <result property="shapeArea" column="shape_area" />
+            <result property="geom" column="geom" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        gid,objectid,provincial,city,county,irrname,
+        irrtype,name,angle,remark,shape_leng,
+        shape_area,geom
+    </sql>
+    <select id="selectLakesByConditions" resultType="com.ydsw.domain.Lakes"
+            parameterType="com.ydsw.domain.Lakes">
+        select * from lakes
+        <where>
+            <if test="lakesClass.gid!=null">
+                and gid=#{lakesClass.gid}
+            </if>
+            <if test="lakesClass.objectid!=null">
+                and objectid=#{lakesClass.objectid}
+            </if>
+            <if test="lakesClass.provincial!=null and lakesClass.provincial.trim()!=''">
+                and provincial=#{lakesClass.provincial}
+            </if>
+            <if test="lakesClass.city!=null and lakesClass.city.trim()!=''">
+                and city=#{lakesClass.city}
+            </if>
+            <if test="lakesClass.county!=null and lakesClass.county.trim()!=''">
+                and county=#{lakesClass.county}
+            </if>
+            <if test="lakesClass.irrname!=null and lakesClass.irrname.trim()!=''">
+                and irrname=#{lakesClass.irrname}
+            </if>
+            <if test="lakesClass.irrtype!=null and lakesClass.irrtype.trim()!=''">
+                and irrtype=#{lakesClass.irrtype}
+            </if>
+            <if test="lakesClass.name!=null and lakesClass.name.trim()!=''">
+                and "name"=#{lakesClass.name}
+            </if>
+            <if test="lakesClass.angle!=null">
+                and angle=#{lakesClass.angle}
+            </if>
+            <if test="lakesClass.shapeLeng!=null">
+                and shape_leng=#{lakesClass.shapeLeng}
+            </if>
+            <if test="lakesClass.shapeArea!=null">
+                and shape_area=#{lakesClass.shapeArea}
+            </if>
+        </where>
+    </select>
+</mapper>
