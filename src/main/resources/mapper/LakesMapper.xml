@@ -25,7 +25,7 @@
         irrtype,name,angle,remark,shape_leng,
         shape_area,geom
     </sql>
-    <select id="selectLakesByConditions" resultType="com.ydsw.domain.Lakes"
+    <select id="selectLakesByConditions" resultType="java.util.Map"
             parameterType="com.ydsw.domain.Lakes">
         select * from lakes
         <where>
@@ -64,4 +64,43 @@
             </if>
         </where>
     </select>
+    <select id="selectLakesPageByConditions" resultType="java.util.Map" parameterType="com.ydsw.domain.Lakes">
+        select * from lakes
+        <where>
+            <if test="lakesClass.gid!=null">
+                and gid=#{lakesClass.gid}
+            </if>
+            <if test="lakesClass.objectid!=null">
+                and objectid=#{lakesClass.objectid}
+            </if>
+            <if test="lakesClass.provincial!=null and lakesClass.provincial.trim()!=''">
+                and provincial=#{lakesClass.provincial}
+            </if>
+            <if test="lakesClass.city!=null and lakesClass.city.trim()!=''">
+                and city=#{lakesClass.city}
+            </if>
+            <if test="lakesClass.county!=null and lakesClass.county.trim()!=''">
+                and county=#{lakesClass.county}
+            </if>
+            <if test="lakesClass.irrname!=null and lakesClass.irrname.trim()!=''">
+                and irrname=#{lakesClass.irrname}
+            </if>
+            <if test="lakesClass.irrtype!=null and lakesClass.irrtype.trim()!=''">
+                and irrtype=#{lakesClass.irrtype}
+            </if>
+            <if test="lakesClass.name!=null and lakesClass.name.trim()!=''">
+                and "name"=#{lakesClass.name}
+            </if>
+            <if test="lakesClass.angle!=null">
+                and angle=#{lakesClass.angle}
+            </if>
+            <if test="lakesClass.shapeLeng!=null">
+                and shape_leng=#{lakesClass.shapeLeng}
+            </if>
+            <if test="lakesClass.shapeArea!=null">
+                and shape_area=#{lakesClass.shapeArea}
+            </if>
+        </where>
+    </select>
+
 </mapper>

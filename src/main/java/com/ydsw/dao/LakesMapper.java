@@ -1,10 +1,12 @@
 package com.ydsw.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ydsw.domain.Lakes;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -14,6 +16,7 @@ import java.util.List;
 */
 public interface LakesMapper extends BaseMapper<Lakes> {
     List<Lakes> selectLakesByConditions(@Param("lakesClass") Lakes lakesClass);
+    IPage<Map<String,Object>> selectLakesPageByConditions(IPage<?> page,@Param("lakesClass") Lakes lakesClass);
 }
 
 
