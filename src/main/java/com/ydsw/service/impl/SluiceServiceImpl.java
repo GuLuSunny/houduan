@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Administrator
@@ -20,7 +21,7 @@ public class SluiceServiceImpl extends ServiceImpl<SluiceMapper, Sluice>
     @Autowired
     private SluiceMapper sluiceMapper;
     @Override
-    public List<Sluice> selectBySluice(Sluice sluiceClass)
+    public List<Map<String,Object>> selectBySluice(Sluice sluiceClass)
     {
         return sluiceMapper.selectBySluice(sluiceClass);
     }

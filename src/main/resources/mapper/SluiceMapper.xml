@@ -22,7 +22,7 @@
         gid,objectid,provincial,city,county,irrname,
         irrtype,name,angle,remark,geog
     </sql>
-    <select id="selectBySluice" resultType="com.ydsw.domain.Sluice" parameterType="com.ydsw.domain.Sluice">
+    <select id="selectBySluice" resultType="com.ydsw.domain.Sluice" parameterType="java.util.Map">
         select * from sluice
         <where>
             <if test="sluiceClass.gid!=null">

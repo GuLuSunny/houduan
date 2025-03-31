@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -13,5 +14,5 @@ import java.util.List;
 */
 public interface SluiceService extends IService<Sluice> {
 
-    List<Sluice> selectBySluice(Sluice sluiceClass);
+    List<Map<String,Object>> selectBySluice(Sluice sluiceClass);
 }

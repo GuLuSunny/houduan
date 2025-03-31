@@ -22,7 +22,7 @@
         gid,objectid,provincial,city,county,irrname,
         irrtype,name,angle,remark,geog
     </sql>
-    <select id="selectAllPumpingStationByCondition" resultType="com.ydsw.domain.PumpingStation"
+    <select id="selectAllPumpingStationByCondition" resultType="java.util.Map"
             parameterType="com.ydsw.domain.PumpingStation">
         select * from pumping_station
         <where>

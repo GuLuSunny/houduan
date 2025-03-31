@@ -23,7 +23,7 @@ public class LakesServiceImpl extends ServiceImpl<LakesMapper, Lakes>
     @Autowired
     private LakesMapper lakesMapper;
     @Override
-    public List<Lakes> selectLakesByConditions(Lakes lakesClass)
+    public List<Map<String,Object>> selectLakesByConditions(Lakes lakesClass)
     {
         return lakesMapper.selectLakesByConditions(lakesClass);
     }

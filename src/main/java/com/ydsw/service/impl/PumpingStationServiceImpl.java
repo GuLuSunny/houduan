@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -21,7 +22,7 @@ public class PumpingStationServiceImpl extends ServiceImpl<PumpingStationMapper,
     private PumpingStationMapper pumpingStationMapper;
 
     @Override
-    public List<PumpingStation> selectAllPumpingStationByCondition(PumpingStation pumpingStationClass)
+    public List<Map<String,Object>> selectAllPumpingStationByCondition(PumpingStation pumpingStationClass)
     {
         return pumpingStationMapper.selectAllPumpingStationByCondition(pumpingStationClass);
     }

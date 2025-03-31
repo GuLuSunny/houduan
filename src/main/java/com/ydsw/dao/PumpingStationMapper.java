@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -15,7 +16,7 @@ import java.util.List;
 */
 @Mapper
 public interface PumpingStationMapper extends BaseMapper<PumpingStation> {
-    List<PumpingStation> selectAllPumpingStationByCondition(@Param("pumpingStationClass") PumpingStation pumpingStationClass);
+    List<Map<String,Object>> selectAllPumpingStationByCondition(@Param("pumpingStationClass") PumpingStation pumpingStationClass);
 }
 
 

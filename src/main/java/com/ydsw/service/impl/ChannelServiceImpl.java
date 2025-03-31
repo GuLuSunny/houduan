@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -20,7 +21,7 @@ public class ChannelServiceImpl extends ServiceImpl<ChannelMapper, Channel>
     @Autowired
     private ChannelMapper channelMapper;
     @Override
-    public List<Channel> selectAllChannelByConditions(Channel channelClass)
+    public List<Map<String,Object>> selectAllChannelByConditions(Channel channelClass)
     {
         return channelMapper.selectAllChannelByConditions(channelClass);
     }

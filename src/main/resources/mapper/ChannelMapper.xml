@@ -25,7 +25,7 @@
         irrtype,name,angle,remark,shape_leng,
         geom,canal_type
     </sql>
-    <select id="selectAllChannelByConditions" resultType="com.ydsw.domain.Channel"
+    <select id="selectAllChannelByConditions" resultType="java.util.Map"
             parameterType="com.ydsw.domain.Channel">
         select * from channel
         <where>

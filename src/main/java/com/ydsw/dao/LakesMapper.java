@@ -15,7 +15,7 @@ import java.util.Map;
 * @Entity com.ydsw.domain.Lakes
 */
 public interface LakesMapper extends BaseMapper<Lakes> {
-    List<Lakes> selectLakesByConditions(@Param("lakesClass") Lakes lakesClass);
+    List<Map<String,Object>> selectLakesByConditions(@Param("lakesClass") Lakes lakesClass);
     IPage<Map<String,Object>> selectLakesPageByConditions(IPage<?> page,@Param("lakesClass") Lakes lakesClass);
 }
 

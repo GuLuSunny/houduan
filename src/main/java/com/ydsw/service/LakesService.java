@@ -14,6 +14,6 @@ import java.util.Map;
 * @createDate 2025-03-27 15:33:10
 */
 public interface LakesService extends IService<Lakes> {
-    List<Lakes> selectLakesByConditions( Lakes lakesClass);
+    List<Map<String,Object>> selectLakesByConditions( Lakes lakesClass);
     IPage<Map<String,Object>> selectLakesPageByConditions(int current,int pagesize, Lakes lakesClass);
 }

@@ -6,12 +6,17 @@ import com.fengwenyi.api.result.ResultTemplate;
 import com.ydsw.domain.Channel;
 import com.ydsw.service.ChannelService;
 import lombok.extern.slf4j.Slf4j;
+import net.postgis.jdbc.PGgeometry;
+import net.postgis.jdbc.geometry.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
+
+import static com.ydsw.controller.LakesController.getRangeFromPGgeometryforMap;
 
 @Slf4j
 @RestController
@@ -21,7 +26,7 @@ public class ChannelController {
     @PostMapping(value = "/api/Channel/selectAllByconditions")
     public ResultTemplate<Object> selectAllByconditions(@RequestBody JSONObject jsonObject) {
         Channel channel = JSONUtil.toBean(jsonObject, Channel.class);
-        List<Channel> channelList=channelService.selectAllChannelByConditions(channel);
-        return ResultTemplate.success(channelList);
+        List<Map<String,Object>> channelList=channelService.selectAllChannelByConditions(channel);
+        return getRangeFromPGgeometryforMap(channelList);
     }
 }

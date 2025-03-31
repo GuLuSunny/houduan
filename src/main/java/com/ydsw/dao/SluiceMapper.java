@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -16,7 +17,7 @@ import java.util.List;
 @Mapper
 public interface SluiceMapper extends BaseMapper<Sluice> {
 
-    List<Sluice> selectBySluice(@Param("sluiceClass") Sluice sluiceClass);
+    List<Map<String,Object>> selectBySluice(@Param("sluiceClass") Sluice sluiceClass);
 }
 
 
