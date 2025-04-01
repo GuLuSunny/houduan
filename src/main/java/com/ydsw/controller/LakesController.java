@@ -5,15 +5,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fengwenyi.api.result.ResultTemplate;
 import com.ydsw.domain.Lakes;
 import com.ydsw.service.LakesService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.ydsw.utils.ShpfileUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.postgis.jdbc.PGgeometry;
 import net.postgis.jdbc.geometry.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -51,9 +54,20 @@ public class LakesController {
                 return ResultTemplate.success(res);
     }
 
-    @PostMapping(value = "/api/lakes/uploadByShpfile")
-    public ResultTemplate<Object> uploadByShpfile(@RequestBody JSONObject jsonObject, HttpServletRequest request) {
+    @PostMapping(value = "/api/lakes/uploadByShpfiles")
+    public ResultTemplate<Object> uploadByShpfile(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
+        if(fileGroup==null||fileGroup.length==0)
+        {
+            return ResultTemplate.fail("请提交文件！");
+        }
+        try {
 
-        return null;
+            List<Lakes> lakesList= ShpfileUtils.parseMultipleShpGroups(fileGroup,Lakes.class);
+            System.out.println(lakesList);
+        } catch (IOException e) {
+            return ResultTemplate.fail("文件："+fileGroup[0].getOriginalFilename()+"提交格式错误！");
+        }
+
+        return ResultTemplate.success("提交成功！");
     }
 }

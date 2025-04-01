@@ -145,6 +145,10 @@ public class ShpfileUtils {
                 BigDecimal shapeLeng=new BigDecimal(feature.getAttribute("SHAPE_Leng").toString());
                 targetClass.getMethod("setShapeLeng", BigDecimal.class).invoke(entity, shapeLeng);
             }
+            if (feature.getAttribute("SHAPE_Area")!=null) {
+                BigDecimal shapeLeng=new BigDecimal(feature.getAttribute("SHAPE_Area").toString());
+                targetClass.getMethod("setShapeArea", BigDecimal.class).invoke(entity, shapeLeng);
+            }
 
 
 

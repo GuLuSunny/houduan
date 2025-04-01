@@ -35,7 +35,7 @@ public class ChannelController {
         return getRangeFromPGgeometryforMap(channelList);
     }
     @PostMapping(value = "/api/Channel/uploadByShpfile")
-    public ResultTemplate<Object> uploadByShpfile(@RequestParam("shpfile") MultipartFile[] fileGroup) {
+    public ResultTemplate<Object> uploadByShpfile(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
         if(fileGroup==null||fileGroup.length==0)
         {
             return ResultTemplate.fail("请提交文件！");
