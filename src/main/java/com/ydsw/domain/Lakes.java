@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 import lombok.Data;
 import org.locationtech.jts.geom.Geometry;
@@ -80,19 +81,32 @@ public class Lakes implements Serializable {
      * 
      */
     @TableField(value = "shape_leng")
-    private Integer shapeLeng;
+    private BigDecimal shapeLeng;
 
     /**
      * 
      */
     @TableField(value = "shape_area")
-    private Integer shapeArea;
+    private BigDecimal shapeArea;
 
     /**
      * 
      */
     @TableField(value = "geom")
     private Object geom;
+
+
+    /*
+     * 入库时间
+     * */
+    @TableField(value = "create_time")
+    private Date createTime;
+
+    /*
+     * 删除状态
+     * */
+    @TableField(value = "status")
+    private Integer status;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
@@ -121,7 +135,9 @@ public class Lakes implements Serializable {
             && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
             && (this.getShapeLeng() == null ? other.getShapeLeng() == null : this.getShapeLeng().equals(other.getShapeLeng()))
             && (this.getShapeArea() == null ? other.getShapeArea() == null : this.getShapeArea().equals(other.getShapeArea()))
-            && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()));
+            && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()));
     }
 
     @Override
@@ -141,6 +157,8 @@ public class Lakes implements Serializable {
         result = prime * result + ((getShapeLeng() == null) ? 0 : getShapeLeng().hashCode());
         result = prime * result + ((getShapeArea() == null) ? 0 : getShapeArea().hashCode());
         result = prime * result + ((getGeom() == null) ? 0 : getGeom().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
         return result;
     }
 
@@ -163,6 +181,8 @@ public class Lakes implements Serializable {
         sb.append(", shapeLeng=").append(shapeLeng);
         sb.append(", shapeArea=").append(shapeArea);
         sb.append(", geom=").append(geom);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", status=").append(status);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

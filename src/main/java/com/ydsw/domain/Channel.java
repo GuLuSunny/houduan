@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 import lombok.Data;
 
@@ -93,6 +94,18 @@ public class Channel implements Serializable {
     @TableField(value = "canal_type")
     private String canalType;
 
+    /*
+    * 入库时间
+    * */
+    @TableField(value = "create_time")
+    private Date createTime;
+
+    /*
+    * 删除状态
+    * */
+    @TableField(value = "status")
+    private Integer status;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -120,7 +133,9 @@ public class Channel implements Serializable {
             && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
             && (this.getShapeLeng() == null ? other.getShapeLeng() == null : this.getShapeLeng().equals(other.getShapeLeng()))
             && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()))
-            && (this.getCanalType() == null ? other.getCanalType() == null : this.getCanalType().equals(other.getCanalType()));
+            && (this.getCanalType() == null ? other.getCanalType() == null : this.getCanalType().equals(other.getCanalType()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()));
     }
 
     @Override
@@ -140,6 +155,8 @@ public class Channel implements Serializable {
         result = prime * result + ((getShapeLeng() == null) ? 0 : getShapeLeng().hashCode());
         result = prime * result + ((getGeom() == null) ? 0 : getGeom().hashCode());
         result = prime * result + ((getCanalType() == null) ? 0 : getCanalType().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
         return result;
     }
 
@@ -162,6 +179,8 @@ public class Channel implements Serializable {
         sb.append(", shapeLeng=").append(shapeLeng);
         sb.append(", geom=").append(geom);
         sb.append(", canalType=").append(canalType);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", status=").append(status);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

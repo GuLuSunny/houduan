@@ -16,11 +16,13 @@
             <result property="angle" column="angle" />
             <result property="remark" column="remark" />
             <result property="geog" column="geog" />
+            <result property="createTime" column="create_time" />
+            <result property="status" column="status" />
     </resultMap>
 
     <sql id="Base_Column_List">
         gid,objectid,provincial,city,county,irrname,
-        irrtype,name,angle,remark,geog
+        irrtype,name,angle,remark,geog,create_time,status
     </sql>
     <select id="selectAllPumpingStationByCondition" resultType="java.util.Map"
             parameterType="com.ydsw.domain.PumpingStation">
@@ -53,6 +55,7 @@
             <if test="pumpingStationClass.angle!=null">
                 and angle=#{pumpingStationClass.angle}
             </if>
+            and status=0
         </where>
     </select>
 </mapper>

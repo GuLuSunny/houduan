@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 import lombok.Data;
 
@@ -81,6 +82,18 @@ public class PumpingStation implements Serializable {
     @TableField(value = "geog")
     private Object geog;
 
+    /*
+     * 入库时间
+     * */
+    @TableField(value = "create_time")
+    private Date createTime;
+
+    /*
+     * 删除状态
+     * */
+    @TableField(value = "status")
+    private Integer status;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -106,7 +119,9 @@ public class PumpingStation implements Serializable {
             && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
             && (this.getAngle() == null ? other.getAngle() == null : this.getAngle().equals(other.getAngle()))
             && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
-            && (this.getGeog() == null ? other.getGeog() == null : this.getGeog().equals(other.getGeog()));
+            && (this.getGeog() == null ? other.getGeog() == null : this.getGeog().equals(other.getGeog()))
+            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()));
     }
 
     @Override
@@ -124,6 +139,8 @@ public class PumpingStation implements Serializable {
         result = prime * result + ((getAngle() == null) ? 0 : getAngle().hashCode());
         result = prime * result + ((getRemark() == null) ? 0 : getRemark().hashCode());
         result = prime * result + ((getGeog() == null) ? 0 : getGeog().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
         return result;
     }
 
@@ -144,6 +161,8 @@ public class PumpingStation implements Serializable {
         sb.append(", angle=").append(angle);
         sb.append(", remark=").append(remark);
         sb.append(", geog=").append(geog);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", status=").append(status);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

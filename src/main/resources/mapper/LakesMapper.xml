@@ -18,12 +18,14 @@
             <result property="shapeLeng" column="shape_leng" />
             <result property="shapeArea" column="shape_area" />
             <result column="geom" property="geom"/>
+            <result property="createTime" column="create_time" />
+            <result property="status" column="status" />
     </resultMap>
 
     <sql id="Base_Column_List">
         gid,objectid,provincial,city,county,irrname,
         irrtype,name,angle,remark,shape_leng,
-        shape_area,geom
+        shape_area,geom,create_time,status
     </sql>
     <select id="selectLakesByConditions" resultType="java.util.Map"
             parameterType="com.ydsw.domain.Lakes">
@@ -62,6 +64,7 @@
             <if test="lakesClass.shapeArea!=null">
                 and shape_area=#{lakesClass.shapeArea}
             </if>
+            and status=0
         </where>
     </select>
     <select id="selectLakesPageByConditions" resultType="java.util.Map" parameterType="com.ydsw.domain.Lakes">
@@ -100,6 +103,7 @@
             <if test="lakesClass.shapeArea!=null">
                 and shape_area=#{lakesClass.shapeArea}
             </if>
+            and status=0
         </where>
     </select>
 

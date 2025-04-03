@@ -18,12 +18,14 @@
             <result property="shapeLeng" column="shape_leng" />
             <result property="geom" column="geom" />
             <result property="canalType" column="canal_type" />
+            <result property="createTime" column="create_time" />
+            <result property="status" column="status" />
     </resultMap>
 
     <sql id="Base_Column_List">
         gid,objectid,provincial,city,county,irrname,
         irrtype,name,angle,remark,shape_leng,
-        geom,canal_type
+        geom,canal_type,create_time,status
     </sql>
     <select id="selectAllChannelByConditions" resultType="java.util.Map"
             parameterType="com.ydsw.domain.Channel">
@@ -62,6 +64,7 @@
             <if test="channelClass.shapeLeng!=null">
                 and shape_leng=#{channelClass.shapeLeng}
             </if>
+            and status=0
         </where>
     </select>
 </mapper>

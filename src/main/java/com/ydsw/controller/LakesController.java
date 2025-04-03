@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -63,6 +64,10 @@ public class LakesController {
         try {
 
             List<Lakes> lakesList= ShpfileUtils.parseMultipleShpGroups(fileGroup,Lakes.class);
+            for (Lakes lakes:lakesList) {
+                lakes.setStatus(0);
+                lakes.setCreateTime(new Date());
+            }
             System.out.println(lakesList);
         } catch (IOException e) {
             return ResultTemplate.fail("文件："+fileGroup[0].getOriginalFilename()+"提交格式错误！");
