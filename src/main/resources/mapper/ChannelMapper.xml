@@ -27,6 +27,17 @@
         irrtype,name,angle,remark,shape_leng,
         geom,canal_type,create_time,status
     </sql>
+    <update id="updataTablesByTypes">
+        update ${classType} set status=1
+        <where>
+            <if test="ClassIdList != null and ClassIdList.size()>0">
+                and ${idType} in
+                <foreach collection="ClassIdList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </update>
     <select id="selectAllChannelByConditions" resultType="java.util.Map"
             parameterType="com.ydsw.domain.Channel">
         select * from channel

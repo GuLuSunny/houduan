@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.ydsw.controller.LakesController.getRangeFromPGgeometryforMap;
 import static com.ydsw.utils.ShpfileUtils.parseShpFile;
@@ -52,5 +53,26 @@ public class ChannelController {
         }
 
         return ResultTemplate.success("提交成功！");
+    }
+
+    @PostMapping(value = "/api/DataManagement/deleteByIdListAndTypes")
+    public ResultTemplate<Object> deleteByIdListAndTypes(@RequestBody JSONObject jsonObject) {
+        List<Integer> idArray = jsonObject.getBeanList("ClassIdList", Integer.class);//id列表
+        if(jsonObject.get("classType") == null)
+        {
+            return ResultTemplate.fail("非法的数据类型！");
+        }
+        String classType= jsonObject.get("classType").toString();
+        String idType=jsonObject.get("idType").toString();
+        if(classType.isEmpty()||(!Objects.equals(idType, "gid") && !Objects.equals(idType, "id"))||idArray==null|| idArray.isEmpty())
+        {
+            return ResultTemplate.fail("参数错误！");
+        }
+            try {
+            channelService.updataTablesByTypes(classType,idType,idArray);
+        }catch (Exception e) {
+            ResultTemplate.fail("删除失败!");
+        }
+        return ResultTemplate.success("删除成功！");
     }
 }
