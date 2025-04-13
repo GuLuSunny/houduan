@@ -37,3 +37,4 @@ mybatis-plus:
     file:
       path: /logfile/
   #  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  type-handlers-package: com.ydsw.handler

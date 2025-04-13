@@ -65,10 +65,16 @@ public class LakesController {
 
             List<Lakes> lakesList= ShpfileUtils.parseMultipleShpGroups(fileGroup,Lakes.class);
             for (Lakes lakes:lakesList) {
+                lakes.setGid(null);
+                lakes.setCity("开封市");
+                lakes.setCounty("中国");
+                lakes.setProvincial("河南省");
                 lakes.setStatus(0);
                 lakes.setCreateTime(new Date());
+                lakes.getGeom().setSRID(4326);
             }
-            System.out.println(lakesList);
+            //System.out.println(lakesList);
+            lakesService.saveBatch(lakesList);
         } catch (IOException e) {
             return ResultTemplate.fail("文件："+fileGroup[0].getOriginalFilename()+"提交格式错误！");
         }

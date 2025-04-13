@@ -15,7 +15,7 @@
             <result property="name" column="name" />
             <result property="angle" column="angle" />
             <result property="remark" column="remark" />
-            <result property="geog" column="geog" />
+            <result property="geog" column="geog" typeHandler="com.ydsw.handler.GeometryTypeHandler"/>
             <result property="createTime" column="create_time" />
             <result property="status" column="status" />
     </resultMap>
@@ -24,7 +24,7 @@
         gid,objectid,provincial,city,county,irrname,
         irrtype,name,angle,remark,geog,create_time,status
     </sql>
-    <select id="selectBySluice" resultType="com.ydsw.domain.Sluice" parameterType="java.util.Map">
+    <select id="selectBySluice" resultType="java.util.Map" parameterType="com.ydsw.domain.Sluice">
         select * from sluice
         <where>
             <if test="sluiceClass.gid!=null">

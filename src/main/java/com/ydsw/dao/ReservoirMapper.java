@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -15,7 +16,7 @@ import java.util.List;
 */
 @Mapper
 public interface ReservoirMapper extends BaseMapper<Reservoir> {
-    List<Reservoir> selectReservoirByConditons(@Param("reservoirClass")Reservoir reservoirClass);
+    List<Map<String,Object>> selectReservoirByConditons(@Param("reservoirClass")Reservoir reservoirClass);
 }
 
 

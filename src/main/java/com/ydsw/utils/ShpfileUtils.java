@@ -94,7 +94,13 @@ public class ShpfileUtils {
 
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
 
-            targetClass.getMethod("setGeom", Object.class).invoke(entity, geometry);
+            try {
+                targetClass.getMethod("setGeom", Geometry.class).invoke(entity, geometry);
+            }catch (NoSuchMethodException ignored)
+            {
+                targetClass.getMethod("setGeog", Geometry.class).invoke(entity, geometry);
+            }
+
 
             if (feature.getAttribute("OBJECTID")!=null) {
                 Double Objectid=Double.parseDouble(feature.getAttribute("OBJECTID").toString());

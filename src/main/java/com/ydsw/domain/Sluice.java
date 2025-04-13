@@ -1,9 +1,11 @@
 package com.ydsw.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.locationtech.jts.geom.Geometry;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -19,7 +21,7 @@ public class Sluice implements Serializable {
     /**
      * 
      */
-    @TableId(value = "gid")
+    @TableId(value = "gid",type = IdType.AUTO)
     private Integer gid;
 
     /**
@@ -79,8 +81,8 @@ public class Sluice implements Serializable {
     /**
      * 
      */
-    @TableField(value = "geog")
-    private Object geog;
+    @TableField(value = "geog",typeHandler =  com.ydsw.handler.GeometryTypeHandler.class)
+    private Geometry geog;
 
 
     /*

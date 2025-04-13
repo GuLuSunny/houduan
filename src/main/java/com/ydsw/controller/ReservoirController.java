@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -21,7 +22,7 @@ public class ReservoirController {
     @PostMapping(value = "/api/reservoir/getAllByConditions")
     public ResultTemplate<Object> getAllByConditions(@RequestBody JSONObject jsonObject) {
         Reservoir reservoir=jsonObject.toBean(Reservoir.class);
-        List<Reservoir> res=reservoirService.selectReservoirByConditons(reservoir);
-        return ResultTemplate.success(res);
+        List<Map<String,Object>> res=reservoirService.selectReservoirByConditons(reservoir);
+        return LakesController.getRangeFromPGgeometryforMap(res);
     }
 }

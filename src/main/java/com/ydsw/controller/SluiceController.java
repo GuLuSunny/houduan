@@ -7,6 +7,7 @@ import com.ydsw.domain.Sluice;
 import com.ydsw.service.SluiceService;
 import lombok.extern.slf4j.Slf4j;
 import net.postgis.jdbc.PGgeography;
+import net.postgis.jdbc.PGgeometry;
 import net.postgis.jdbc.geometry.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,7 +34,7 @@ public class SluiceController {
     public static ResultTemplate<Object> getPointFromPGgeographyFromMap(List<Map<String, Object>> sluiceList) {
         for(Map<String,Object> map:sluiceList)
         {
-            PGgeography pGgeography=(PGgeography)map.get("geog");
+            PGgeometry pGgeography=(PGgeometry)map.get("geog");
             Geometry point=pGgeography.getGeometry().getFirstPoint();
             String wkt=point.toString();
             map.put("geog",wkt);

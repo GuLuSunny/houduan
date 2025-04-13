@@ -1,12 +1,16 @@
 package com.ydsw.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
+import com.ydsw.handler.GeometryTypeHandler;
 import lombok.Data;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * 
@@ -18,7 +22,7 @@ public class Reservoir implements Serializable {
     /**
      * 
      */
-    @TableId(value = "gid")
+    @TableId(value = "gid",type = IdType.AUTO)
     private Integer gid;
 
     /**
@@ -90,8 +94,20 @@ public class Reservoir implements Serializable {
     /**
      * 
      */
-    @TableField(value = "geom")
-    private Object geom;
+    @TableField(value = "geom",typeHandler = GeometryTypeHandler.class)
+    private Geometry geom;
+
+    /*
+     * 入库时间
+     * */
+    @TableField(value = "create_time")
+    private Date createTime;
+
+    /*
+     * 删除状态
+     * */
+    @TableField(value = "status")
+    private Integer status;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
@@ -120,7 +136,9 @@ public class Reservoir implements Serializable {
             && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
             && (this.getShapeLeng() == null ? other.getShapeLeng() == null : this.getShapeLeng().equals(other.getShapeLeng()))
             && (this.getShapeArea() == null ? other.getShapeArea() == null : this.getShapeArea().equals(other.getShapeArea()))
-            && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()));
+            && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()));
     }
 
     @Override
@@ -140,6 +158,8 @@ public class Reservoir implements Serializable {
         result = prime * result + ((getShapeLeng() == null) ? 0 : getShapeLeng().hashCode());
         result = prime * result + ((getShapeArea() == null) ? 0 : getShapeArea().hashCode());
         result = prime * result + ((getGeom() == null) ? 0 : getGeom().hashCode());
+        result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
+        result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
         return result;
     }
 
@@ -162,6 +182,8 @@ public class Reservoir implements Serializable {
         sb.append(", shapeLeng=").append(shapeLeng);
         sb.append(", shapeArea=").append(shapeArea);
         sb.append(", geom=").append(geom);
+        sb.append(", createTime=").append(createTime);
+        sb.append(", status=").append(status);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

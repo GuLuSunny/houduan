@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -21,7 +22,7 @@ public class ReservoirServiceImpl extends ServiceImpl<ReservoirMapper, Reservoir
     @Autowired
     private ReservoirMapper reservoirMapper;
     @Override
-    public List<Reservoir> selectReservoirByConditons(Reservoir reservoirClass)
+    public List<Map<String,Object>> selectReservoirByConditons(Reservoir reservoirClass)
     {
         return reservoirMapper.selectReservoirByConditons(reservoirClass);
     }

@@ -1,5 +1,6 @@
 package com.ydsw.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -20,7 +21,7 @@ public class Lakes implements Serializable {
     /**
      * 
      */
-    @TableId(value = "gid")
+    @TableId(value = "gid",type = IdType.AUTO)
     private Integer gid;
 
     /**
@@ -92,8 +93,8 @@ public class Lakes implements Serializable {
     /**
      * 
      */
-    @TableField(value = "geom")
-    private Object geom;
+    @TableField(value = "geom",typeHandler = com.ydsw.handler.GeometryTypeHandler.class)
+    private Geometry geom;
 
 
     /*

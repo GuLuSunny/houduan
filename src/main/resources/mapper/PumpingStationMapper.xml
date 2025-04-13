@@ -15,7 +15,7 @@
             <result property="name" column="name" />
             <result property="angle" column="angle" />
             <result property="remark" column="remark" />
-            <result property="geog" column="geog" />
+            <result property="geog" column="geog" typeHandler="com.ydsw.handler.GeometryTypeHandler"/>
             <result property="createTime" column="create_time" />
             <result property="status" column="status" />
     </resultMap>

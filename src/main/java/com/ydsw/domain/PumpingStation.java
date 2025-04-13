@@ -1,13 +1,16 @@
 package com.ydsw.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 import lombok.Data;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * 泵站表
@@ -19,7 +22,7 @@ public class PumpingStation implements Serializable {
     /**
      * 
      */
-    @TableId(value = "gid")
+    @TableId(value = "gid",type = IdType.AUTO)
     private Integer gid;
 
     /**
@@ -79,9 +82,8 @@ public class PumpingStation implements Serializable {
     /**
      * 点位信息
      */
-    @TableField(value = "geog")
-    private Object geog;
-
+    @TableField(value = "geog",typeHandler =  com.ydsw.handler.GeometryTypeHandler.class)
+    private Geometry geog;
     /*
      * 入库时间
      * */

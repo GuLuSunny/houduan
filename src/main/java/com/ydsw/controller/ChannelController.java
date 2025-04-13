@@ -44,10 +44,12 @@ public class ChannelController {
 
             List<Channel> channelList= ShpfileUtils.parseMultipleShpGroups(fileGroup,Channel.class);
             for (Channel channel : channelList) {
+                channel.getGeom().setSRID(4326);
                 channel.setCreateTime(new Date());
                 channel.setStatus(0);
             }
-            System.out.println(channelList);
+            //System.out.println(channelList);
+            channelService.saveBatch(channelList);
         } catch (IOException e) {
             return ResultTemplate.fail("文件："+fileGroup[0].getOriginalFilename()+"提交格式错误！");
         }

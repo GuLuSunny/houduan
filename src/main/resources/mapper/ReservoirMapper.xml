@@ -17,15 +17,17 @@
             <result property="remark" column="remark" />
             <result property="shapeLeng" column="shape_leng" />
             <result property="shapeArea" column="shape_area" />
-            <result property="geom" column="geom" />
+            <result property="geom" column="geom" typeHandler="com.ydsw.handler.GeometryTypeHandler"/>
+            <result property="createTime" column="create_time" />
+            <result property="status" column="status" />
     </resultMap>
 
     <sql id="Base_Column_List">
         gid,objectid,provincial,city,county,irrname,
         irrtype,name,angle,remark,shape_leng,
-        shape_area,geom
+        shape_area,geom,create_time,status
     </sql>
-    <select id="selectReservoirByConditons" resultType="com.ydsw.domain.Reservoir"
+    <select id="selectReservoirByConditons" resultType="java.util.Map"
             parameterType="com.ydsw.domain.Reservoir">
 select * from reservoir
         <where>

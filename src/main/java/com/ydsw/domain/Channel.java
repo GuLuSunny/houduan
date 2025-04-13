@@ -1,5 +1,6 @@
 package com.ydsw.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -8,6 +9,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import lombok.Data;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.MultiPolygon;
 
 /**
  * 
@@ -19,7 +23,7 @@ public class Channel implements Serializable {
     /**
      * 
      */
-    @TableId(value = "gid")
+    @TableId(value = "gid",type= IdType.AUTO)
     private Integer gid;
 
     /**
@@ -85,8 +89,8 @@ public class Channel implements Serializable {
     /**
      * 
      */
-    @TableField(value = "geom")
-    private Object geom;
+    @TableField(value = "geom",typeHandler = com.ydsw.handler.GeometryTypeHandler.class)
+    private Geometry geom;
 
     /**
      * 

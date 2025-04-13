@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Administrator
@@ -12,5 +13,5 @@ import java.util.List;
 * @createDate 2025-03-27 15:14:12
 */
 public interface ReservoirService extends IService<Reservoir> {
-    List<Reservoir> selectReservoirByConditons(Reservoir reservoirClass);
+    List<Map<String,Object>> selectReservoirByConditons(Reservoir reservoirClass);
 }
