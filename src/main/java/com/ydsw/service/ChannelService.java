@@ -14,5 +14,5 @@ import java.util.Map;
 */
 public interface ChannelService extends IService<Channel> {
     List<Map<String,Object>> selectAllChannelByConditions(Channel channelClass);
-    void updataTablesByTypes( String classType,String idType, List<Integer> ClassIdList);
+    void updataTablesByTypes( String classType,String idType, List<Integer> ClassIdList,Channel channelClass);
 }

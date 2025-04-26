@@ -26,9 +26,9 @@ public class ChannelServiceImpl extends ServiceImpl<ChannelMapper, Channel>
         return channelMapper.selectAllChannelByConditions(channelClass);
     }
     @Override
-    public void updataTablesByTypes( String classType,String idType, List<Integer> ClassIdList)
+    public void updataTablesByTypes( String classType,String idType, List<Integer> ClassIdList,Channel channelClass)
     {
-        channelMapper.updataTablesByTypes(classType,idType,ClassIdList);
+        channelMapper.updataTablesByTypes(classType,idType,ClassIdList,channelClass);
     }
 }
 

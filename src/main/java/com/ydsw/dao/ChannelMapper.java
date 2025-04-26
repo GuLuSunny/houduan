@@ -17,7 +17,8 @@ import java.util.Map;
 @Mapper
 public interface ChannelMapper extends BaseMapper<Channel> {
     List<Map<String,Object>> selectAllChannelByConditions(@Param("channelClass") Channel channelClass);
-    void updataTablesByTypes(@Param("classType") String classType,@Param("idType") String idType, @Param("ClassIdList") List<Integer> ClassIdList);
+    void updataTablesByTypes(@Param("classType") String classType,@Param("idType") String idType,
+                             @Param("ClassIdList") List<Integer> ClassIdList,@Param("channelClass")Channel channelClass);
 
 }
 

@@ -15,10 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.ydsw.controller.LakesController.getRangeFromPGgeometryforMap;
 import static com.ydsw.utils.ShpfileUtils.parseShpFile;
@@ -60,20 +57,31 @@ public class ChannelController {
     @PostMapping(value = "/api/DataManagement/deleteByIdListAndTypes")
     public ResultTemplate<Object> deleteByIdListAndTypes(@RequestBody JSONObject jsonObject) {
         List<Integer> idArray = jsonObject.getBeanList("ClassIdList", Integer.class);//id列表
+        Channel channel= JSONUtil.toBean(jsonObject, Channel.class);
         if(jsonObject.get("classType") == null)
         {
             return ResultTemplate.fail("非法的数据类型！");
         }
         String classType= jsonObject.get("classType").toString();
         String idType=jsonObject.get("idType").toString();
-        if(classType.isEmpty()||(!Objects.equals(idType, "gid") && !Objects.equals(idType, "id"))||idArray==null|| idArray.isEmpty())
+        if(classType.isEmpty() || (!Objects.equals(idType, "gid") && !Objects.equals(idType, "id")
+                &&!idType.equals("objectid")) )
         {
             return ResultTemplate.fail("参数错误！");
         }
+        if(idArray==null|| idArray.isEmpty())
+        {
             try {
-            channelService.updataTablesByTypes(classType,idType,idArray);
-        }catch (Exception e) {
-            ResultTemplate.fail("删除失败!");
+                channelService.updataTablesByTypes(classType,idType,new ArrayList<>(),channel);
+            }catch (Exception e) {
+                ResultTemplate.fail("删除失败!");
+            }
+        }else {
+            try {
+                channelService.updataTablesByTypes(classType, idType, idArray, channel);
+            } catch (Exception e) {
+                ResultTemplate.fail("删除失败!");
+            }
         }
         return ResultTemplate.success("删除成功！");
     }
