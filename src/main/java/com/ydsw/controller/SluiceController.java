@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RestController
@@ -52,6 +53,13 @@ public class SluiceController {
     public ResultTemplate<Object> uploadByShpfiles(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
         if (fileGroup == null || fileGroup.length == 0) {
             return ResultTemplate.fail("请提交文件！");
+        }
+        String fileName = fileGroup[0].getOriginalFilename();
+        for (int i = 1; i < fileGroup.length; i++) {
+            if(!Objects.equals(fileGroup[i].getOriginalFilename(), fileName))
+            {
+                return ResultTemplate.fail("文件格式错误！");
+            }
         }
         try {
             List<Sluice> sluiceList = ShpfileUtils.parseMultipleShpGroups(fileGroup, Sluice.class);

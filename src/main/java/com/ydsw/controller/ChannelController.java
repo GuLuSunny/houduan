@@ -37,6 +37,13 @@ public class ChannelController {
         {
             return ResultTemplate.fail("请提交文件！");
         }
+        String fileName = fileGroup[0].getOriginalFilename();
+        for (int i = 1; i < fileGroup.length; i++) {
+            if(!Objects.equals(fileGroup[i].getOriginalFilename(), fileName))
+            {
+                return ResultTemplate.fail("文件格式错误！");
+            }
+        }
         try {
 
             List<Channel> channelList= ShpfileUtils.parseMultipleShpGroups(fileGroup,Channel.class);
