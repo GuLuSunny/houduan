@@ -170,7 +170,14 @@
             <version>1.19.0</version>
         </dependency>
 
-    </dependencies>
+            <!-- Logback 实现 -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.4.14</version>
+            </dependency>
+        </dependencies>
+
 
     <dependencyManagement>
         <dependencies>

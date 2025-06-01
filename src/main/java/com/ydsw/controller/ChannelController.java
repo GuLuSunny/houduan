@@ -65,7 +65,8 @@ public class ChannelController {
     public ResultTemplate<Object> deleteByIdListAndTypes(@RequestBody JSONObject jsonObject) {
         List<Integer> idArray = jsonObject.getBeanList("ClassIdList", Integer.class);//id列表
         Channel channel= JSONUtil.toBean(jsonObject, Channel.class);
-        if(jsonObject.get("classType") == null)
+        Set<String> classNames=Set.of("lakes","channel","pumping_station","reservoir","sluice");
+        if(jsonObject.get("classType") == null||!classNames.contains(jsonObject.get("classType").toString()))
         {
             return ResultTemplate.fail("非法的数据类型！");
         }
