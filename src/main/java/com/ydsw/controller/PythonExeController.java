@@ -175,4 +175,31 @@ public class PythonExeController {
             logger.warn("文件删除失败: {}", file.getAbsolutePath());
         }
     }
+
+    @PostMapping(value = "/api/plantCover")
+    public ResultTemplate<Object> buildplantCoverProcessWithoutResult(@RequestBody JSONObject jsonObject) {
+        String processName=jsonObject.getStr("processName");
+        String filepathroot = "D:\\heigankoumodel\\plantCover\\3.Code\\";
+        if(processName==null || processName.isEmpty()){
+            return ResultTemplate.fail("非法参数！");
+        }
+        if(!processName.equals("RF") && !processName.equals("1DResnet"))
+        {
+            if(!processName.equals("fanyan") && !processName.equals("fanyanNN"))
+            {
+                return ResultTemplate.fail("未知操作！");
+            }
+            filepathroot+="反演code\\";
+        }
+        String filePath=filepathroot+processName+".py";
+        try {
+            ProcessBuilderUtils.executeInBackground(filePath);
+        }catch (RuntimeException e){
+            ResultTemplate.fail("程序执行失败！");
+        }catch (Exception e){
+            ResultTemplate.fail("未知错误!");
+        }
+
+        return ResultTemplate.success("程序已在后台运行!");
+    }
 }
