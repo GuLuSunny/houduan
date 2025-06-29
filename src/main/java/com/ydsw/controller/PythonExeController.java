@@ -157,6 +157,35 @@ public class PythonExeController {
         return ResultTemplate.success();
     }
 
+    @PostMapping(value = "/api/groupType/predict")
+    public ResultTemplate<Object> useModels(@RequestBody JSONObject jsonObject)
+    {
+        String modelName = jsonObject.getStr("modelName");
+        List<String> commons = jsonObject.getBeanList("commons", String.class);
+        List<String> envValues = jsonObject.getBeanList("envValues", String.class);
+        Map<String, String> values = new HashMap<>();
+        String processname="";
+        switch (modelName){
+            case "MLP" -> processname = "predict";
+        }
+        String filepath = "D:\\heigankoumodel\\tudifugaifenlei\\code\\" + processname + ".py";
+        String fileRaletivePath = "..\\shuju\\";
+        try {
+            switch (modelName) {
+                case "MLP" -> ProcessBuilderUtils.executeWithRealTimeOutput(filepath,null,"UTF-8");
+                default -> {
+                    return ResultTemplate.fail("非法的参数名！");
+                }
+            }
+        }catch (RuntimeException e) {
+
+            return ResultTemplate.fail("数据处理失败!");
+        } catch (Exception e) {
+            return ResultTemplate.fail("未知错误");
+        }
+        return ResultTemplate.success("预测已完成！");
+    }
+
     // 重试删除文件的方法
     private void deleteFileWithRetry(File file) {
         if (file != null && file.exists()) {
