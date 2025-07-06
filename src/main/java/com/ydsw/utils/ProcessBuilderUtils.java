@@ -293,7 +293,6 @@ public class ProcessBuilderUtils {
                 if (envVars != null) {
                     pb.environment().putAll(envVars);
                 }
-
                 // 关键环境变量设置
                 pb.environment().put("PYTHONIOENCODING", "UTF-8");
                 pb.environment().put("PYTHONUNBUFFERED", "1");

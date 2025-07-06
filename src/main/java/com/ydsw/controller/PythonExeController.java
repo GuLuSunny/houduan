@@ -163,27 +163,37 @@ public class PythonExeController {
         String modelName = jsonObject.getStr("modelName");
         List<String> commons = jsonObject.getBeanList("commons", String.class);
         List<String> envValues = jsonObject.getBeanList("envValues", String.class);
+        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
+        String confusion_matrix=Objects.equals(jsonObject.getStr("confusion_matrix"), "False") ?"False" :"True";
+        String class_stats=Objects.equals(jsonObject.getStr("class_stats"), "False") ?"False" :"True";
         Map<String, String> values = new HashMap<>();
         String processname="";
         switch (modelName){
-            case "MLP" -> processname = "predict";
+            case "mlp", "rf", "svm", "xgb" -> processname = "predict";
+            default -> {
+                return ResultTemplate.fail("非法的参数名！");
+            }
         }
         String filepath = "D:\\heigankoumodel\\tudifugaifenlei\\code\\" + processname + ".py";
         String fileRaletivePath = "..\\shuju\\";
         try {
             switch (modelName) {
-                case "MLP" -> ProcessBuilderUtils.executeWithRealTimeOutput(filepath,null,"UTF-8");
+                case "mlp", "rf", "svm", "xgb" -> values.put("modelSelected",modelName);
                 default -> {
                     return ResultTemplate.fail("非法的参数名！");
                 }
             }
+            values.put("preview_png",preview_png);
+            values.put("confusion_matrix",confusion_matrix);
+            values.put("class_stats",class_stats);
+            ProcessBuilderUtils.executeInBackground(filepath,null,values);
         }catch (RuntimeException e) {
 
             return ResultTemplate.fail("数据处理失败!");
         } catch (Exception e) {
             return ResultTemplate.fail("未知错误");
         }
-        return ResultTemplate.success("预测已完成！");
+        return ResultTemplate.success("预测已开始，请稍后查询。预计十分钟内完成。");
     }
 
     // 重试删除文件的方法
