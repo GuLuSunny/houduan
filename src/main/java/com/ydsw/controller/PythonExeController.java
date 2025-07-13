@@ -2,8 +2,14 @@ package com.ydsw.controller;
 
 import cn.hutool.json.JSONObject;
 import com.fengwenyi.api.result.ResultTemplate;
+import com.ydsw.domain.ModelStatus;
+import com.ydsw.domain.User;
+import com.ydsw.service.ModelStatusService;
+import com.ydsw.service.UserService;
 import com.ydsw.utils.ProcessBuilderUtils;
 import org.apache.ibatis.annotations.Param;
+import org.geolatte.geom.M;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +19,7 @@ import javax.annotation.processing.FilerException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.ErrorManager;
 import org.slf4j.Logger;
@@ -22,7 +29,11 @@ import org.slf4j.LoggerFactory;
 public class PythonExeController {
     // 添加日志记录器
     private static final Logger logger = LoggerFactory.getLogger(PythonExeController.class);
+    @Autowired
+    private UserService userService;
 
+    @Autowired
+    private ModelStatusService modelStatusService;
     @PostMapping(value = "/api/groupType")
     public ResultTemplate<Object> buildGroupTypeProcess(@RequestBody JSONObject jsonObject) {
         String processName = jsonObject.getStr("processName");
@@ -166,6 +177,27 @@ public class PythonExeController {
         String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
         String confusion_matrix=Objects.equals(jsonObject.getStr("confusion_matrix"), "False") ?"False" :"True";
         String class_stats=Objects.equals(jsonObject.getStr("class_stats"), "False") ?"False" :"True";
+        String userName=jsonObject.getStr("userName");
+        Integer createUserId=jsonObject.getInt("createUserId");
+        User user=new User();
+        user.setUsername(userName);
+        user.setStatus(0);
+        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
+        boolean flag=false;
+        for (Map<String,Object> map : userList) {
+            if(Objects.equals(map.get("id"), createUserId)){
+                flag=true;
+            }
+        }
+        if(!flag){
+            return ResultTemplate.fail("非法用户！");
+        }
+        user.setId(createUserId);
+        user.setMemo(modelName);
+        if(!couldVisit(modelName))
+        {
+            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
+        }
         Map<String, String> values = new HashMap<>();
         String processname="";
         switch (modelName){
@@ -186,7 +218,7 @@ public class PythonExeController {
             values.put("preview_png",preview_png);
             values.put("confusion_matrix",confusion_matrix);
             values.put("class_stats",class_stats);
-            ProcessBuilderUtils.executeInBackground(filepath,null,values);
+            ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
         }catch (RuntimeException e) {
 
             return ResultTemplate.fail("数据处理失败!");
@@ -240,5 +272,39 @@ public class PythonExeController {
         }
 
         return ResultTemplate.success("程序已在后台运行!");
+    }
+
+    private  boolean couldVisit(User user)
+    {
+        ModelStatus modelStatus = new ModelStatus();
+        modelStatus.setModelName(user.getMemo());
+        List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
+        for (Map<String,Object> map : usages) {
+            Date date=new Date();
+
+        }
+        return true;
+    }
+    private  boolean couldVisit(String modelName)
+    {
+        ModelStatus modelStatus = new ModelStatus();
+        modelStatus.setModelName(modelName);
+        List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
+        for (Map<String,Object> map : usages) {
+            Date date1=new Date();
+            if(Objects.equals(map.get("usageStatus").toString(), "executing"))
+            {
+                return false;
+            }else if(Objects.equals(map.get("usageStatus").toString(), "success"))
+            {
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+                if(fmt.format(date1).equals(fmt.format((Date) map.get("createTime")))) {
+                    return false;
+                }
+                ModelStatus modelStatus1 = new ModelStatus(map);
+                modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
+            }
+        }
+        return true;
     }
 }

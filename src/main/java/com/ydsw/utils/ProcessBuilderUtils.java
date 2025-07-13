@@ -1,17 +1,22 @@
 package com.ydsw.utils;
 
+import com.ydsw.domain.ModelStatus;
+import com.ydsw.domain.User;
+import com.ydsw.service.ModelStatusService;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 @Data
+@Component
 public class ProcessBuilderUtils {
     // 可配置的Python路径
     private static String pythonPath = "D:\\Ananconda3\\envs\\heigangkouenv\\python.exe";
@@ -22,6 +27,22 @@ public class ProcessBuilderUtils {
     private static final ExecutorService executorService =
             Executors.newFixedThreadPool(10);
 
+    @Autowired
+    public void setModelStatusService(ModelStatusService modelStatusService)
+    {
+        ProcessBuilderUtils.modelStatusService =modelStatusService;
+    }
+
+    @Autowired
+    private ModelStatusService modelStatusServiceNotStatic;
+
+    @Autowired
+    private static ModelStatusService modelStatusService;
+
+    @PostConstruct
+    public void init() {
+        modelStatusService=modelStatusServiceNotStatic;
+    }
     /**
      * 专为日志监控设计的执行方法（解决中文乱码问题）
      */
@@ -263,6 +284,96 @@ public class ProcessBuilderUtils {
         executeWithRealTimeOutput(pythonScriptPath, null, defaultEncoding);
     }
     /**
+     * 后台执行Python脚本（完全异步，结果存入日志）
+     *
+     * @param scriptPath Python脚本路径
+     * @param args       传递给Python脚本的参数
+     * @param envVars    环境变量（可选）
+     */
+    public static void executeInBackground(String scriptPath, List<String> args,
+                                           Map<String, String> envVars, User user) {
+        executorService.submit(() -> {
+            try {
+                // 构建命令
+                List<String> command = new ArrayList<>();
+                command.add(pythonPath);
+                command.add(scriptPath);
+                if (args != null) {
+                    command.addAll(args);
+                }
+
+                ProcessBuilder pb = new ProcessBuilder(command);
+
+                // 设置工作目录
+                File workingDir = new File(scriptPath).getParentFile();
+                if (workingDir != null) {
+                    pb.directory(workingDir);
+                }
+
+                // 添加环境变量
+                if (envVars != null) {
+                    pb.environment().putAll(envVars);
+                }
+                // 关键环境变量设置
+                pb.environment().put("PYTHONIOENCODING", "UTF-8");
+                pb.environment().put("PYTHONUNBUFFERED", "1");
+                pb.environment().put("PYTHONUTF8", "1");  // Python 3.7+ 额外保险
+
+                // 重定向输出到日志文件（可选）
+                File logFile = new File(workingDir, "python_background.log");
+                pb.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
+                pb.redirectError(ProcessBuilder.Redirect.appendTo(logFile));
+
+                // 启动进程（不等待结束）
+                Process process = pb.start();
+                logUsageStatus(user,"executing");
+
+                // 仅记录进程启动信息
+                System.out.println("Python脚本已在后台启动，PID: " + getProcessId(process));
+                // 不调用process.waitFor()，让进程自主运行
+
+                // 监听结束事件
+                new Thread(() -> {
+                    try {
+                        int exitCode = process.waitFor();
+                        System.out.println("🏁 执行结束 | 退出码: " + exitCode);
+
+                        if(exitCode == 0) {
+                            logUsageStatus(user,"success") ; // 成功回调
+                        } else {
+                            logUsageStatus(user,"failed");  // 失败回调
+                        }
+
+                    } catch (InterruptedException e) {
+                        System.err.println("监听线程被中断");
+                        Thread.currentThread().interrupt();
+                    }
+                }).start();
+            } catch (IOException e) {
+                logUsageStatus(user,"failed");
+                System.err.println("后台执行Python脚本失败: " + e.getMessage());
+            }
+        });
+    }
+
+    private static void logUsageStatus(User user,String status) {
+        ModelStatus modelStatus = new ModelStatus();
+        modelStatus.setUsageStatus(status);
+        modelStatus.setModelName(user.getMemo());
+
+        modelStatus.setUpdateTime(new Date());
+        modelStatus.setCreateUserid(user.getId().toString());
+        modelStatus.setUserName(user.getUsername());
+
+        if (Objects.equals(status, "executing")) {
+            modelStatus.setCreateTime(new Date());
+            modelStatusService.save(modelStatus);
+            return;
+        }
+        modelStatusService.updateModelStatus(modelStatus);
+    }
+
+    /**
      * 后台执行Python脚本（完全异步，不关心结果）
      *
      * @param scriptPath Python脚本路径
@@ -308,14 +419,15 @@ public class ProcessBuilderUtils {
 
                 // 仅记录进程启动信息
                 System.out.println("Python脚本已在后台启动，PID: " + getProcessId(process));
-
                 // 不调用process.waitFor()，让进程自主运行
+
 
             } catch (IOException e) {
                 System.err.println("后台执行Python脚本失败: " + e.getMessage());
             }
         });
     }
+
 
     /**
      * 获取进程ID（跨平台实现）

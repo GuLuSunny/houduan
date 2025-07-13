@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.ModelStatusMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.ModelStatus">
+            <id property="id" column="id" />
+            <result property="modelName" column="model_name" />
+            <result property="usageStatus" column="usage_status" />
+            <result property="status" column="status" />
+            <result property="createTime" column="create_time" />
+            <result property="updateTime" column="update_time" />
+            <result property="userName" column="user_name" />
+            <result property="createUserid" column="create_userid" />
+            <result property="dataIntroduction" column="data_introduction" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,model_name,usage_status,status,create_time,update_time,
+        user_name,create_userid,data_introduction
+    </sql>
+    <update id="updateModelStatus" parameterType="com.ydsw.domain.ModelStatus">
+        UPDATE model_status
+        set usage_status = #{modelStatusClass.usageStatus}
+        <where>
+            <if test="modelStatusClass.modelName!=null and modelStatusClass.modelName.trim()!=''">
+                model_name = #{modelStatusClass.modelName}
+            </if>
+            <if test="modelStatusClass.userName!=null and modelStatusClass.userName.trim()!=''">
+                and user_name = #{modelStatusClass.userName}
+            </if>
+            <if test="modelStatusClass.createUserid!=null and modelStatusClass.createUserid.trim()!=''">
+                and create_userid=#{modelStatusClass.createUserid}
+            </if>
+            and status =0
+        </where>
+    </update>
+    <update id="dropModelLogs" >
+        update model_status set status=1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="modelStatusClass.modelName!=null and modelStatusClass.modelName.trim()!=''">
+                model_name = #{modelStatusClass.modelName}
+            </if>
+            <if test="modelStatusClass.userName!=null and modelStatusClass.userName.trim()!=''">
+                and user_name = #{modelStatusClass.userName}
+            </if>
+            <if test="modelStatusClass.createUserid!=null and modelStatusClass.createUserid.trim()!=''">
+                and create_userid=#{modelStatusClass.createUserid}
+            </if>
+            and status =0
+        </where>
+    </update>
+    <select id="selectModelStatusByConditions" resultType="java.util.Map">
+        select "user_name" as "userName","usage_status" as "usageStatus",create_time as "createTime"  from model_status
+        <where>
+            <if test="modelStatusClass.modelName!=null and modelStatusClass.modelName.trim()!=''">
+                model_name = #{modelStatusClass.modelName}
+            </if>
+            <if test="modelStatusClass.userName!=null and modelStatusClass.userName.trim()!=''">
+                and user_name = #{modelStatusClass.userName}
+            </if>
+            <if test="modelStatusClass.createUserid!=null and modelStatusClass.createUserid.trim()!=''">
+                and create_userid=#{modelStatusClass.createUserid}
+            </if>
+            and status =0
+        </where>
+    </select>
+</mapper>

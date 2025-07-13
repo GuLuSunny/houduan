@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.ModelListMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.ModelList">
+            <id property="id" column="id" />
+            <result property="className" column="class_name" />
+            <result property="modelName" column="model_name" />
+            <result property="modelInfo" column="model_info" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,class_name,model_name,model_info
+    </sql>
+    <select id="getAllModelByClassName" resultType="java.util.Map" parameterType="java.lang.String">
+        select "id",class_name as "className",model_name as "modelName",model_info as "modelInfo"
+        from model_list
+        <where>
+            <if test="className.trim()!='' and className!=null">
+                class_name = #{className}
+            </if>
+        </where>
+    </select>
+    <select id="getAllClassName" resultType="java.lang.String">
+        select distinct class_name as "className"  from model_list
+    </select>
+</mapper>
