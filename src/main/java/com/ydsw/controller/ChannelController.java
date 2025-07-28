@@ -8,6 +8,7 @@ import com.ydsw.service.ChannelService;
 import com.ydsw.utils.ShpfileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,6 +32,8 @@ public class ChannelController {
         List<Map<String,Object>> channelList=channelService.selectAllChannelByConditions(channel);
         return getRangeFromPGgeometryforMap(channelList);
     }
+
+    @PreAuthorize("hasAnyAuthority('api_Channel_uploadByShpfiles')")
     @PostMapping(value = "/api/Channel/uploadByShpfile")
     public ResultTemplate<Object> uploadByShpfile(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
         if(fileGroup==null||fileGroup.length==0)

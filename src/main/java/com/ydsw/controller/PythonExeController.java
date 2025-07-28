@@ -10,6 +10,7 @@ import com.ydsw.utils.ProcessBuilderUtils;
 import org.apache.ibatis.annotations.Param;
 import org.geolatte.geom.M;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +35,8 @@ public class PythonExeController {
 
     @Autowired
     private ModelStatusService modelStatusService;
+
+    @PreAuthorize("hasAnyAuthority('api_groupType')")
     @PostMapping(value = "/api/groupType")
     public ResultTemplate<Object> buildGroupTypeProcess(@RequestBody JSONObject jsonObject) {
         String processName = jsonObject.getStr("processName");
@@ -101,6 +104,7 @@ public class PythonExeController {
         return ResultTemplate.success();
     }
 
+    @PreAuthorize("hasAnyAuthority('api_groupType_all')")
     @PostMapping(value = "/api/groupType/all")
     public ResultTemplate<Object> buildGroupTypeProcess(@Param("tiffile") MultipartFile tiffile) {
         String filename = tiffile.getOriginalFilename();
@@ -168,6 +172,7 @@ public class PythonExeController {
         return ResultTemplate.success();
     }
 
+    @PreAuthorize("hasAnyAuthority('api_groupType_predict')")
     @PostMapping(value = "/api/groupType/predict")
     public ResultTemplate<Object> useModels(@RequestBody JSONObject jsonObject)
     {
@@ -178,7 +183,7 @@ public class PythonExeController {
         String confusion_matrix=Objects.equals(jsonObject.getStr("confusion_matrix"), "False") ?"False" :"True";
         String class_stats=Objects.equals(jsonObject.getStr("class_stats"), "False") ?"False" :"True";
         String userName=jsonObject.getStr("userName");
-        Integer createUserId=jsonObject.getInt("createUserId");
+        String createUserId=jsonObject.getStr("createUserId");
         User user=new User();
         user.setUsername(userName);
         user.setStatus(0);
@@ -192,7 +197,7 @@ public class PythonExeController {
         if(!flag){
             return ResultTemplate.fail("非法用户！");
         }
-        user.setId(createUserId);
+        user.setId(Integer.valueOf(createUserId));
         user.setMemo(modelName);
         if(!couldVisit(modelName))
         {
@@ -247,6 +252,7 @@ public class PythonExeController {
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('api_plantCover')")
     @PostMapping(value = "/api/plantCover")
     public ResultTemplate<Object> buildplantCoverProcessWithoutResult(@RequestBody JSONObject jsonObject) {
         String processName=jsonObject.getStr("processName");
@@ -307,4 +313,5 @@ public class PythonExeController {
         }
         return true;
     }
+
 }

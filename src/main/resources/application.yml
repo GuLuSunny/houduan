@@ -24,7 +24,7 @@ spring:
       hibernate:
         dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
 server:
-  port: 8090
+  port: 8091
 #mybatis-plus配置
 mybatis-plus:
   mapper-locations:  classpath*:/mapper/**Mapper.xml #将xml文件放进resource下的mapper中

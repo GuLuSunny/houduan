@@ -150,14 +150,7 @@ public class DroneImageController {
             return ResultTemplate.success("删除成功！");
         }
         List<Integer> idList = new ArrayList<>();
-        if (idArray != null) {
-            for (String s : idArray) {
-                String[] ssplit = s.split("-");
-                for (String s1 : ssplit) {
-                    idList.add(Integer.parseInt(s1));
-                }
-            }
-        }
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
         try {
             droneImageService.delByIdList(idList, dateSelected, filepath,deviceName,type);
         } catch (Exception e) {

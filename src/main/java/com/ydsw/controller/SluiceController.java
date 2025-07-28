@@ -12,6 +12,7 @@ import net.postgis.jdbc.PGgeography;
 import net.postgis.jdbc.PGgeometry;
 import net.postgis.jdbc.geometry.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,6 +50,7 @@ public class SluiceController {
         return ResultTemplate.success(sluiceList);
     }
 
+    @PreAuthorize("hasAnyAuthority('api_sluice_uploadByShpfiles')")
     @PostMapping(value = "/api/sluice/uploadByShpfiles")
     public ResultTemplate<Object> uploadByShpfiles(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
         if (fileGroup == null || fileGroup.length == 0) {

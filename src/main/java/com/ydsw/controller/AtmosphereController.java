@@ -317,14 +317,7 @@ public class AtmosphereController {
             return ResultTemplate.success("删除成功！");
         }
         List<Integer> idList = new ArrayList<>();
-        if (idArray != null) {
-            for (String s : idArray) {
-                String[] ssplit = s.split("-");
-                for (String s1 : ssplit) {
-                    idList.add(Integer.parseInt(s1));
-                }
-            }
-        }
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
         try {
             atmosphereService.delByIdList(idList, dateSelected, filepath, deviceId);
         } catch (Exception e) {
@@ -515,15 +508,7 @@ public class AtmosphereController {
         }
         List<String> idArray = jsonObject.getBeanList("ids", String.class);
         List<Integer> idList = new ArrayList<>();
-        if(idArray!=null)
-        {
-            for (String s : idArray) {
-                String[] ssplit = s.split("-");
-                for (String s1 : ssplit) {
-                    idList.add(Integer.parseInt(s1));
-                }
-            }
-        }
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
         String filepath= "";
         if (jsonObject.get("filepath") != null) {
             filepath=String.valueOf(jsonObject.get("filepath"));
@@ -693,15 +678,7 @@ public class AtmosphereController {
         }
         List<String> idArray = jsonObject.getBeanList("ids", String.class);
         List<Integer> idList = new ArrayList<>();
-        if(idArray!=null)
-        {
-            for (String s : idArray) {
-                String[] ssplit = s.split("-");
-                for (String s1 : ssplit) {
-                    idList.add(Integer.parseInt(s1));
-                }
-            }
-        }
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
         String filepath= "";
         if (jsonObject.get("filepath") != null) {
             filepath=String.valueOf(jsonObject.get("filepath"));

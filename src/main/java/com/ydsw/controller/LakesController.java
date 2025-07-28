@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.postgis.jdbc.PGgeometry;
 import net.postgis.jdbc.geometry.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -55,7 +56,7 @@ public class LakesController {
         IPage<Map<String,Object>> res= lakesService.selectLakesPageByConditions(currentPage,pageSize,lakes);
                 return ResultTemplate.success(res);
     }
-
+    @PreAuthorize("hasAnyAuthority('api_lakes_uploadByShpfiles')")
     @PostMapping(value = "/api/lakes/uploadByShpfiles")
     public ResultTemplate<Object> uploadByShpfile(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
         if(fileGroup==null||fileGroup.length==0)

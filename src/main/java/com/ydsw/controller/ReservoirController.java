@@ -7,6 +7,7 @@ import com.ydsw.service.ReservoirService;
 import com.ydsw.utils.ShpfileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +33,7 @@ public class ReservoirController {
         return LakesController.getRangeFromPGgeometryforMap(res);
     }
 
+    @PreAuthorize("hasAnyAuthority('api_reservoir_uploadByShpfiles')")
     @PostMapping(value = "/api/reservoir/uploadByShpfiles")
     public ResultTemplate<Object> uploadByShpfiles(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
         if (fileGroup == null || fileGroup.length == 0) {

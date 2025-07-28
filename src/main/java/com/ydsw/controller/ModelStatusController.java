@@ -6,6 +6,7 @@ import com.ydsw.domain.ModelStatus;
 import com.ydsw.service.ModelStatusService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +29,7 @@ public class ModelStatusController {
         return ResultTemplate.success(res);
     }
 
+    @PreAuthorize("hasAnyAuthority('api_model_updateModelStatus')")
     @PostMapping(value = "/api/model/updateModelStatus")
     public ResultTemplate<Object> updateModelStatus(@RequestBody JSONObject jsonObject) {
         ModelStatus modelStatus = jsonObject.toBean(ModelStatus.class);
@@ -52,14 +54,7 @@ public class ModelStatusController {
             }
         }
         List<Integer> idList = new ArrayList<>();
-        if (idArray != null) {
-            for (String s : idArray) {
-                String[] ssplit = s.split("-");
-                for (String s1 : ssplit) {
-                    idList.add(Integer.parseInt(s1));
-                }
-            }
-        }
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
         try {
             modelStatusService.dropModelLogs(idList, modelStatus);
         }catch (Exception e){
