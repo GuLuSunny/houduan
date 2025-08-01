@@ -6,6 +6,7 @@ import com.ydsw.domain.ModelFileStatus;
 import com.ydsw.domain.ModelStatus;
 import com.ydsw.domain.User;
 import com.ydsw.service.ModelFileStatusService;
+import com.ydsw.service.ModelListService;
 import com.ydsw.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +31,18 @@ public class ModelFileStatusController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ModelListService modelListService;
     @PreAuthorize("hasAnyAuthority('api_modelFile_upload')")
     @PostMapping(value = "/api/modelFile/upload")
     public ResultTemplate<Object> uploadModelFile(@RequestParam("tiffile") MultipartFile file
             ,@RequestParam("createUserid") String userUid, @RequestParam("userName") String userName,
-            @RequestParam("modelName") String modelName) {
-
-        if (userAlive(userUid, userName, modelName)) return ResultTemplate.fail("非法用户！");
+            @RequestParam("className") String className) {
+        List<String> classNameList=modelListService.getAllClassName();
+        if(!classNameList.contains(className)){
+            return ResultTemplate.fail("非法的类型参数！");
+        }
+        if (userAlive(userUid, userName, className)) return ResultTemplate.fail("非法用户！");
         String fileType= Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf("."));
         if(!fileType.equals("tif"))
         {
@@ -46,7 +52,7 @@ public class ModelFileStatusController {
         return ResultTemplate.fail("未知错误!");
     }
 
-    public boolean userAlive(String userUid, String userName, String modelName) {
+    public boolean userAlive(String userUid, String userName, String className) {
         User user=new User();
         user.setUsername(userName);
         user.setStatus(0);
@@ -61,7 +67,7 @@ public class ModelFileStatusController {
             return true;
         }
         user.setId(Integer.valueOf(userUid));
-        user.setMemo(modelName);
+        user.setMemo(className);
         return false;
     }
     @PreAuthorize("hasAnyAuthority('api_modelFile_dropByConditions')")
@@ -99,10 +105,10 @@ public class ModelFileStatusController {
         }
     }
 
-    private boolean couldUpload(String modelName)
+    private boolean couldUpload(String className)
     {
         ModelFileStatus modelFileStatus = new ModelFileStatus();
-        modelFileStatus.setModelName(modelName);
+        modelFileStatus.setClassName(className);
         List<Map<String,Object>> usages = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
         for (Map<String,Object> map : usages) {
             Date date1=new Date();

@@ -10,6 +10,11 @@ import com.ydsw.utils.ProcessBuilderUtils;
 import org.apache.ibatis.annotations.Param;
 import org.geolatte.geom.M;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +25,8 @@ import javax.annotation.processing.FilerException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.ErrorManager;
@@ -190,7 +197,7 @@ public class PythonExeController {
         List<Map<String,Object>> userList= userService.selectUserByCondition(user);
         boolean flag=false;
         for (Map<String,Object> map : userList) {
-            if(Objects.equals(map.get("id"), createUserId)){
+            if(Objects.equals(map.get("id").toString(), createUserId)){
                 flag=true;
             }
         }
@@ -280,6 +287,7 @@ public class PythonExeController {
         return ResultTemplate.success("程序已在后台运行!");
     }
 
+
     private  boolean couldVisit(User user)
     {
         ModelStatus modelStatus = new ModelStatus();
@@ -313,5 +321,94 @@ public class PythonExeController {
         }
         return true;
     }
+    private final String resultPath = "D:\\heigankoumodel\\tudifugaifenlei\\result";
 
+    // 1. 获取文件URL的接口
+    @PostMapping(value = "/api/modelFile/getLandResult")
+    public ResultTemplate<Object> getLandResult(@RequestBody JSONObject jsonObject) {
+        Map<String, Object> response = new HashMap<>();
+        String modelName = jsonObject.getStr("modelName");
+        String preview_png = Objects.equals(jsonObject.getStr("preview_png"), "False") ? "False" : "True";
+        String confusion_matrix = Objects.equals(jsonObject.getStr("confusion_matrix"), "False") ? "False" : "True";
+        String class_stats = Objects.equals(jsonObject.getStr("class_stats"), "False") ? "False" : "True";
+        String userName = jsonObject.getStr("userName");
+        String createUserId = jsonObject.getStr("createUserId");
+
+        // 验证modelName合法性
+        if (!Arrays.asList("mlp", "rf", "xgb", "svm").contains(modelName)) {
+            return ResultTemplate.fail("非法的模型名");
+        }
+
+        Map<String, String> urls = new HashMap<>();
+        urls.put("preview_png", "/api/modelFile/preview");
+        urls.put("confusion_matrix", "/api/modelFile/download/confusion_matrix");
+        urls.put("class_stats", "/api/modelFile/download/class_stats");
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("urls", urls);
+        data.put("modelName", modelName);
+
+        return ResultTemplate.success(data);
+    }
+
+    // 2. 直接展示图片的接口
+    @PostMapping(value = "/api/modelFile/preview")
+    public ResponseEntity<Resource> getPreviewImage(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String fileName = modelName + "_prediction_preview.png";
+        Path filePath = Paths.get(resultPath, fileName);
+        return getImageResponse(filePath, fileName);
+    }
+
+    // 3. 下载混淆矩阵文件的接口
+    @PostMapping("/api/modelFile/download/confusion_matrix")
+    public ResponseEntity<Resource> downloadConfusionMatrix(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String fileName = modelName + "_confusion_matrix.png";
+        Path filePath = Paths.get(resultPath, fileName);
+        return getFileResponse(filePath, fileName, "image/png");
+    }
+
+    // 4. 下载分类统计文件的接口
+    @PostMapping("/api/modelFile/download/class_stats")
+    public ResponseEntity<Resource> downloadClassStats(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String fileName = modelName + "_class_stats.txt";
+        Path filePath = Paths.get(resultPath, fileName);
+        return getFileResponse(filePath, fileName, "text/plain");
+    }
+
+    // 通用方法：获取图片响应
+    private ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {
+        try {
+            File file = filePath.toFile();
+            if (!file.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+            Resource resource = new FileSystemResource(file);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // 通用方法：获取文件下载响应
+    private ResponseEntity<Resource> getFileResponse(Path filePath, String fileName, String contentType) {
+        try {
+            File file = filePath.toFile();
+            if (!file.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+            Resource resource = new FileSystemResource(file);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 }

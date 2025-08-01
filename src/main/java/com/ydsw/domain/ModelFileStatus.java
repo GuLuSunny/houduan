@@ -27,7 +27,7 @@ public class ModelFileStatus implements Serializable {
      * 所支持的模型
      */
     @TableField(value = "model_name")
-    private String modelName;
+    private String className;
 
     /**
      * 数据处理状态
@@ -96,7 +96,7 @@ public class ModelFileStatus implements Serializable {
 
     public ModelFileStatus(Map<String,Object> map)
     {
-        this.modelName = (String)map.get("modelName");
+        this.className = (String)map.get("className");
         this.dealStatus = (String)map.get("dealStatus");
         this.filepath = (String)map.get("filepath");
         this.userName = (String)map.get("userName");
@@ -123,7 +123,7 @@ public class ModelFileStatus implements Serializable {
         }
         ModelFileStatus other = (ModelFileStatus) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getModelName() == null ? other.getModelName() == null : this.getModelName().equals(other.getModelName()))
+            && (this.getClassName() == null ? other.getClassName() == null : this.getClassName().equals(other.getClassName()))
             && (this.getDealStatus() == null ? other.getDealStatus() == null : this.getDealStatus().equals(other.getDealStatus()))
             && (this.getFilepath() == null ? other.getFilepath() == null : this.getFilepath().equals(other.getFilepath()))
             && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
@@ -141,7 +141,7 @@ public class ModelFileStatus implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getModelName() == null) ? 0 : getModelName().hashCode());
+        result = prime * result + ((getClassName() == null) ? 0 : getClassName().hashCode());
         result = prime * result + ((getDealStatus() == null) ? 0 : getDealStatus().hashCode());
         result = prime * result + ((getFilepath() == null) ? 0 : getFilepath().hashCode());
         result = prime * result + ((getUserName() == null) ? 0 : getUserName().hashCode());
@@ -162,7 +162,7 @@ public class ModelFileStatus implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", modelName=").append(modelName);
+        sb.append(", className=").append(className);
         sb.append(", dealStatus=").append(dealStatus);
         sb.append(", filepath=").append(filepath);
         sb.append(", userName=").append(userName);
