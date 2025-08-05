@@ -14,11 +14,16 @@
             <result property="userName" column="user_name" />
             <result property="createUserid" column="create_userid" />
             <result property="dataIntroduction" column="data_introduction" />
+            <result property="functionSelected" column="function_selected" />
+            <result property="className" column="class_name" />
+            <result property="observationTime" column="observation_time" />
+            <result property="type" column="type" />
     </resultMap>
 
     <sql id="Base_Column_List">
         id,model_name,usage_status,status,create_time,update_time,
-        user_name,create_userid,data_introduction
+        user_name,create_userid,data_introduction,function_selected,class_name,
+        observation_time,type
     </sql>
     <update id="updateModelStatus" parameterType="com.ydsw.domain.ModelStatus">
         UPDATE model_status
@@ -58,13 +63,20 @@
         </where>
     </update>
     <select id="selectModelStatusByConditions" resultType="java.util.Map">
-        select "user_name" as "userName","usage_status" as "usageStatus",create_time as "createTime"  from model_status
+        select "user_name" as "userName","create_userid" as "createUserid",
+               "usage_status" as "usageStatus","create_time" as "createTime",
+               "function_selected" as functionSelected,"class_name" as "className",
+               "observation_time" as observationTime,"model_name" as "modelName"
+          from model_status
         <where>
             <if test="modelStatusClass.modelName!=null and modelStatusClass.modelName.trim()!=''">
                 model_name = #{modelStatusClass.modelName}
             </if>
             <if test="modelStatusClass.userName!=null and modelStatusClass.userName.trim()!=''">
                 and user_name = #{modelStatusClass.userName}
+            </if>
+            <if test="modelStatusClass.usageStatus!=null and modelStatusClass.usageStatus.trim()!=''">
+                and usage_status = #{modelStatusClass.usageStatus}
             </if>
             <if test="modelStatusClass.createUserid!=null and modelStatusClass.createUserid.trim()!=''">
                 and create_userid=#{modelStatusClass.createUserid}

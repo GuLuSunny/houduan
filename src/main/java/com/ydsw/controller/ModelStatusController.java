@@ -62,4 +62,5 @@ public class ModelStatusController {
         }
         return ResultTemplate.success("已遗弃记录");
     }
+
 }

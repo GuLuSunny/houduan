@@ -26,7 +26,7 @@ public class ModelFileStatus implements Serializable {
     /**
      * 所支持的模型
      */
-    @TableField(value = "model_name")
+    @TableField(value = "class_name")
     private String className;
 
     /**

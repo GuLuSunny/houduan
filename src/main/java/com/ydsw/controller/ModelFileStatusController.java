@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,7 +73,7 @@ public class ModelFileStatusController {
     }
     @PreAuthorize("hasAnyAuthority('api_modelFile_dropByConditions')")
     @PostMapping(value = "/api/modelFile/dropByConditions")
-    public ResultTemplate<Object> dropByConditions(@RequestParam("Json") JSONObject jsonObject) {
+    public ResultTemplate<Object> dropByConditions(@RequestBody JSONObject jsonObject) {
         ModelFileStatus modelFileStatus=jsonObject.toBean(ModelFileStatus.class);
         List<String> idArray = jsonObject.getBeanList("ids", String.class);
         if (idArray != null && idArray.isEmpty())
@@ -126,6 +127,13 @@ public class ModelFileStatusController {
             }
         }
         return true;
+    }
+
+    @PostMapping(value = "/api/modelFile/getModelFileStatus")
+    public ResultTemplate<Object> getModelFileStatus(@RequestBody JSONObject jsonObject) {
+        ModelFileStatus modelFileStatus=jsonObject.toBean(ModelFileStatus.class);
+        List<Map<String,Object>> usages = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        return ResultTemplate.success(usages);
     }
 
 

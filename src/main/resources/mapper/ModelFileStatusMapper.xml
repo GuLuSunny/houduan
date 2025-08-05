@@ -6,7 +6,7 @@
 
     <resultMap id="BaseResultMap" type="com.ydsw.domain.ModelFileStatus">
             <id property="id" column="id" />
-            <result property="modelName" column="model_name" />
+            <result property="className" column="class_name" />
             <result property="dealStatus" column="deal_status" />
             <result property="filepath" column="filepath" />
             <result property="userName" column="user_name" />
@@ -20,7 +20,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,model_name,deal_status,filepath,user_name,create_userid,
+        id,class_name,deal_status,filepath,user_name,create_userid,
         create_time,update_time,status,data_introduction,observation_time,
         type
     </sql>
@@ -33,8 +33,8 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="modelFileStatusClass.modelName!=null and modelFileStatusClass.modelName.trim()!=''">
-                model_name = #{modelFileStatusClass.modelName}
+            <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
+                class_name = #{modelFileStatusClass.className}
             </if>
             <if test="modelFileStatusClass.userName!=null and modelFileStatusClass.userName.trim()!=''">
                 and user_name = #{modelFileStatusClass.userName}
@@ -51,8 +51,8 @@
     <update id="updateDealStatusViod">
         update model_file_status set deal_status = #{modelFileStatusClass.dealStatus}
         <where>
-            <if test="modelFileStatusClass.modelName!=null and modelFileStatusClass.modelName.trim()!=''">
-                model_name = #{modelFileStatusClass.modelName}
+            <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
+                class_name = #{modelFileStatusClass.className}
             </if>
             <if test="modelFileStatusClass.userName!=null and modelFileStatusClass.userName.trim()!=''">
                 and user_name = #{modelFileStatusClass.userName}
@@ -65,16 +65,20 @@
 
     </update>
     <select id="selectUserAndFileStatus" resultType="java.util.Map">
-        select "user_name" as "userName","deal_status" as "dealStatus",observation_time as observationTime,create_time as "createTime"  from model_status
+        select "user_name" as "userName","create_userid" as "createUserid","deal_status" as "dealStatus",
+               "observation_time" as "observationTime","create_time" as "createTime"  from model_file_status
         <where>
-            <if test="modelFileStatusClass.modelName!=null and modelFileStatusClass.modelName.trim()!=''">
-                model_name = #{modelFileStatusClass.modelName}
+            <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
+                and class_name = #{modelFileStatusClass.className}
             </if>
             <if test="modelFileStatusClass.userName!=null and modelFileStatusClass.userName.trim()!=''">
                 and user_name = #{modelFileStatusClass.userName}
             </if>
             <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
                 and create_userid=#{modelFileStatusClass.createUserid}
+            </if>
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
             </if>
             and status =0
         </where>

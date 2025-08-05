@@ -71,6 +71,29 @@ public class ModelStatus implements Serializable {
     @TableField(value = "data_introduction")
     private String dataIntroduction;
 
+
+    /**
+     * 选择的功能
+     */
+    @TableField(value = "function_selected")
+    private String functionSelected;
+
+    /**
+     *
+     */
+    @TableField(value = "class_name")
+    private String className;
+    /**
+     * 数据观测日期
+     */
+    @TableField(value = "observation_time")
+    private String observationTime;
+
+    /**
+     * 待定字段
+     */
+    @TableField(value = "type")
+    private String type;
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -86,6 +109,8 @@ public class ModelStatus implements Serializable {
         this.setUserName((String)map.get("user_name"));
         this.setCreateUserid((String)map.get("create_userid"));
         this.setDataIntroduction((String)map.get("data_introduction"));
+        this.setFunctionSelected((String)map.get("function_selected"));
+        this.setClassName((String)map.get("class_name"));
     }
 
     @Override
@@ -101,14 +126,18 @@ public class ModelStatus implements Serializable {
         }
         ModelStatus other = (ModelStatus) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getModelName() == null ? other.getModelName() == null : this.getModelName().equals(other.getModelName()))
-            && (this.getUsageStatus() == null ? other.getUsageStatus() == null : this.getUsageStatus().equals(other.getUsageStatus()))
-            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
-            && (this.getCreateUserid() == null ? other.getCreateUserid() == null : this.getCreateUserid().equals(other.getCreateUserid()))
-            && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()));
+                && (this.getModelName() == null ? other.getModelName() == null : this.getModelName().equals(other.getModelName()))
+                && (this.getUsageStatus() == null ? other.getUsageStatus() == null : this.getUsageStatus().equals(other.getUsageStatus()))
+                && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
+                && (this.getCreateUserid() == null ? other.getCreateUserid() == null : this.getCreateUserid().equals(other.getCreateUserid()))
+                && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()))
+                && (this.getFunctionSelected() == null ? other.getFunctionSelected() == null : this.getFunctionSelected().equals(other.getFunctionSelected()))
+                && (this.getClassName() == null ? other.getClassName() == null : this.getClassName().equals(other.getClassName()))
+                && (this.getObservationTime() == null ? other.getObservationTime() == null : this.getObservationTime().equals(other.getObservationTime()))
+                && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()));
     }
 
     @Override
@@ -124,6 +153,10 @@ public class ModelStatus implements Serializable {
         result = prime * result + ((getUserName() == null) ? 0 : getUserName().hashCode());
         result = prime * result + ((getCreateUserid() == null) ? 0 : getCreateUserid().hashCode());
         result = prime * result + ((getDataIntroduction() == null) ? 0 : getDataIntroduction().hashCode());
+        result = prime * result + ((getFunctionSelected() == null) ? 0 : getFunctionSelected().hashCode());
+        result = prime * result + ((getClassName() == null) ? 0 : getClassName().hashCode());
+        result = prime * result + ((getObservationTime() == null) ? 0 : getObservationTime().hashCode());
+        result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
         return result;
     }
 
@@ -142,6 +175,10 @@ public class ModelStatus implements Serializable {
         sb.append(", userName=").append(userName);
         sb.append(", createUserid=").append(createUserid);
         sb.append(", dataIntroduction=").append(dataIntroduction);
+        sb.append(", functionSelected=").append(functionSelected);
+        sb.append(", className=").append(className);
+        sb.append(", observationTime=").append(observationTime);
+        sb.append(", type=").append(type);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

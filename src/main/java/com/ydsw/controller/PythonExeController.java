@@ -189,8 +189,33 @@ public class PythonExeController {
         String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
         String confusion_matrix=Objects.equals(jsonObject.getStr("confusion_matrix"), "False") ?"False" :"True";
         String class_stats=Objects.equals(jsonObject.getStr("class_stats"), "False") ?"False" :"True";
+        String heatmaps_summary=Objects.equals(jsonObject.getStr("heatmaps_summary"), "False") ?"False" :"True";
+
         String userName=jsonObject.getStr("userName");
         String createUserId=jsonObject.getStr("createUserId");
+        String funcitionSelected=jsonObject.getStr("funcitionSelected");
+        funcitionSelected=funcitionSelected.replace("null","");
+        String className="land";
+        if(preview_png.equals("True"))
+        {
+            funcitionSelected+="preview_png";
+        }
+        if(confusion_matrix.equals("True"))
+        {
+            funcitionSelected+=",confusion_matrix";
+        }
+        if(class_stats.equals("True"))
+        {
+            funcitionSelected+=",class_stats";
+        }
+        if(heatmaps_summary.equals("True"))
+        {
+            funcitionSelected+=",heatmaps_summary";
+        }
+        if(funcitionSelected.startsWith(","))
+        {
+            funcitionSelected=funcitionSelected.substring(1);
+        }
         User user=new User();
         user.setUsername(userName);
         user.setStatus(0);
@@ -230,6 +255,9 @@ public class PythonExeController {
             values.put("preview_png",preview_png);
             values.put("confusion_matrix",confusion_matrix);
             values.put("class_stats",class_stats);
+            values.put("heatmaps_summary",heatmaps_summary);
+            user.setAddress(funcitionSelected);
+            user.setProductionCompany(className);
             ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
         }catch (RuntimeException e) {
 
@@ -295,7 +323,27 @@ public class PythonExeController {
         List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
         for (Map<String,Object> map : usages) {
             Date date=new Date();
+            if(Objects.equals(map.get("usageStatus").toString(), "executing"))
+            {
+                return false;
+            }else if(Objects.equals(map.get("usageStatus").toString(), "success"))
+            {
+                if(Objects.equals(user.getId(), Integer.valueOf(map.get("createUserid").toString())) &&user.getUsername()==map.get("username"))
+                {
+                    return true;
+                }
+                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+                if(fmt.format(date).equals(fmt.format((Date) map.get("createTime")))) {
 
+                    return false;
+                }
+                if(map.get("modelName")==modelStatus.getModelName())
+                {
+                    ModelStatus modelStatus1 = new ModelStatus(map);
+                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
+                }
+
+            }
         }
         return true;
     }
@@ -315,13 +363,16 @@ public class PythonExeController {
                 if(fmt.format(date1).equals(fmt.format((Date) map.get("createTime")))) {
                     return false;
                 }
-                ModelStatus modelStatus1 = new ModelStatus(map);
-                modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
+                if(Objects.equals(map.get("modelName").toString(), modelStatus.getModelName()))
+                {
+                    ModelStatus modelStatus1 = new ModelStatus(map);
+                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
+                }
             }
         }
         return true;
     }
-    private final String resultPath = "D:\\heigankoumodel\\tudifugaifenlei\\result";
+    private final String landResultPath = "D:\\heigankoumodel\\tudifugaifenlei\\result";
 
     // 1. 获取文件URL的接口
     @PostMapping(value = "/api/modelFile/getLandResult")
@@ -338,7 +389,13 @@ public class PythonExeController {
         if (!Arrays.asList("mlp", "rf", "xgb", "svm").contains(modelName)) {
             return ResultTemplate.fail("非法的模型名");
         }
-
+        User user = new User();
+        user.setUsername(userName);
+        user.setId(1);
+        if(!couldVisit(user))
+        {
+            return ResultTemplate.fail("请先提交申请！");
+        }
         Map<String, String> urls = new HashMap<>();
         urls.put("preview_png", "/api/modelFile/preview");
         urls.put("confusion_matrix", "/api/modelFile/download/confusion_matrix");
@@ -356,7 +413,7 @@ public class PythonExeController {
     public ResponseEntity<Resource> getPreviewImage(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String fileName = modelName + "_prediction_preview.png";
-        Path filePath = Paths.get(resultPath, fileName);
+        Path filePath = Paths.get(landResultPath, fileName);
         return getImageResponse(filePath, fileName);
     }
 
@@ -365,7 +422,7 @@ public class PythonExeController {
     public ResponseEntity<Resource> downloadConfusionMatrix(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String fileName = modelName + "_confusion_matrix.png";
-        Path filePath = Paths.get(resultPath, fileName);
+        Path filePath = Paths.get(landResultPath, fileName);
         return getFileResponse(filePath, fileName, "image/png");
     }
 
@@ -374,10 +431,48 @@ public class PythonExeController {
     public ResponseEntity<Resource> downloadClassStats(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String fileName = modelName + "_class_stats.txt";
-        Path filePath = Paths.get(resultPath, fileName);
+        Path filePath = Paths.get(landResultPath, fileName);
         return getFileResponse(filePath, fileName, "text/plain");
     }
 
+    // 5. 下载单分类热力图的接口
+    @PostMapping("/api/modelFile/download/heatmaps_summary")
+    public ResponseEntity<Resource> downloadHeatmapsSummary(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String relativePath = "\\class_heatmaps_"+modelName;
+        String fileName="class_heatmaps_summary.png";
+        Path filePath = Paths.get(landResultPath+relativePath, fileName);
+        return getFileResponse(filePath, fileName, "image/png");
+    }
+
+    // 6. 栅格文件下载
+    @PostMapping("/api/modelFile/download/tif")
+    public ResponseEntity<Resource> downloadTifFile(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String fileName = modelName + "_prediction.tif";
+        Path filePath = Paths.get(landResultPath, fileName);
+        return getFileResponse(filePath, fileName, "image/tiff");
+    }
+    private final String plantResultPath = "D:\\heigankoumodel\\plantCover\\products";
+
+    // 植被结果下载
+    @PostMapping("/api/modelFile/PlantDownload")
+    public ResponseEntity<Resource> downloadPlantFiles(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String type=  jsonObject.get("type").toString();
+        if(Objects.equals(type, "tif"))
+        {
+            String fileName = "200502_"+modelName +"."+ type;
+            Path filePath = Paths.get(plantResultPath, fileName);
+            return getFileResponse(filePath, fileName, "image/tiff");
+        } else if (Objects.equals(type, "png")) {
+            String fileName = "200502_"+modelName +"."+ type;
+            Path filePath = Paths.get(plantResultPath, fileName);
+            return getImageResponse(filePath, fileName);
+        }else{
+            return ResponseEntity.status(500).body(null);
+        }
+    }
     // 通用方法：获取图片响应
     private ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {
         try {
@@ -411,4 +506,7 @@ public class PythonExeController {
             return ResponseEntity.status(500).build();
         }
     }
+
+
+
 }
