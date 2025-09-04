@@ -11,7 +11,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     #url: jdbc:postgresql://localhost:5432/ydsw?&rewriteBatchedStatements=true&allowMultiQueries=true
-    url: jdbc:postgresql://47.122.28.51:5432/ydsw?&rewriteBatchedStatements=true&allowMultiQueries=true&stringtype=unspecified
+    url: jdbc:postgresql://39.96.187.210:5432/ydsw?&rewriteBatchedStatements=true&allowMultiQueries=true&stringtype=unspecified
     username: ydsweditor
     password: hgg123.
     driver-class-name: org.postgresql.Driver
