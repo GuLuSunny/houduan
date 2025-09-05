@@ -96,6 +96,18 @@ public class PumpingStation implements Serializable {
     @TableField(value = "status")
     private Integer status;
 
+    /**
+     *
+     */
+    @TableField(value = "shape_leng")
+    private BigDecimal shapeLeng;
+
+    /**
+     *
+     */
+    @TableField(value = "shape_area")
+    private BigDecimal shapeArea;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -123,7 +135,9 @@ public class PumpingStation implements Serializable {
             && (this.getRemark() == null ? other.getRemark() == null : this.getRemark().equals(other.getRemark()))
             && (this.getGeog() == null ? other.getGeog() == null : this.getGeog().equals(other.getGeog()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()));
+            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
+            && (this.getShapeLeng() == null ? other.getShapeLeng() == null : this.getShapeLeng().equals(other.getShapeLeng()))
+            && (this.getShapeArea() == null ? other.getShapeArea() == null : this.getShapeArea().equals(other.getShapeArea()));
     }
 
     @Override
@@ -143,6 +157,8 @@ public class PumpingStation implements Serializable {
         result = prime * result + ((getGeog() == null) ? 0 : getGeog().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
+        result = prime * result + ((getShapeLeng() == null) ? 0 : getShapeLeng().hashCode());
+        result = prime * result + ((getShapeArea() == null) ? 0 : getShapeArea().hashCode());
         return result;
     }
 
@@ -165,6 +181,8 @@ public class PumpingStation implements Serializable {
         sb.append(", geog=").append(geog);
         sb.append(", createTime=").append(createTime);
         sb.append(", status=").append(status);
+        sb.append(", shapeLeng=").append(shapeLeng);
+        sb.append(", shapeArea=").append(shapeArea);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

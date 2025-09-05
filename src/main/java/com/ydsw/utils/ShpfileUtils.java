@@ -1,4 +1,5 @@
 package com.ydsw.utils;
+import com.ydsw.domain.Sluice;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.locationtech.jts.geom.Geometry;
@@ -146,7 +147,6 @@ public class ShpfileUtils {
                 String remark = (String) feature.getAttribute("REMARK");
                 targetClass.getMethod("setRemark", String.class).invoke(entity, remark);
             }
-
             if (feature.getAttribute("SHAPE_Leng")!=null) {
                 BigDecimal shapeLeng=new BigDecimal(feature.getAttribute("SHAPE_Leng").toString());
                 targetClass.getMethod("setShapeLeng", BigDecimal.class).invoke(entity, shapeLeng);

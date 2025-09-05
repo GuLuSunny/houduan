@@ -110,6 +110,12 @@ public class Channel implements Serializable {
     @TableField(value = "status")
     private Integer status;
 
+    /**
+     *
+     */
+    @TableField(value = "shape_area")
+    private BigDecimal shapeArea;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -139,7 +145,8 @@ public class Channel implements Serializable {
             && (this.getGeom() == null ? other.getGeom() == null : this.getGeom().equals(other.getGeom()))
             && (this.getCanalType() == null ? other.getCanalType() == null : this.getCanalType().equals(other.getCanalType()))
             && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()));
+            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
+            && (this.getShapeArea() == null ? other.getShapeArea() == null : this.getShapeArea().equals(other.getShapeArea()));
     }
 
     @Override
@@ -161,6 +168,7 @@ public class Channel implements Serializable {
         result = prime * result + ((getCanalType() == null) ? 0 : getCanalType().hashCode());
         result = prime * result + ((getCreateTime() == null) ? 0 : getCreateTime().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
+        result = prime * result + ((getShapeArea() == null) ? 0 : getShapeArea().hashCode());
         return result;
     }
 
@@ -185,6 +193,7 @@ public class Channel implements Serializable {
         sb.append(", canalType=").append(canalType);
         sb.append(", createTime=").append(createTime);
         sb.append(", status=").append(status);
+        sb.append(", shapeArea=").append(shapeArea);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

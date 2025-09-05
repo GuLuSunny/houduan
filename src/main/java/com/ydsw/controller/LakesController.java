@@ -65,7 +65,8 @@ public class LakesController {
         }
         String fileName = fileGroup[0].getOriginalFilename();
         for (int i = 1; i < fileGroup.length; i++) {
-            if(!Objects.equals(fileGroup[i].getOriginalFilename(), fileName))
+            String finename = fileGroup[i].getOriginalFilename();
+            if(!Objects.equals(finename.substring(0,finename.indexOf('.')), fileName.substring(0,finename.indexOf('.'))))
             {
                 return ResultTemplate.fail("文件格式错误！");
             }
@@ -82,8 +83,8 @@ public class LakesController {
                 lakes.setCreateTime(new Date());
                 lakes.getGeom().setSRID(4326);
             }
-            //System.out.println(lakesList);
-            lakesService.saveBatch(lakesList);
+            System.out.println(lakesList);
+            //lakesService.saveBatch(lakesList);
         } catch (IOException e) {
             return ResultTemplate.fail("文件："+fileGroup[0].getOriginalFilename()+"提交格式错误！");
         }
