@@ -312,7 +312,8 @@ public class ProcessBuilderUtils {
 
                 // 添加环境变量
                 if (envVars != null) {
-                    pb.environment().putAll(envVars);
+                    Map<String, String> env = pb.environment();
+                    env.putAll(envVars);
                 }
                 // 关键环境变量设置
                 pb.environment().put("PYTHONIOENCODING", "UTF-8");
@@ -461,4 +462,10 @@ public class ProcessBuilderUtils {
         executeInBackground(scriptPath, args, null);
     }
 
+    public static String buildSaveNameByInformation(User user,Map<String,Object> map) {
+        String className=map.get("className").toString();
+        String modelName=map.get("modelName").toString();
+        String name="";
+        return name;
+    }
 }

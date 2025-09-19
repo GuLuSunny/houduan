@@ -59,14 +59,18 @@
             </if>
             <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
                 and create_userid=#{modelFileStatusClass.createUserid}
-            </if>                                     
+            </if>
+            and deal_status != "failed"
             and status=0;
         </where>
 
     </update>
     <select id="selectUserAndFileStatus" resultType="java.util.Map">
-        select "user_name" as "userName","create_userid" as "createUserid","deal_status" as "dealStatus",
-               "observation_time" as "observationTime","create_time" as "createTime"  from model_file_status
+        select "user_name" as "userName",
+               "create_userid" as "createUserid","deal_status" as "dealStatus",
+               "observation_time" as "observationTime","create_time" as "createTime" ,
+               "filepath"
+        from model_file_status
         <where>
             <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
                 and class_name = #{modelFileStatusClass.className}
@@ -79,6 +83,9 @@
             </if>
             <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelFileStatusClass.observationTime}
+            </if>
+            <if test="modelFileStatusClass.dealStatus!=null and modelFileStatusClass.dealStatus.trim()!=''">
+                and deal_status=#{modelFileStatusClass.dealStatus}
             </if>
             and status =0
         </where>

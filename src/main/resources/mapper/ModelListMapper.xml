@@ -15,7 +15,8 @@
         id,class_name,model_name,model_info
     </sql>
     <select id="getAllModelByClassName" resultType="java.util.Map" parameterType="java.lang.String">
-        select "id",class_name as "className",model_name as "modelName",model_info as "modelInfo"
+        select "id",class_name as "className",model_name as "modelName",
+               model_info as "modelInfo",functions
         from model_list
         <where>
             <if test="className.trim()!='' and className!=null">

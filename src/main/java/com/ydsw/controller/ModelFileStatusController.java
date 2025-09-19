@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -25,9 +27,8 @@ import java.util.*;
 public class ModelFileStatusController {
     @Autowired
     private ModelFileStatusService modelFileStatusService;
-    String plantFileRootDirPath="D:\\heigankoumodel\\plantCover\\";
-    String solidFileRootDirPath ="D:\\heigankoumodel\\tudifugaifenlei\\";
-    String waterFileRootDirPath ="D:\\heigankoumodel\\waterRetrieval\\";
+    final private String FileRootDirPath="D:\\heigankoumodel\\fileTemp\\";
+
 
     @Autowired
     private UserService userService;
@@ -36,21 +37,68 @@ public class ModelFileStatusController {
     private ModelListService modelListService;
     @PreAuthorize("hasAnyAuthority('api_modelFile_upload')")
     @PostMapping(value = "/api/modelFile/upload")
-    public ResultTemplate<Object> uploadModelFile(@RequestParam("tiffile") MultipartFile file
-            ,@RequestParam("createUserid") String userUid, @RequestParam("userName") String userName,
-            @RequestParam("className") String className) {
-        List<String> classNameList=modelListService.getAllClassName();
-        if(!classNameList.contains(className)){
+    public ResultTemplate<Object> uploadModelFile(@RequestParam("tiffile") MultipartFile file,
+                                                  @RequestParam("createUserid") String userUid,
+                                                  @RequestParam("userName") String userName,
+                                                  @RequestParam("className") String className,
+                                                  @RequestParam("observationTime")String observationTime) {
+
+        List<String> classNameList = modelListService.getAllClassName();
+        if (!classNameList.contains(className)) {
             return ResultTemplate.fail("非法的类型参数！");
         }
-        if (userAlive(userUid, userName, className)) return ResultTemplate.fail("非法用户！");
-        String fileType= Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf("."));
-        if(!fileType.equals("tif"))
-        {
+        if (!userAlive(userUid, userName, className)) {
+            return ResultTemplate.fail("非法用户！");
+        }
+
+        String originalFilename = file.getOriginalFilename();
+        String fileType = originalFilename.substring(originalFilename.lastIndexOf("."));
+        if (!fileType.equalsIgnoreCase(".tif")) {
             return ResultTemplate.fail("文件类型错误！");
         }
 
-        return ResultTemplate.fail("未知错误!");
+        if (!couldUpload(className)) {
+            return ResultTemplate.fail("服务器繁忙，请稍后重试");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = new Date();
+        String formattedDate = sdf.format(date);
+        String filename = userName + "-" + userUid + "_" + formattedDate + "_HH.tif";
+        String directoryPath = FileRootDirPath + File.separator + className;
+        String filepath = directoryPath + File.separator + filename;
+        ModelFileStatus modelFileStatus = new ModelFileStatus();
+        modelFileStatus.setCreateUserid(userUid);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setFilepath(filepath);
+        modelFileStatus.setCreateTime(date);
+        modelFileStatus.setUpdateTime(date);
+        modelFileStatus.setObservationTime(observationTime);
+        try {
+            // 创建目录（如果不存在）
+            File directory = new File(directoryPath);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // 保存文件
+            File dest = new File(filepath);
+            file.transferTo(dest);
+
+            // 保存文件记录到数据库
+
+            modelFileStatus.setDealStatus("success");
+            modelFileStatusService.save(modelFileStatus);
+
+            return ResultTemplate.success("文件上传成功");
+
+        } catch (IOException e) {
+            log.error("文件保存失败", e);
+            modelFileStatus.setDealStatus("failed");
+            modelFileStatusService.save(modelFileStatus);
+            return ResultTemplate.fail("文件保存失败: " + e.getMessage());
+        }
     }
 
     public boolean userAlive(String userUid, String userName, String className) {
@@ -60,15 +108,16 @@ public class ModelFileStatusController {
         List<Map<String,Object>> userList= userService.selectUserByCondition(user);
         boolean flag=false;
         for (Map<String,Object> map : userList) {
-            if(Objects.equals(map.get("id"), userUid)){
+            if(Objects.equals(map.get("id").toString(), userUid)){
                 flag=true;
             }
         }
-        if(!flag){
+        if(flag){
             return true;
         }
         user.setId(Integer.valueOf(userUid));
         user.setMemo(className);
+
         return false;
     }
     @PreAuthorize("hasAnyAuthority('api_modelFile_dropByConditions')")
