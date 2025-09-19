@@ -1,6 +1,9 @@
 package com.ydsw.controller;
 
 import cn.hutool.json.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fengwenyi.api.result.ResultTemplate;
 import com.ydsw.domain.ModelStatus;
 import com.ydsw.domain.User;
@@ -18,18 +21,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.processing.FilerException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.ErrorManager;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -591,4 +597,301 @@ public class PythonExeController {
         }
         return ResultTemplate.success("预测已开始，请稍后查询。预计十分钟内完成。");
     }
+    //分析水域面积变化的接口
+    //@PreAuthorize("hasAnyAuthority('api_groupType_all')")
+    @PostMapping("/api/waterChange")
+    public ResultTemplate<Object> buildWaterChangeProcess(
+            @RequestParam("earlyFile") MultipartFile earlyFile,
+            @RequestParam("lateFile") MultipartFile lateFile) {
+
+        // 1. 校验文件是否为空
+        if (earlyFile == null || earlyFile.isEmpty()) {
+            logger.error("earlyFile 为空");
+            return ResultTemplate.fail("earlyFile 不能为空");
+        }
+        if (lateFile == null || lateFile.isEmpty()) {
+            logger.error("lateFile 为空");
+            return ResultTemplate.fail("lateFile 不能为空");
+        }
+
+        // 2. 创建保存目录
+        String baseDir = "D:\\heigankoumodel\\tudifugaifenlei\\shuju\\";
+        File dir = new File(baseDir);
+        if (!dir.exists() && !dir.mkdirs()) {
+            logger.error("临时目录创建失败: {}", baseDir);
+            return ResultTemplate.fail("临时目录创建失败，请联系管理员");
+        }
+
+        // 使用UUID生成唯一文件名，避免并发冲突
+        String uuid = UUID.randomUUID().toString();
+        File earlySave = new File(baseDir, "early_" + uuid + ".tif");
+        File lateSave = new File(baseDir, "late_" + uuid + ".tif");
+
+
+        try {
+            earlyFile.transferTo(earlySave);
+            lateFile.transferTo(lateSave);
+            logger.info("earlyFile 保存成功: {}", earlySave.getAbsolutePath());
+            logger.info("lateFile 保存成功: {}", lateSave.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("文件保存失败: {}", e.getMessage(), e);
+            return ResultTemplate.fail("文件上传失败，请稍后重试");
+        }
+
+        // 3. 调用 Python 脚本
+        StringBuilder output = new StringBuilder();
+        int exitCode = -1;
+        Process process = null;
+        BufferedReader reader = null;
+
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                    "D:\\Pycharm\\condaInstall\\envs\\yzm38\\python.exe",
+                    "E:\\陆浑湖\\waterchangeforuse\\waterchangeforuse.py",
+                    earlySave.getAbsolutePath(),
+                    lateSave.getAbsolutePath(),
+                    "3"
+            );
+            pb.redirectErrorStream(true);
+
+            process = pb.start();
+
+            reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+                logger.info("Python 输出: {}", line);
+            }
+
+            exitCode = process.waitFor();
+            logger.info("Python 进程退出码: {}", exitCode);
+
+            if (exitCode != 0) {
+                return ResultTemplate.fail("Python 脚本执行失败:\n" + output.toString());
+            }
+
+            // 解析Python输出的JSON
+            String jsonOutput = output.toString().trim();
+            logger.info("原始JSON输出: {}", jsonOutput);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode resultJson;
+
+            try {
+                resultJson = objectMapper.readTree(jsonOutput);
+
+                // 检查是否有错误字段
+                if (resultJson.has("error")) {
+                    logger.error("Python脚本返回错误: {}", resultJson.get("error").asText());
+                    return ResultTemplate.fail("Python脚本执行错误: " + resultJson.get("error").asText());
+                }
+
+                // 创建格式化的响应对象
+                Map<String, Object> formattedResponse = new LinkedHashMap<>();
+
+                // 添加文件路径信息
+                formattedResponse.put("stats_file", resultJson.get("stats_file").asText());
+                formattedResponse.put("image_file", resultJson.get("image_file").asText());
+                formattedResponse.put("tif_file", resultJson.get("tif_file").asText());
+
+                // 添加统计信息
+                JsonNode statsNode = resultJson.get("stats");
+                Map<String, Object> statsMap = new LinkedHashMap<>();
+
+                if (statsNode != null && statsNode.isObject()) {
+                    statsNode.fields().forEachRemaining(entry -> {
+                        JsonNode statItem = entry.getValue();
+                        Map<String, Object> statMap = new LinkedHashMap<>();
+                        statMap.put("pixels", statItem.get("pixels").asInt());
+                        statMap.put("area", statItem.get("area").asDouble());
+                        statMap.put("ratio", statItem.get("ratio").asDouble());
+                        statsMap.put(entry.getKey(), statMap);
+                    });
+                }
+
+                formattedResponse.put("stats", statsMap);
+
+                return ResultTemplate.success(formattedResponse);
+
+            } catch (JsonProcessingException e) {
+                logger.warn("Python输出不是标准JSON格式，返回原始文本: {}", e.getMessage());
+                // 如果不是JSON，返回原始文本
+                return ResultTemplate.success(jsonOutput);
+            }
+
+        } catch (IOException e) {
+            logger.error("执行 Python 脚本IO错误: {}", e.getMessage(), e);
+            return ResultTemplate.fail("执行 Python 脚本IO错误:\n" + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("执行 Python 脚本被中断: {}", e.getMessage(), e);
+            return ResultTemplate.fail("执行 Python 脚本被中断:\n" + e.getMessage());
+        } catch (Exception e) {
+            logger.error("执行 Python 脚本出错: {}", e.getMessage(), e);
+            return ResultTemplate.fail("执行 Python 脚本出错:\n" + e.getMessage());
+        } finally {
+            // 关闭资源
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    logger.warn("关闭读取器失败: {}", e.getMessage());
+                }
+            }
+            if (process != null) {
+                process.destroy();
+            }
+
+            // 删除临时文件（确保Python脚本执行完成后再删除）
+            boolean earlyDeleted = earlySave.exists() && earlySave.delete();
+            boolean lateDeleted = lateSave.exists() && lateSave.delete();
+
+            if (!earlyDeleted || !lateDeleted) {
+                logger.warn("临时文件删除失败: early={}, late={}", earlyDeleted, lateDeleted);
+            } else {
+                logger.info("临时文件已清理");
+            }
+        }
+    }
+
+    // 水域面积预测
+    @PostMapping("/api/waterExtract")
+    public ResultTemplate<Object> waterExtract(
+            @RequestParam(value = "sarFile", required = false) MultipartFile sarFile,
+            @RequestParam(value = "optFile", required = false) MultipartFile optFile,
+            @RequestParam(value = "model", defaultValue = "UNet") String model) {
+
+        // 1) 参数校验
+        if ((sarFile == null || sarFile.isEmpty()) && (optFile == null || optFile.isEmpty())) {
+            return ResultTemplate.fail("必须至少上传 SAR 或 Optical 影像");
+        }
+
+        // 针对模型的输入要求进一步校验
+        if ((model.equalsIgnoreCase("DeepLabV3") ||
+                model.equalsIgnoreCase("HRNet") ||
+                model.equalsIgnoreCase("SFNet")) &&
+                (sarFile == null || sarFile.isEmpty() || optFile == null || optFile.isEmpty())) {
+            return ResultTemplate.fail(model + " 模型必须同时上传 SAR 和 Optical 影像");
+        }
+
+        // 2) 临时文件目录
+        String baseDir = "C:\\Users\\俞笙\\Desktop\\水资源监测\\output_results\\";
+        File dir = new File(baseDir);
+        if (!dir.exists() && !dir.mkdirs()) {
+            return ResultTemplate.fail("临时目录创建失败");
+        }
+        // 创建 sar 和 optical 子目录
+        File sarDir = new File(baseDir + "sar\\");
+        File optDir = new File(baseDir + "optical\\");
+        if (!sarDir.exists() && !sarDir.mkdirs()) {
+            return ResultTemplate.fail("SAR 子目录创建失败");
+        }
+        if (!optDir.exists() && !optDir.mkdirs()) {
+            return ResultTemplate.fail("Optical 子目录创建失败");
+        }
+
+        String uuid = UUID.randomUUID().toString();
+        File sarSave = null, optSave = null;
+        String commonFileName = uuid + ".tif"; // 使用相同文件名
+        try {
+            if (sarFile != null && !sarFile.isEmpty()) {
+                sarSave = new File(sarDir, commonFileName);
+                sarFile.transferTo(sarSave);
+                System.out.println("保存 SAR 文件: " + sarSave.getAbsolutePath());
+            }
+            if (optFile != null && !optFile.isEmpty()) {
+                optSave = new File(optDir, commonFileName);
+                optFile.transferTo(optSave);
+                System.out.println("保存 Optical 文件: " + optSave.getAbsolutePath());
+            }
+        } catch (IOException e) {
+            return ResultTemplate.fail("文件保存失败: " + e.getMessage());
+        }
+
+        File outDir = new File(baseDir, "results_" + uuid);
+        if (!outDir.exists() && !outDir.mkdirs()) {
+            return ResultTemplate.fail("结果目录创建失败");
+        }
+
+        // 3) 构建 Python 命令
+        StringBuilder output = new StringBuilder();
+        int exitCode;
+        Process process = null;
+        try {
+            File pythonWorkDir = new File("C:\\Users\\俞笙\\Desktop\\水资源监测");
+
+            List<String> command = new ArrayList<>();
+            command.add("D:\\Pycharm\\condaInstall\\envs\\yzm38\\python.exe");
+            command.add("C:\\Users\\俞笙\\Desktop\\水资源监测\\core.py");
+            command.add("--model");
+            command.add(model);
+            if (sarSave != null) {
+                command.add("--sar");
+                command.add(sarSave.getAbsolutePath());
+            }
+            if (optSave != null) {
+                command.add("--opt");
+                command.add(optSave.getAbsolutePath());
+            }
+            command.add("--output");
+            command.add(outDir.getAbsolutePath());
+
+            System.out.println("执行命令: " + String.join(" ", command));
+
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.redirectErrorStream(true);
+            pb.directory(pythonWorkDir);  // 设置为脚本目录
+
+
+            Map<String, String> env = pb.environment();
+            env.put("PYTHONUNBUFFERED", "1");
+            env.put("PYTHONPATH", pythonWorkDir.getAbsolutePath());
+            env.put("PYTHONIOENCODING", "utf-8"); // 强制 Python 使用 UTF-8 编码输出
+
+            process = pb.start();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+
+            exitCode = process.waitFor();
+            if (exitCode != 0) {
+                return ResultTemplate.fail("Python 脚本执行失败:\n" + output);
+            }
+
+        } catch (Exception e) {
+            return ResultTemplate.fail("执行 Python 出错: " + e.getMessage());
+        } finally {
+            if (sarSave != null && sarSave.exists()) sarSave.delete();
+            if (optSave != null && optSave.exists()) optSave.delete();
+        }
+
+        // 4) 解析 Python 输出（JSON）
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String outputStr = output.toString().trim();
+            System.out.println("原始 Python 输出: " + outputStr);
+            // 提取 JSON 部分
+            Pattern jsonPattern = Pattern.compile("\\[\\{.*\\}\\]");
+            Matcher matcher = jsonPattern.matcher(outputStr);
+            if (!matcher.find()) {
+                return ResultTemplate.fail("无法从 Python 输出中提取 JSON: \n" + outputStr);
+            }
+            String jsonStr = matcher.group(0);
+            JsonNode root = mapper.readTree(jsonStr);
+
+            if (root.isObject() && root.has("error")) {
+                return ResultTemplate.fail("Python 错误: " + root.get("error").asText());
+            }
+            return ResultTemplate.success(root);
+        } catch (Exception e) {
+            return ResultTemplate.fail("解析 Python 输出失败: " + e.getMessage() + "\n原始输出: " + output.toString());
+        }
+    }
+
 }
+
