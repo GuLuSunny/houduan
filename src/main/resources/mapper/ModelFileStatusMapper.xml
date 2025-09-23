@@ -60,7 +60,7 @@
             <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
                 and create_userid=#{modelFileStatusClass.createUserid}
             </if>
-            and deal_status != "failed"
+            and deal_status != 'failed'
             and status=0;
         </where>
 

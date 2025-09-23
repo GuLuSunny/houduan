@@ -27,19 +27,26 @@
     </sql>
     <update id="updateModelStatus" parameterType="com.ydsw.domain.ModelStatus">
         UPDATE model_status
-        set usage_status = #{modelStatusClass.usageStatus}
+        SET usage_status = #{modelStatusClass.usageStatus}
+        WHERE id = (
+        SELECT id FROM (
+        SELECT id FROM model_status
         <where>
             <if test="modelStatusClass.modelName!=null and modelStatusClass.modelName.trim()!=''">
                 model_name = #{modelStatusClass.modelName}
             </if>
             <if test="modelStatusClass.userName!=null and modelStatusClass.userName.trim()!=''">
-                and user_name = #{modelStatusClass.userName}
+                AND user_name = #{modelStatusClass.userName}
             </if>
             <if test="modelStatusClass.createUserid!=null and modelStatusClass.createUserid.trim()!=''">
-                and create_userid=#{modelStatusClass.createUserid}
+                AND create_userid = #{modelStatusClass.createUserid}
             </if>
-            and status =0
+            AND status = 0
         </where>
+        ORDER BY id DESC
+        LIMIT 1
+        ) AS temp
+        )
     </update>
     <update id="dropModelLogs" >
         update model_status set status=1

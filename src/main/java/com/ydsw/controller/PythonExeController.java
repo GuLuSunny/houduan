@@ -461,119 +461,21 @@ public class PythonExeController {
         return ResultTemplate.success(data);
     }
 
-    // 2. 直接展示图片的接口
-    @PostMapping(value = "/api/modelFile/preview")
-    public ResponseEntity<Resource> getPreviewImage(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_prediction_preview.png";
-        Path filePath = Paths.get(ResultRootPath, fileName);
-        return getImageResponse(filePath, fileName);
-    }
 
-    // 3. 下载混淆矩阵文件的接口
-    @PostMapping("/api/modelFile/download/confusion_matrix")
-    public ResponseEntity<Resource> downloadConfusionMatrix(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_confusion_matrix.png";
-        Path filePath = Paths.get(ResultRootPath, fileName);
-        return getFileResponse(filePath, fileName, "image/png");
-    }
-
-    // 4. 下载分类统计文件的接口
-    @PostMapping("/api/modelFile/download/class_stats")
-    public ResponseEntity<Resource> downloadClassStats(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_class_stats.txt";
-        Path filePath = Paths.get(ResultRootPath, fileName);
-        return getFileResponse(filePath, fileName, "text/plain");
-    }
-
-    // 5. 下载单分类热力图的接口
-    @PostMapping("/api/modelFile/download/heatmaps_summary")
-    public ResponseEntity<Resource> downloadHeatmapsSummary(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String relativePath = "\\class_heatmaps_"+modelName;
-        String fileName="class_heatmaps_summary.png";
-        Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
-        return getFileResponse(filePath, fileName, "image/png");
-    }
-
-    // 6. 栅格文件下载
-    @PostMapping("/api/modelFile/download/tif")
-    public ResponseEntity<Resource> downloadTifFile(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_prediction.tif";
-        Path filePath = Paths.get(ResultRootPath, fileName);
-        return getFileResponse(filePath, fileName, "image/tiff");
-    }
-    private final String plantResultPath = "D:\\heigankoumodel\\products";
-
-    // 植被结果下载
-    @PostMapping("/api/modelFile/PlantDownload")
-    public ResponseEntity<Resource> downloadPlantFiles(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String type=  jsonObject.get("type").toString();
-        if(Objects.equals(type, "tif"))
-        {
-            String fileName = "200502_"+modelName +"."+ type;
-            Path filePath = Paths.get(plantResultPath, fileName);
-            return getFileResponse(filePath, fileName, "image/tiff");
-        } else if (Objects.equals(type, "png")) {
-            String fileName = "200502_"+modelName +"."+ type;
-            Path filePath = Paths.get(plantResultPath, fileName);
-            return getImageResponse(filePath, fileName);
-        }else{
-            return ResponseEntity.status(500).body(null);
-        }
-    }
-    // 通用方法：获取图片响应
-    private ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {
-        try {
-            File file = filePath.toFile();
-            if (!file.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-            Resource resource = new FileSystemResource(file);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
-                    .contentType(MediaType.IMAGE_PNG)
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
-
-    // 通用方法：获取文件下载响应
-    private ResponseEntity<Resource> getFileResponse(Path filePath, String fileName, String contentType) {
-        try {
-            File file = filePath.toFile();
-            if (!file.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-            Resource resource = new FileSystemResource(file);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
-
-    @PostMapping(value = "/api/model/getResultV2_preview")
-    public ResponseEntity<Resource> getResultV2_preview(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_predictAndgetResult.txt";
-        Path filePath = Paths.get(ResultRootPath, fileName);
-        return getFileResponse(filePath, fileName, "image/png");
-    }
-    @PostMapping(value = "/api/model/getResultV2_tif")
-    public ResponseEntity<Resource> getResultV2_tif(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_predictAndgetResult.txt";
-        Path filePath = Paths.get(ResultRootPath, fileName);
-        return getFileResponse(filePath, fileName, "image/tiff");
-    }
+//    @PostMapping(value = "/api/model/getResultV2_preview")
+//    public ResponseEntity<Resource> getResultV2_preview(@RequestBody JSONObject jsonObject) {
+//        String modelName = jsonObject.getStr("modelName");
+//        String fileName = modelName + "_predictAndgetResult.txt";
+//        Path filePath = Paths.get(ResultRootPath, fileName);
+//        return getFileResponse(filePath, fileName, "image/png");
+//    }
+//    @PostMapping(value = "/api/model/getResultV2_tif")
+//    public ResponseEntity<Resource> getResultV2_tif(@RequestBody JSONObject jsonObject) {
+//        String modelName = jsonObject.getStr("modelName");
+//        String fileName = modelName + "_predictAndgetResult.txt";
+//        Path filePath = Paths.get(ResultRootPath, fileName);
+//        return getFileResponse(filePath, fileName, "image/tiff");
+//    }
     @PostMapping(value = "/api/model/predictV2")
     public ResultTemplate<Object> predictV2(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
