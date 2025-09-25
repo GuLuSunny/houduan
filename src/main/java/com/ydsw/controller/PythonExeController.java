@@ -208,6 +208,7 @@ public class PythonExeController {
         String userName=jsonObject.getStr("userName");
         String createUserId=jsonObject.getStr("createUserId");
         String input_dir=jsonObject.getStr("input_dir");
+        String observationTime=jsonObject.getStr("observationTime");
         String funcitionSelected="null";
         funcitionSelected=funcitionSelected.replace("null","");
         String className="land";
@@ -254,7 +255,7 @@ public class PythonExeController {
         String processname="";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         String formattedDate = sdf.format(new Date());
-        String filename=userName+"-"+createUserId+"_"+formattedDate+"_HH";
+        String filename=userName+"-"+createUserId+"_"+observationTime+"_"+formattedDate+"_HH";
         switch (modelName){
             case "mlp", "rf", "svm", "xgb" -> processname = "predict";
             case "XGB","CNN" -> processname = "predictV2";
@@ -269,6 +270,7 @@ public class PythonExeController {
             modelFileStatus.setClassName(className);
             modelFileStatus.setUserName(userName);
             modelFileStatus.setCreateUserid(createUserId);
+            modelFileStatus.setObservationTime(observationTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
@@ -277,7 +279,7 @@ public class PythonExeController {
                 //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
                 filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
             }else {
-                return ResultTemplate.fail("请先提交文件！");
+                return ResultTemplate.fail("请先提交目标文件！");
             }
         }
         String filepath = codeRootPath + processname + ".py";
@@ -336,27 +338,91 @@ public class PythonExeController {
     @PreAuthorize("hasAnyAuthority('api_plantCover')")
     @PostMapping(value = "/api/plantCover")
     public ResultTemplate<Object> buildplantCoverProcessWithoutResult(@RequestBody JSONObject jsonObject) {
-        String processName=jsonObject.getStr("processName");
-        String filepathroot = "D:\\heigankoumodel\\code";
-        if(processName==null || processName.isEmpty()){
+        String modelName = jsonObject.getStr("modelName");
+        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
+        String filepathroot = "D:\\heigankoumodel\\code"+File.separator;
+        String color_map=jsonObject.getStr("color_map");
+        String userName=jsonObject.getStr("userName");
+        String createUserId=jsonObject.getStr("createUserId");
+        String input_dir=jsonObject.getStr("input_dir");
+        String funcitionSelected="null";
+        String className="plant";
+        String observationTime=jsonObject.getStr("observationTime");
+        User user=new User();
+        user.setUsername(userName);
+        user.setStatus(0);
+        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
+        boolean flag=false;
+        for (Map<String,Object> map : userList) {
+            if(Objects.equals(map.get("id").toString(), createUserId)){
+                flag=true;
+            }
+        }
+        if(!flag){
+            return ResultTemplate.fail("非法用户！");
+        }
+        user.setId(Integer.valueOf(createUserId));
+        user.setMemo(modelName);
+        if(!couldVisit(modelName))
+        {
+            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
+        }
+        if(preview_png.equals("True"))
+        {
+            funcitionSelected+="preview_png";
+        }
+
+//        if(funcitionSelected.startsWith(","))
+//        {
+//            funcitionSelected=funcitionSelected.substring(1);
+//        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String formattedDate = sdf.format(new Date());
+        if(modelName==null || modelName.isEmpty()){
             return ResultTemplate.fail("非法参数！");
         }
-        if(!processName.equals("RF") && !processName.equals("1DResnet"))
+        if(!modelName.equals("RF") && !modelName.equals("1DResnet"))
         {
-            if(!processName.equals("fanyan") && !processName.equals("fanyanNN"))
+            if(!modelName.equals("fanyan") && !modelName.equals("fanyanNN"))
             {
                 return ResultTemplate.fail("未知操作！");
             }
-            filepathroot+="反演code\\";
         }
-        String filePath=filepathroot+processName+".py";
+        Map<String, String> values = new HashMap<>();
+        String filePath=filepathroot+modelName+".py";
+
+        String filename="";
+
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        if(!mapList.isEmpty())
+        {
+            String filepath=mapList.get(0).get("filepath").toString();
+            filepath=filepath.replace("\\\\","\\");
+            //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
+            filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+        }else {
+            return ResultTemplate.fail("请先提交文件！");
+        }
+        values.put("preview_png",preview_png);
+        if(input_dir!=null) {
+            values.put("input_dir", input_dir);
+        }
+        values.put("createUserid",createUserId);
+        values.put("userName",userName);
+        values.put("createTime",new Date().toString());
         try {
-            ProcessBuilderUtils.executeInBackground(filePath);
+            ProcessBuilderUtils.executeInBackground(filePath,null,values);
         }catch (RuntimeException e){
             ResultTemplate.fail("程序执行失败！");
         }catch (Exception e){
             ResultTemplate.fail("未知错误!");
         }
+
 
         return ResultTemplate.success("程序已在后台运行!");
     }

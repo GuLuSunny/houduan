@@ -35,9 +35,9 @@ import java.util.*;
 public class ModelFileStatusController {
     @Autowired
     private ModelFileStatusService modelFileStatusService;
-    final private String FileRootDirPath="D:\\heigankoumodel\\fileTemp\\";
+    final private String FileRootDirPath="D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"";
 
-    private final String ResultRootPath = "D:\\heigankoumodel\\code\\result\\";
+    private final String ResultRootPath = "D:"+File.separator+"heigankoumodel"+File.separator+"code"+File.separator+"result"+File.separator+"";
     @Autowired
     private UserService userService;
 
@@ -116,6 +116,48 @@ public class ModelFileStatusController {
         }
     }
 
+    @PostMapping(value = "/api/model/getTrainData")
+    public ResultTemplate<Object> getTrainData(@RequestParam("dataset") MultipartFile dataset,
+                                               @RequestParam("createUserid") String userUid,
+                                               @RequestParam("userName") String userName,
+                                               @RequestParam("modelMame") String modelMame,
+                                               @RequestParam("className") String className) {
+        String filename = userName + "-" + userUid+"_"+modelMame+ "_train.tif";
+        String directoryPath = FileRootDirPath + File.separator + className;
+        String filepath = directoryPath + File.separator + filename;
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setCreateUserid(userUid);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setFilepath(filepath);
+        try {
+            // 创建目录（如果不存在）
+            modelFileStatus.setDealStatus("executing");
+            modelFileStatusService.save(modelFileStatus);
+            File directory = new File(directoryPath);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // 保存文件
+            File dest = new File(filepath);
+            dataset.transferTo(dest);
+
+            // 保存文件记录到数据库
+
+            modelFileStatus.setDealStatus("success");
+            modelFileStatusService.updateDealStatusViod(modelFileStatus);
+
+            return ResultTemplate.success("文件上传成功");
+
+        } catch (IOException e) {
+            log.error("文件保存失败", e);
+            modelFileStatus.setDealStatus("failed");
+            modelFileStatusService.save(modelFileStatus);
+            return ResultTemplate.fail("文件保存失败: " + e.getMessage());
+        }
+    }
+
     public boolean userAlive(String userUid, String userName, String className) {
         User user=new User();
         user.setUsername(userName);
@@ -135,6 +177,7 @@ public class ModelFileStatusController {
 
         return false;
     }
+
     @PreAuthorize("hasAnyAuthority('api_modelFile_dropByConditions')")
     @PostMapping(value = "/api/modelFile/dropByConditions")
     public ResultTemplate<Object> dropByConditions(@RequestBody JSONObject jsonObject) {
@@ -206,12 +249,16 @@ public class ModelFileStatusController {
         String modelName = jsonObject.getStr("modelName");
         String userName=jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
-        String fileName=modelName+"_prediction_preview";
+        String fileName=modelName+"_prediction_preview.png";
         String relativePath="";
         if(modelName.equals("XGB")||modelName.equals("CNN"))
         {
             String observationTime= jsonObject.getStr("observationTime");
             String className = jsonObject.getStr("className");
+            if(observationTime.isEmpty() || className.isEmpty())
+            {
+                return ResponseEntity.status(500).build();
+            }
             String year=observationTime.substring(0,4);
             String month=observationTime.substring(5,7);
             ModelFileStatus modelFileStatus=new ModelFileStatus();
@@ -224,12 +271,12 @@ public class ModelFileStatusController {
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace("\\\\","\\");
-                //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
-                String filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
 
-                relativePath =year+File.separator+month+File.separator+className+File.separator
-                        +filename.substring(filename.lastIndexOf('.'))+"_"+modelName+File.separator;
+                relativePath =year+File.separator+month+File.separator+
+                        filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
             }else {
                 return ResponseEntity.status(400).build();
             }
@@ -262,12 +309,12 @@ public class ModelFileStatusController {
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace("\\\\","\\");
-                //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
-                String filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
 
-                relativePath =year+File.separator+month+File.separator+className+File.separator
-                        +filename.substring(filename.lastIndexOf('.'))+"_"+modelName+File.separator;
+                relativePath =year+File.separator+month+File.separator+
+                        filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
             }else {
                 return ResponseEntity.status(400).build();
             }
@@ -301,12 +348,12 @@ public class ModelFileStatusController {
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace("\\\\","\\");
-                //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
-                String filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
 
-                relativePath =year+File.separator+month+File.separator+className+File.separator
-                        +filename.substring(filename.lastIndexOf('.'))+"_"+modelName+File.separator;
+                relativePath =year+File.separator+month+File.separator+
+                        filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
             }else {
                 return ResponseEntity.status(400).build();
             }
@@ -319,7 +366,7 @@ public class ModelFileStatusController {
     @PostMapping("/api/modelFile/download/heatmaps_summary")
     public ResponseEntity<Resource> downloadHeatmapsSummary(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
-        String relativePath = "\\class_heatmaps_"+modelName;
+        String relativePath = ""+File.separator+"class_heatmaps_"+modelName;
         String fileName="class_heatmaps_summary.png";
         Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
         return getFileResponse(filePath, fileName, "image/png");
@@ -349,12 +396,12 @@ public class ModelFileStatusController {
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace("\\\\","\\");
-                //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
-                String filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
 
-                relativePath =year+File.separator+month+File.separator+className+File.separator
-                        +filename.substring(filename.lastIndexOf('.'))+"_"+modelName+File.separator;
+                relativePath =year+File.separator+month+File.separator+
+                        filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
             }else {
                 return ResponseEntity.status(400).build();
             }
@@ -362,21 +409,22 @@ public class ModelFileStatusController {
         Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
         return getFileResponse(filePath, fileName, "image/tiff");
     }
-    private final String plantResultPath = "D:\\heigankoumodel\\products";
+    private final String plantResultPath = ResultRootPath;
 
     // 植被结果下载
     @PostMapping("/api/modelFile/PlantDownload")
     public ResponseEntity<Resource> downloadPlantFiles(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String type=  jsonObject.get("type").toString();
+        String pngType = (jsonObject.get("pngType").toString().isEmpty()?"simple":jsonObject.get("pngType").toString());
+        String fileName = "200502_"+modelName ;
+        Path filePath = Paths.get(plantResultPath, fileName);
         if(Objects.equals(type, "tif"))
         {
-            String fileName = "200502_"+modelName +"."+ type;
-            Path filePath = Paths.get(plantResultPath, fileName);
+            fileName+="."+type;
             return getFileResponse(filePath, fileName, "image/tiff");
         } else if (Objects.equals(type, "png")) {
-            String fileName = "200502_"+modelName +"."+ type;
-            Path filePath = Paths.get(plantResultPath, fileName);
+            fileName+="_"+pngType+"."+type;
             return getImageResponse(filePath, fileName);
         }else{
             return ResponseEntity.status(500).body(null);
@@ -415,4 +463,5 @@ public class ModelFileStatusController {
             return ResponseEntity.status(500).build();
         }
     }
+
 }
