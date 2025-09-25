@@ -89,7 +89,7 @@
         <where>
             <!-- 动态解析JSONObject中的条件 -->
             <if test="userClass.id != null">
-                AND id LIKE CONCAT('%', #{userClass.id},'%')
+                AND id = #{userClass.id}
             </if>
             <if test="userClass.username != null and userClass.username.trim() != ''">
                 AND username = #{userClass.username}

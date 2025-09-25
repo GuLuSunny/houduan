@@ -442,6 +442,8 @@ public class PythonExeController {
         }
         ModelStatus modelStatus = new ModelStatus();
         modelStatus.setModelName(user.getMemo());
+        modelStatus.setUserName(user.getUsername());
+        modelStatus.setCreateUserid(user.getId().toString());
         List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
         for (Map<String,Object> map : usages) {
             Date date=new Date();
@@ -453,16 +455,6 @@ public class PythonExeController {
                 if(Objects.equals(user.getId(), Integer.valueOf(map.get("createUserid").toString())) &&user.getUsername()==map.get("username"))
                 {
                     return true;
-                }
-                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-                if(fmt.format(date).equals(fmt.format((Date) map.get("createTime")))) {
-
-                    return false;
-                }
-                if(map.get("modelName")==modelStatus.getModelName())
-                {
-                    ModelStatus modelStatus1 = new ModelStatus(map);
-                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
                 }
 
             }
@@ -502,7 +494,7 @@ public class PythonExeController {
         Map<String, Object> response = new HashMap<>();
         String modelName = jsonObject.getStr("modelName");
         String userName = jsonObject.getStr("userName");
-        String createUserId = jsonObject.getStr("createUserId");
+        Integer createUserId = jsonObject.getInt("createUserId");
 
         // 验证modelName合法性
         if (!Arrays.asList("mlp", "rf", "xgb", "svm","XGB","CNN").contains(modelName)) {
@@ -510,7 +502,9 @@ public class PythonExeController {
         }
         User user = new User();
         user.setUsername(userName);
-        user.setId(Integer.parseInt(createUserId));
+        user.setId(createUserId);
+        user.setStatus(0);
+        user.setMemo(modelName);
         if(!couldVisit(user))
         {
             return ResultTemplate.fail("请先提交申请！");

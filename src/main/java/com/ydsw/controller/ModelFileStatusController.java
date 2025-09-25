@@ -46,7 +46,7 @@ public class ModelFileStatusController {
     @PreAuthorize("hasAnyAuthority('api_modelFile_upload')")
     @PostMapping(value = "/api/modelFile/upload")
     public ResultTemplate<Object> uploadModelFile(@RequestParam("tiffile") MultipartFile file,
-                                                  @RequestParam("createUserid") String userUid,
+                                                  @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
                                                   @RequestParam("observationTime")String observationTime) {
