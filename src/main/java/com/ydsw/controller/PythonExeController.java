@@ -5,10 +5,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fengwenyi.api.result.ResultTemplate;
+import com.ydsw.domain.ModelFileStatus;
 import com.ydsw.domain.ModelStatus;
 import com.ydsw.domain.User;
+import com.ydsw.service.ModelFileStatusService;
 import com.ydsw.service.ModelStatusService;
 import com.ydsw.service.UserService;
+import com.ydsw.service.impl.ModelFileStatusServiceImpl;
 import com.ydsw.utils.ProcessBuilderUtils;
 import org.apache.ibatis.annotations.Param;
 import org.geolatte.geom.M;
@@ -48,7 +51,14 @@ public class PythonExeController {
     private UserService userService;
 
     @Autowired
+    private ModelFileStatusService modelFileStatusService;
+    @Autowired
     private ModelStatusService modelStatusService;
+    
+    private final String codeRootPath = "D:\\heigankoumodel\\code\\";
+    private final String ResultRootPath = "D:\\heigankoumodel\\code\\result\\";
+    @Autowired
+    private ModelFileStatusServiceImpl modelFileStatusServiceImpl;
 
     @PreAuthorize("hasAnyAuthority('api_groupType')")
     @PostMapping(value = "/api/groupType")
@@ -57,7 +67,7 @@ public class PythonExeController {
         List<String> commons = jsonObject.getBeanList("commons", String.class);
         List<String> envValues = jsonObject.getBeanList("envValues", String.class);
         Map<String, String> values = new HashMap<>();
-        String filepath = "D:\\heigankoumodel\\tudifugaifenlei\\code\\" + processName + ".py";
+        String filepath = "D:\\heigankoumodel\\code\\" + processName + ".py";
         String fileRaletivePath = "..\\shuju\\";
         try {
             switch (processName) {
@@ -133,7 +143,7 @@ public class PythonExeController {
         }
 
         // 创建保存目录
-        String baseDir = "D:\\heigankoumodel\\tudifugaifenlei\\shuju\\";
+        String baseDir = "D:\\heigankoumodel\\shuju\\";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             return ResultTemplate.fail("目录创建失败！请联系管理员");
@@ -161,7 +171,7 @@ public class PythonExeController {
 
         try {
             for (String pyFileName : filenames) {
-                String filepath = "D:\\heigankoumodel\\tudifugaifenlei\\code\\" + pyFileName + ".py";
+                String filepath = codeRootPath + pyFileName + ".py";
                 switch (pyFileName) {
                     case "cluster", "特征筛选", "分离波段" -> ProcessBuilderUtils.executePythonScript(filepath);
                     case "特征生成" -> ProcessBuilderUtils.executeWithLogMonitoring(filepath);
@@ -191,16 +201,16 @@ public class PythonExeController {
     public ResultTemplate<Object> useModels(@RequestBody JSONObject jsonObject)
     {
         String modelName = jsonObject.getStr("modelName");
-        List<String> commons = jsonObject.getBeanList("commons", String.class);
-        List<String> envValues = jsonObject.getBeanList("envValues", String.class);
         String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
         String confusion_matrix=Objects.equals(jsonObject.getStr("confusion_matrix"), "False") ?"False" :"True";
         String class_stats=Objects.equals(jsonObject.getStr("class_stats"), "False") ?"False" :"True";
         String heatmaps_summary=Objects.equals(jsonObject.getStr("heatmaps_summary"), "False") ?"False" :"True";
-
+        String color_map=jsonObject.getStr("color_map");
         String userName=jsonObject.getStr("userName");
         String createUserId=jsonObject.getStr("createUserId");
-        String funcitionSelected=jsonObject.getStr("funcitionSelected");
+        String input_dir=jsonObject.getStr("input_dir");
+        String observationTime=jsonObject.getStr("observationTime");
+        String funcitionSelected="null";
         funcitionSelected=funcitionSelected.replace("null","");
         String className="land";
         if(preview_png.equals("True"))
@@ -244,17 +254,39 @@ public class PythonExeController {
         }
         Map<String, String> values = new HashMap<>();
         String processname="";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String formattedDate = sdf.format(new Date());
+        String filename=userName+"-"+createUserId+"_"+observationTime+"_"+formattedDate+"_HH";
         switch (modelName){
             case "mlp", "rf", "svm", "xgb" -> processname = "predict";
+            case "XGB","CNN" -> processname = "predictV2";
             default -> {
                 return ResultTemplate.fail("非法的参数名！");
             }
         }
-        String filepath = "D:\\heigankoumodel\\tudifugaifenlei\\code\\" + processname + ".py";
-        String fileRaletivePath = "..\\shuju\\";
+        if(processname.equals("predictV2"))
+        {
+            ModelFileStatus modelFileStatus=new ModelFileStatus();
+            modelFileStatus.setDealStatus("success");
+            modelFileStatus.setClassName(className);
+            modelFileStatus.setUserName(userName);
+            modelFileStatus.setCreateUserid(createUserId);
+            modelFileStatus.setObservationTime(observationTime);
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace("\\\\","\\");
+                //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
+                filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+            }else {
+                return ResultTemplate.fail("请先提交目标文件！");
+            }
+        }
+        String filepath = codeRootPath + processname + ".py";
         try {
             switch (modelName) {
-                case "mlp", "rf", "svm", "xgb" -> values.put("modelSelected",modelName);
+                case "mlp", "rf", "svm", "xgb","XGB","CNN" -> values.put("modelSelected",modelName);
                 default -> {
                     return ResultTemplate.fail("非法的参数名！");
                 }
@@ -263,6 +295,16 @@ public class PythonExeController {
             values.put("confusion_matrix",confusion_matrix);
             values.put("class_stats",class_stats);
             values.put("heatmaps_summary",heatmaps_summary);
+            values.put("createUserid",createUserId);
+            values.put("userName",userName);
+            values.put("createTime",new Date().toString());
+            values.put("filename",filename);
+            if(color_map!=null) {
+                values.put("color_map_str", color_map);
+            }
+            if(input_dir!=null) {
+                values.put("input_dir", input_dir);
+            }
             user.setAddress(funcitionSelected);
             user.setProductionCompany(className);
             ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
@@ -297,27 +339,91 @@ public class PythonExeController {
     @PreAuthorize("hasAnyAuthority('api_plantCover')")
     @PostMapping(value = "/api/plantCover")
     public ResultTemplate<Object> buildplantCoverProcessWithoutResult(@RequestBody JSONObject jsonObject) {
-        String processName=jsonObject.getStr("processName");
-        String filepathroot = "D:\\heigankoumodel\\plantCover\\3.Code\\";
-        if(processName==null || processName.isEmpty()){
+        String modelName = jsonObject.getStr("modelName");
+        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
+        String filepathroot = "D:\\heigankoumodel\\code"+File.separator;
+        String color_map=jsonObject.getStr("color_map");
+        String userName=jsonObject.getStr("userName");
+        String createUserId=jsonObject.getStr("createUserId");
+        String input_dir=jsonObject.getStr("input_dir");
+        String funcitionSelected="null";
+        String className="plant";
+        String observationTime=jsonObject.getStr("observationTime");
+        User user=new User();
+        user.setUsername(userName);
+        user.setStatus(0);
+        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
+        boolean flag=false;
+        for (Map<String,Object> map : userList) {
+            if(Objects.equals(map.get("id").toString(), createUserId)){
+                flag=true;
+            }
+        }
+        if(!flag){
+            return ResultTemplate.fail("非法用户！");
+        }
+        user.setId(Integer.valueOf(createUserId));
+        user.setMemo(modelName);
+        if(!couldVisit(modelName))
+        {
+            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
+        }
+        if(preview_png.equals("True"))
+        {
+            funcitionSelected+="preview_png";
+        }
+
+//        if(funcitionSelected.startsWith(","))
+//        {
+//            funcitionSelected=funcitionSelected.substring(1);
+//        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String formattedDate = sdf.format(new Date());
+        if(modelName==null || modelName.isEmpty()){
             return ResultTemplate.fail("非法参数！");
         }
-        if(!processName.equals("RF") && !processName.equals("1DResnet"))
+        if(!modelName.equals("RF") && !modelName.equals("1DResnet"))
         {
-            if(!processName.equals("fanyan") && !processName.equals("fanyanNN"))
+            if(!modelName.equals("fanyan") && !modelName.equals("fanyanNN"))
             {
                 return ResultTemplate.fail("未知操作！");
             }
-            filepathroot+="反演code\\";
         }
-        String filePath=filepathroot+processName+".py";
+        Map<String, String> values = new HashMap<>();
+        String filePath=filepathroot+modelName+".py";
+
+        String filename="";
+
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        if(!mapList.isEmpty())
+        {
+            String filepath=mapList.get(0).get("filepath").toString();
+            filepath=filepath.replace("\\\\","\\");
+            //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
+            filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+        }else {
+            return ResultTemplate.fail("请先提交文件！");
+        }
+        values.put("preview_png",preview_png);
+        if(input_dir!=null) {
+            values.put("input_dir", input_dir);
+        }
+        values.put("createUserid",createUserId);
+        values.put("userName",userName);
+        values.put("createTime",new Date().toString());
         try {
-            ProcessBuilderUtils.executeInBackground(filePath);
+            ProcessBuilderUtils.executeInBackground(filePath,null,values);
         }catch (RuntimeException e){
             ResultTemplate.fail("程序执行失败！");
         }catch (Exception e){
             ResultTemplate.fail("未知错误!");
         }
+
 
         return ResultTemplate.success("程序已在后台运行!");
     }
@@ -325,8 +431,20 @@ public class PythonExeController {
 
     private  boolean couldVisit(User user)
     {
+        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
+        boolean flag=false;
+        for (Map<String,Object> map : userList) {
+            if(Objects.equals(map.get("id").toString(), user.getId().toString())){
+                flag=true;
+            }
+        }
+        if(!flag){
+            return false;
+        }
         ModelStatus modelStatus = new ModelStatus();
         modelStatus.setModelName(user.getMemo());
+        modelStatus.setUserName(user.getUsername());
+        modelStatus.setCreateUserid(user.getId().toString());
         List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
         for (Map<String,Object> map : usages) {
             Date date=new Date();
@@ -338,16 +456,6 @@ public class PythonExeController {
                 if(Objects.equals(user.getId(), Integer.valueOf(map.get("createUserid").toString())) &&user.getUsername()==map.get("username"))
                 {
                     return true;
-                }
-                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-                if(fmt.format(date).equals(fmt.format((Date) map.get("createTime")))) {
-
-                    return false;
-                }
-                if(map.get("modelName")==modelStatus.getModelName())
-                {
-                    ModelStatus modelStatus1 = new ModelStatus(map);
-                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
                 }
 
             }
@@ -379,26 +487,25 @@ public class PythonExeController {
         }
         return true;
     }
-    private final String landResultPath = "D:\\heigankoumodel\\tudifugaifenlei\\result";
+    
 
     // 1. 获取文件URL的接口
     @PostMapping(value = "/api/modelFile/getLandResult")
     public ResultTemplate<Object> getLandResult(@RequestBody JSONObject jsonObject) {
         Map<String, Object> response = new HashMap<>();
         String modelName = jsonObject.getStr("modelName");
-        String preview_png = Objects.equals(jsonObject.getStr("preview_png"), "False") ? "False" : "True";
-        String confusion_matrix = Objects.equals(jsonObject.getStr("confusion_matrix"), "False") ? "False" : "True";
-        String class_stats = Objects.equals(jsonObject.getStr("class_stats"), "False") ? "False" : "True";
         String userName = jsonObject.getStr("userName");
-        String createUserId = jsonObject.getStr("createUserId");
+        Integer createUserId = jsonObject.getInt("createUserId");
 
         // 验证modelName合法性
-        if (!Arrays.asList("mlp", "rf", "xgb", "svm").contains(modelName)) {
+        if (!Arrays.asList("mlp", "rf", "xgb", "svm","XGB","CNN").contains(modelName)) {
             return ResultTemplate.fail("非法的模型名");
         }
         User user = new User();
         user.setUsername(userName);
-        user.setId(1);
+        user.setId(createUserId);
+        user.setStatus(0);
+        user.setMemo(modelName);
         if(!couldVisit(user))
         {
             return ResultTemplate.fail("请先提交申请！");
@@ -415,121 +522,21 @@ public class PythonExeController {
         return ResultTemplate.success(data);
     }
 
-    // 2. 直接展示图片的接口
-    @PostMapping(value = "/api/modelFile/preview")
-    public ResponseEntity<Resource> getPreviewImage(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_prediction_preview.png";
-        Path filePath = Paths.get(landResultPath, fileName);
-        return getImageResponse(filePath, fileName);
-    }
 
-    // 3. 下载混淆矩阵文件的接口
-    @PostMapping("/api/modelFile/download/confusion_matrix")
-    public ResponseEntity<Resource> downloadConfusionMatrix(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_confusion_matrix.png";
-        Path filePath = Paths.get(landResultPath, fileName);
-        return getFileResponse(filePath, fileName, "image/png");
-    }
-
-    // 4. 下载分类统计文件的接口
-    @PostMapping("/api/modelFile/download/class_stats")
-    public ResponseEntity<Resource> downloadClassStats(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_class_stats.txt";
-        Path filePath = Paths.get(landResultPath, fileName);
-        return getFileResponse(filePath, fileName, "text/plain");
-    }
-
-    // 5. 下载单分类热力图的接口
-    @PostMapping("/api/modelFile/download/heatmaps_summary")
-    public ResponseEntity<Resource> downloadHeatmapsSummary(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String relativePath = "\\class_heatmaps_"+modelName;
-        String fileName="class_heatmaps_summary.png";
-        Path filePath = Paths.get(landResultPath+relativePath, fileName);
-        return getFileResponse(filePath, fileName, "image/png");
-    }
-
-    // 6. 栅格文件下载
-    @PostMapping("/api/modelFile/download/tif")
-    public ResponseEntity<Resource> downloadTifFile(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_prediction.tif";
-        Path filePath = Paths.get(landResultPath, fileName);
-        return getFileResponse(filePath, fileName, "image/tiff");
-    }
-    private final String plantResultPath = "D:\\heigankoumodel\\plantCover\\products";
-
-    // 植被结果下载
-    @PostMapping("/api/modelFile/PlantDownload")
-    public ResponseEntity<Resource> downloadPlantFiles(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String type=  jsonObject.get("type").toString();
-        if(Objects.equals(type, "tif"))
-        {
-            String fileName = "200502_"+modelName +"."+ type;
-            Path filePath = Paths.get(plantResultPath, fileName);
-            return getFileResponse(filePath, fileName, "image/tiff");
-        } else if (Objects.equals(type, "png")) {
-            String fileName = "200502_"+modelName +"."+ type;
-            Path filePath = Paths.get(plantResultPath, fileName);
-            return getImageResponse(filePath, fileName);
-        }else{
-            return ResponseEntity.status(500).body(null);
-        }
-    }
-    // 通用方法：获取图片响应
-    private ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {
-        try {
-            File file = filePath.toFile();
-            if (!file.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-            Resource resource = new FileSystemResource(file);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
-                    .contentType(MediaType.IMAGE_PNG)
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
-
-    // 通用方法：获取文件下载响应
-    private ResponseEntity<Resource> getFileResponse(Path filePath, String fileName, String contentType) {
-        try {
-            File file = filePath.toFile();
-            if (!file.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-            Resource resource = new FileSystemResource(file);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
-
-    static String landV2Path ="D:\\heigankoumodel\\landV2";
-    String landV2ResultPath ="D:\\heigankoumodel\\landV2\\result";
-    @PostMapping(value = "/api/model/getResultV2_preview")
-    public ResponseEntity<Resource> getResultV2_preview(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_predictAndgetResult.txt";
-        Path filePath = Paths.get(landResultPath, fileName);
-        return getFileResponse(filePath, fileName, "image/png");
-    }
-    @PostMapping(value = "/api/model/getResultV2_tif")
-    public ResponseEntity<Resource> getResultV2_tif(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_predictAndgetResult.txt";
-        Path filePath = Paths.get(landResultPath, fileName);
-        return getFileResponse(filePath, fileName, "image/tiff");
-    }
+//    @PostMapping(value = "/api/model/getResultV2_preview")
+//    public ResponseEntity<Resource> getResultV2_preview(@RequestBody JSONObject jsonObject) {
+//        String modelName = jsonObject.getStr("modelName");
+//        String fileName = modelName + "_predictAndgetResult.txt";
+//        Path filePath = Paths.get(ResultRootPath, fileName);
+//        return getFileResponse(filePath, fileName, "image/png");
+//    }
+//    @PostMapping(value = "/api/model/getResultV2_tif")
+//    public ResponseEntity<Resource> getResultV2_tif(@RequestBody JSONObject jsonObject) {
+//        String modelName = jsonObject.getStr("modelName");
+//        String fileName = modelName + "_predictAndgetResult.txt";
+//        Path filePath = Paths.get(ResultRootPath, fileName);
+//        return getFileResponse(filePath, fileName, "image/tiff");
+//    }
     @PostMapping(value = "/api/model/predictV2")
     public ResultTemplate<Object> predictV2(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
@@ -577,7 +584,7 @@ public class PythonExeController {
                 return ResultTemplate.fail("非法的参数名！");
             }
         }
-        String filepath = landV2Path+"\\" + processname + ".py";
+        String filepath = codeRootPath + processname + ".py";
         try {
             switch (modelName) {
                 case "XGB" -> values.put("modelSelected",modelName);
