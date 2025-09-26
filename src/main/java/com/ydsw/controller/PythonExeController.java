@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.processing.FilerException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -892,6 +893,92 @@ public class PythonExeController {
             return ResultTemplate.fail("解析 Python 输出失败: " + e.getMessage() + "\n原始输出: " + output.toString());
         }
     }
+    /**
+     * 获取预测结果预览图片代理接口
+     * 按照 /api/modelFile/preview 的格式设计
+     */
+    @PostMapping(value = "/api/proxy/preview")
+    public ResponseEntity<byte[]> getPreviewImageProxy(@RequestBody JSONObject jsonObject) {
+        try {
+            String imagePath = jsonObject.getStr("imagePath");
 
+            if (imagePath == null || imagePath.trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            Path filePath = Paths.get(imagePath);
+            if (!Files.exists(filePath)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // 使用字节数组确保完整传输
+            byte[] imageBytes = Files.readAllBytes(filePath);
+            String fileName = filePath.getFileName().toString();
+            String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+
+            MediaType mediaType;
+            switch (extension) {
+                case "png":
+                    mediaType = MediaType.IMAGE_PNG;
+                    break;
+                case "jpg":
+                case "jpeg":
+                    mediaType = MediaType.IMAGE_JPEG;
+                    break;
+                case "gif":
+                    mediaType = MediaType.IMAGE_GIF;
+                    break;
+                default:
+                    mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(mediaType);
+            headers.setContentLength(imageBytes.length);
+            headers.setCacheControl("no-cache");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(imageBytes);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping(value = "/api/proxy/download")
+    public ResponseEntity<byte[]> downloadTifFileProxy(@RequestBody JSONObject jsonObject) {
+        try {
+            String filePath = jsonObject.getStr("filePath");
+            String customFileName = jsonObject.getStr("fileName");
+
+            if (filePath == null || filePath.trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            Path path = Paths.get(filePath);
+            if (!Files.exists(path)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // 使用字节数组确保完整传输
+            byte[] fileBytes = Files.readAllBytes(path);
+            String fileName = customFileName != null ? customFileName : path.getFileName().toString();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("image/tiff"));
+            headers.setContentDispositionFormData("attachment", fileName);
+            headers.setContentLength(fileBytes.length); // 重要：设置正确的文件大小
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(fileBytes);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
 
