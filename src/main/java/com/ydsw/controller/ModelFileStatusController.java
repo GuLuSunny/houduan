@@ -65,7 +65,7 @@ public class ModelFileStatusController {
             return ResultTemplate.fail("文件类型错误！");
         }
 
-        if (!couldUpload(className)) {
+        if (couldUpload(className)) {
             return ResultTemplate.fail("服务器繁忙，请稍后重试");
         }
 
@@ -415,6 +415,12 @@ public class ModelFileStatusController {
     @PostMapping("/api/modelFile/PlantDownload")
     public ResponseEntity<Resource> downloadPlantFiles(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
+        if(modelName.equals("fanyan"))
+        {
+            modelName="RF";
+        } else if (modelName.equals("fanyanNN")) {
+            modelName="GA_1DResNet";
+        }
         String type=  jsonObject.get("type").toString();
         String pngType = (jsonObject.get("pngType").toString().isEmpty()?"simple":jsonObject.get("pngType").toString());
         String fileName = "200502_"+modelName ;
@@ -422,13 +428,23 @@ public class ModelFileStatusController {
         if(Objects.equals(type, "tif"))
         {
             fileName+="."+type;
+            filePath =Paths.get(plantResultPath, fileName);
             return getFileResponse(filePath, fileName, "image/tiff");
         } else if (Objects.equals(type, "png")) {
             fileName+="_"+pngType+"."+type;
+            filePath =  Paths.get(plantResultPath, fileName);
             return getImageResponse(filePath, fileName);
         }else{
             return ResponseEntity.status(500).body(null);
         }
+    }
+    @PostMapping("/api/model/plantTrainResult")
+    public ResponseEntity<Resource> downloadPlantTrainResult(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String userName = jsonObject.getStr("userName");
+        String createUserId = jsonObject.getStr("createUserId");
+        String observationTime= jsonObject.getStr("observationTime");
+        return ResponseEntity.status(404).build();
     }
     // 通用方法：获取图片响应
     private ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {

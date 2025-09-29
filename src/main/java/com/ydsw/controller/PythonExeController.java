@@ -381,13 +381,12 @@ public class PythonExeController {
         if(modelName==null || modelName.isEmpty()){
             return ResultTemplate.fail("非法参数！");
         }
-        if(!modelName.equals("RF") && !modelName.equals("1DResnet"))
+
+        if(!modelName.equals("fanyan") && !modelName.equals("fanyanNN"))
         {
-            if(!modelName.equals("fanyan") && !modelName.equals("fanyanNN"))
-            {
-                return ResultTemplate.fail("未知操作！");
-            }
+            return ResultTemplate.fail("未知操作！");
         }
+
         Map<String, String> values = new HashMap<>();
         String filePath=filepathroot+modelName+".py";
 

@@ -370,9 +370,11 @@ public class ProcessBuilderUtils {
         if (Objects.equals(status, "executing")) {
             modelStatus.setCreateTime(new Date());
             modelStatusService.save(modelStatus);
+            System.out.println(modelStatus);
             return;
         }
         modelStatusService.updateModelStatus(modelStatus);
+        System.out.println(modelStatus);
     }
 
     /**
