@@ -40,7 +40,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();///api/login
         log.info(requestURI);
-        if (requestURI.equals("/api/login") || requestURI.equals("/api/register")||requestURI.equals("/api/logout")) {//登录或者注册、注销直接放行
+        if (requestURI.equals("/api/login") || requestURI.equals("/api/register")||requestURI.equals("/api/logout")||requestURI.equals("/api/proxy/download")||requestURI.equals("/api/proxy/preview")) {//登录或者注册、注销直接放行
             filterChain.doFilter(request, response);//放行
             return;
         } else {

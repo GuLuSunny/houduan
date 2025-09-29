@@ -82,7 +82,7 @@ public class SecurityConfiguration {
         //配置请求拦截方式
         //permitAll：随意访问
         http
-                .authorizeHttpRequests((authz) -> authz.requestMatchers("/api/login","/api/logout","/api/register").permitAll()
+                .authorizeHttpRequests((authz) -> authz.requestMatchers("/api/login","/api/logout","/api/register","/api/proxy/download","/api/proxy/preview").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());
