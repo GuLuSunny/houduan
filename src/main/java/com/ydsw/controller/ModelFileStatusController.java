@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -438,14 +439,42 @@ public class ModelFileStatusController {
             return ResponseEntity.status(500).body(null);
         }
     }
+
+    //获取植被模型文件
     @PostMapping("/api/model/plantTrainResult")
     public ResponseEntity<Resource> downloadPlantTrainResult(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String userName = jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
-        String observationTime= jsonObject.getStr("observationTime");
-        return ResponseEntity.status(404).build();
+        String observationTime = jsonObject.getStr("observationTime");
+        String type = jsonObject.getStr("type");
+        String fileName = "";
+        String filePath = ResultRootPath + "model" + File.separator;
+        int step = jsonObject.getInt("DownloadStep");
+
+        // 验证类型
+        if (!type.equals("train")) {
+            return ResponseEntity.status(400).build();
+        }
+
+        // 根据模型类型和步骤确定文件名
+        if (modelName.equals("1DResnet")) {
+            if (step == 0) {
+                fileName = observationTime + "_1dresnet.h5";
+            } else {
+                fileName = observationTime + "_1dresnet_scaler.pkl";
+            }
+        } else if (modelName.equals("RFV2")) {
+            fileName = observationTime + "_RF.pkl";
+        } else {
+            return ResponseEntity.status(500).build();
+        }
+
+        Path path = Paths.get(filePath).resolve(fileName).normalize();
+        // 使用封装的通用方法返回文件
+        return getFileResponse(path, fileName,"application/octet-stream");
     }
+
     // 通用方法：获取图片响应
     private ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {
         try {
@@ -473,11 +502,46 @@ public class ModelFileStatusController {
             Resource resource = new FileSystemResource(file);
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\"")
                     .body(resource);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
     }
+    // 通用方法：获取文件下载响应（自动检测Content-Type）
+    private ResponseEntity<Resource> getFileDownloadResponse(String filePath, String fileName) {
+        try {
+            Path path = Paths.get(filePath).resolve(fileName).normalize();
+            File file = path.toFile();
 
+            if (!file.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resource resource = new FileSystemResource(file);
+
+            // 自动检测文件类型
+            String contentType = Files.probeContentType(path);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+            headers.add(HttpHeaders.CONTENT_TYPE, contentType);
+            headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+            headers.add("Pragma", "no-cache");
+            headers.add("Expires", "0");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(file.length())
+                    .body(resource);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
 }
