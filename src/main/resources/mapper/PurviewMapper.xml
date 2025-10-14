@@ -44,13 +44,13 @@
         <where>
             <!-- 动态解析JSONObject中的条件 -->
             <if test="purview.rightinfo != null and purview.rightinfo.trim() != ''">
-                AND rightinfo LIKE CONCAT('%', #{purview.rightinfo},'%')
+                AND rightinfo LIKE '%' || #{purview.rightinfo} || '%'
             </if>
             <if test="purview.rightEng != null and purview.rightEng.trim() != ''">
-                AND right_eng LIKE CONCAT('%', #{purview.rightEng},'%')
+                AND right_eng LIKE '%' || #{purview.rightEng} || '%'
             </if>
             <if test="purview.rightApi != null and purview.rightApi.trim() != ''">
-                AND right_api LIKE CONCAT('%', #{purview.rightApi},'%')
+                AND right_api LIKE '%' || #{purview.rightApi} || '%'
             </if>
         AND status='0'
         </where>

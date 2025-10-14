@@ -87,10 +87,10 @@
         from tb_flow
         <where>
             <if test="tbFlowClass.observationTime != null and tbFlowClass.observationTime.trim() != ''">
-                and observation_time LIKE CONCAT('%', #{tbFlowClass.observationTime}, '%')
+                and observation_time LIKE '%' || #{tbFlowClass.observationTime},  || '%'
             </if>
             <if test="tbFlowClass.filepath != null and tbFlowClass.filepath.trim() != ''">
-                and filename LIKE CONCAT('%', #{tbFlowClass.filepath}, '%')
+                and filename LIKE '%' || #{tbFlowClass.filepath},  || '%'
             </if>
             <if test="tbFlowClass.deviceId != null">
                 AND device_id = #{tbFlowClass.deviceId}
@@ -101,7 +101,7 @@
     </select>
     <select id="findDataPageByCondition" resultType="java.util.Map">
         SELECT
-        group_concat( tbFlow.id ORDER BY tbFlow.filepath ASC SEPARATOR ',' ) AS id,
+        STRING_AGG( tbFlow.id ,',' ORDER BY tbFlow.filepath ) AS id,
         tbFlow.observation_time AS "observationTime",
         tbFlow.filepath AS "filepath",
         tbFlow.data_introduction AS "dataIntroduction" ,
@@ -113,10 +113,10 @@
         tb_flow AS "tbFlow"
         <where>
             <if test="time != null and time.trim() !=''">
-                AND observation_time LIKE CONCAT('%', #{time},'%')
+                AND observation_time LIKE '%' || #{time} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND filename LIKE CONCAT('%', #{filepath},'%')
+                AND filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="opens != null">
                 AND open=#{opens}
@@ -155,10 +155,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND filename LIKE CONCAT('%', #{filepath},'%')
+                AND filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="deviceId != null and deviceId.trim() != ''">
                 AND device_id = #{deviceId}
@@ -177,10 +177,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND filename LIKE CONCAT('%', #{filepath},'%')
+                AND filename LIKE '%' || #{filepath} || '%'
             </if>
             and status=0
         </where>

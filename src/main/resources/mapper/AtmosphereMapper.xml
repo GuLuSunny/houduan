@@ -57,22 +57,22 @@
                 </foreach>
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="observationTimeBegin != null and observationTimeBegin.trim() !='' and observationTimeEnd!= null and observationTimeEnd.trim() !=''">
                 AND  observation_time between #{observationTimeBegin} and #{observationTimeEnd}
             </if>
             <if test="type != null and type.trim() !=''">
-                AND  `type` LIKE CONCAT('%', #{type},'%')
+                AND  `type` LIKE '%' || #{type} || '%'
             </if>
             <if test="typeDetail != null and typeDetail.trim() !=''">
-                AND  type_detail LIKE CONCAT('%', #{typeDetail},'%')
+                AND  type_detail LIKE '%' || #{typeDetail} || '%'
             </if>
             <if test="deviceId != null and deviceId.trim() !=''">
-                AND  device_id LIKE CONCAT('%', #{deviceId},'%')
+                AND  device_id LIKE '%' || #{deviceId} || '%'
             </if>
             <if test="deviceName != null and deviceName.trim() !=''">
-                AND  device_name LIKE CONCAT('%', #{deviceName},'%')
+                AND  device_name LIKE '%' || #{deviceName} || '%'
             </if>
             and status = 0
         </where>
@@ -91,10 +91,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND  observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="deviceId != null and deviceId.trim() != ''">
                 AND device_id = #{deviceId}
@@ -113,10 +113,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND  observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             and status=0
         </where>
@@ -126,7 +126,7 @@
         SELECT * FROM atmosphere
         <where>
             <if test="time != null and time.trim() != ''">
-                and observation_time LIKE CONCAT('%',#{time},'%')
+                and observation_time LIKE '%' ||#{time} || '%'
             </if>
             <if test="device != null and device.trim() != ''">
                 AND device_id = #{device}
@@ -144,7 +144,7 @@
         SELECT *  FROM atmosphere
                   <where>
                       <if test="time != null and time.trim() != ''">
-                          and observation_time LIKE CONCAT('%',#{time},'%')
+                          and observation_time LIKE '%' ||#{time} || '%'
                       </if>
                       <if test="device != null and device.trim() != ''">
                           AND device_id = #{device}
@@ -169,10 +169,10 @@
         FROM atmosphere
         <where>
             <if test="atmosphereClass.observationTime != null and atmosphereClass.observationTime.trim() != ''">
-                and observation_time LIKE CONCAT('%', #{atmosphereClass.observationTime}, '%')
+                and observation_time LIKE '%' || #{atmosphereClass.observationTime},  || '%'
             </if>
             <if test="atmosphereClass.filepath!=null and atmosphereClass.filepath.trim()!=''">
-                and filename  LIKE CONCAT('%',#{atmosphereClass.filepath},'%')
+                and filename  LIKE '%' ||#{atmosphereClass.filepath} || '%'
             </if>
             <if test="atmosphereClass.deviceId != null">
                 AND device_id = #{atmosphereClass.deviceId}
@@ -183,7 +183,7 @@
     </select>
     <select id="findDataPageByCondition" resultType="java.util.Map">
         SELECT
-        group_concat( atmosphere.id ORDER BY atmosphere.filename SEPARATOR ',' ) AS id,
+        STRING_AGG( atmosphere.id ,',' ORDER BY atmosphere.filename) AS id,
         atmosphere.observation_time AS "observationTime",
         atmosphere.filename as filename,
         atmosphere.data_introduction AS "dataIntroduction" ,
@@ -191,18 +191,18 @@
         atmosphere.contact_phone AS "contactPhone" ,
         atmosphere.production_unit AS "productionUnit",
         atmosphere.open
-        FROM atmosphere
+        FROM atmosphere group by atmosphere.observation_time, atmosphere.filename
         <where>
             <if test="time != null and time.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{time},'%')
+                AND  atmosphere.observation_time LIKE '%' || #{time} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  atmosphere.filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="opens != null">
-                AND  open=#{opens}
+                AND  atmosphere.open=#{opens}
             </if>
-            and atmosphere.filename IS NOT NULL and atmosphere.status=0
+            and atmosphere.filename IS NOT NULL and atmosphere.status=0, atmosphere.data_introduction, atmosphere.user_name, atmosphere.contact_phone, atmosphere.production_unit
         </where>
         GROUP BY
         atmosphere.filename,

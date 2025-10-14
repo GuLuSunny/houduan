@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.VegetationMonitoringIndicatorsMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.VegetationMonitoringIndicators">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="vegetationSpecies" column="vegetation_species" jdbcType="VARCHAR"/>
+            <result property="leafAreaIndex" column="leaf_area_index" jdbcType="VARCHAR"/>
+            <result property="vegetationMoistureContent" column="vegetation_moisture_content" jdbcType="VARCHAR"/>
+            <result property="chlorophyllContent" column="chlorophyll_content" jdbcType="VARCHAR"/>
+            <result property="biomass" column="biomass" jdbcType="VARCHAR"/>
+            <result property="carbonNitrogenRatio" column="carbon_nitrogen_ratio" jdbcType="VARCHAR"/>
+            <result property="deviceId" column="device_id" jdbcType="INTEGER"/>
+            <result property="investigationTime" column="investigation_time" jdbcType="VARCHAR"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="VARCHAR"/>
+            <result property="createUserid" column="create_userid" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="memo" column="memo" jdbcType="VARCHAR"/>
+            <result property="contactPhone" column="contact_phone" jdbcType="VARCHAR"/>
+            <result property="contactAddress" column="contact_address" jdbcType="VARCHAR"/>
+            <result property="productionUnit" column="production_unit" jdbcType="VARCHAR"/>
+            <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
+            <result property="open" column="open" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,vegetation_species,leaf_area_index,
+        vegetation_moisture_content,chlorophyll_content,biomass,
+        carbon_nitrogen_ratio,device_id,investigation_time,
+        user_name,type,create_userid,
+        status,create_time,memo,
+        contact_phone,contact_address,production_unit,
+        contact_email,open
+    </sql>
+
+    <update id="deleteById" >
+        update ydsw.vegetation_monitoring_indicators set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  investigation_time LIKE '%' || #{dateSelected} || '%'
+            </if>
+            and status=0
+        </where>
+    </update>
+
+    <select id="selectByTime" resultType="com.ydsw.domain.VegetationMonitoringIndicators">
+        SELECT * FROM vegetation_monitoring_indicators
+        <where>
+            <if test="time != null and time.trim() != ''">
+                and investigation_time LIKE '%' ||#{time} || '%'
+            </if>
+            <if test="plant != null and plant.trim() != ''">
+                AND vegetation_species = #{plant}
+            </if>
+            <if test="deviceId != null">
+                and device_id=#{deviceId}
+            </if>
+            and status = 0
+        </where>
+    </select>
+    <select id="getAtmosphereDatasPage" resultType="java.util.Map">
+        select * from vegetation_monitoring_indicators
+        <where>
+            <if test="vegetationMonitoringIndicatorsClass.investigationTime!=null and vegetationMonitoringIndicatorsClass.investigationTime.trim()!=''">
+                and investigation_time LIKE '%' ||#{vegetationMonitoringIndicatorsClass.investigationTime} || '%'
+            </if>
+            and status = 0
+            order by investigation_time
+        </where>
+    </select>
+    <select id="fetchObservationTimeByDay" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(investigation_time, 10) FROM vegetation_monitoring_indicators where status=0
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(investigation_time, 7) FROM vegetation_monitoring_indicators where status=0
+    </select>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(investigation_time, 4) FROM vegetation_monitoring_indicators where status=0
+    </select>
+</mapper>

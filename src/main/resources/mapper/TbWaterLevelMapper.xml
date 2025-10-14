@@ -87,10 +87,10 @@
                 </foreach>
             </if>
             <if test="observationTime!=null and observationTime.trim()!=''">
-                and observation_time LIKE CONCAT('%',#{observationTime},'%')
+                and observation_time LIKE '%' ||#{observationTime} || '%'
             </if>
             <if test="filepath!=null and filepath.trim()!=''">
-                and filename LIKE CONCAT('%',#{filepath},'%')
+                and filename LIKE '%' ||#{filepath} || '%'
             </if>
             and status=0
         </where>
@@ -101,10 +101,10 @@
         from tb_water_level
         <where>
             <if test="tbWaterLevelClass.observationTime!=null and tbWaterLevelClass.observationTime.trim()!=''">
-                and observation_time LIKE CONCAT('%',#{tbWaterLevelClass.observationTime},'%')
+                and observation_time LIKE '%' ||#{tbWaterLevelClass.observationTime} || '%'
             </if>
             <if test="tbWaterLevelClass.filepath!=null and tbWaterLevelClass.filepath.trim()!=''">
-                and filename  LIKE CONCAT('%',#{tbWaterLevelClass.filepath},'%')
+                and filename  LIKE '%' ||#{tbWaterLevelClass.filepath} || '%'
             </if>
             <if test="tbWaterLevelClass.deviceId!=null">
                 and device_id=#{tbWaterLevelClass.deviceId}
@@ -115,7 +115,7 @@
     </select>
     <select id="findDataPageByCondition" resultType="java.util.Map">
         SELECT
-        group_concat( TbWaterLevel.id ORDER BY TbWaterLevel.filepath SEPARATOR ',' ) AS id,
+        STRING_AGG( TbWaterLevel.id ,',' ORDER BY TbWaterLevel.filepath ) AS id,
         TbWaterLevel.observation_time "observationTime",
         TbWaterLevel.filepath,
         TbWaterLevel.data_introduction "dataIntroduction" ,
@@ -124,18 +124,18 @@
         TbWaterLevel.production_unit "productionUnit",
         TbWaterLevel.open
         FROM
-        tb_water_level AS TbWaterLevel
+        tb_water_level AS TbWaterLevel group by TbWaterLevel.observation_time, TbWaterLevel.filepath
         <where>
             <if test="time != null and time.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{time},'%')
+                AND  observation_time LIKE '%' || #{time} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="opens != null">
                 AND  open=#{opens}
             </if>
-            and TbWaterLevel.filepath IS NOT NULL and TbWaterLevel.status=0
+            and TbWaterLevel.filepath IS NOT NULL and TbWaterLevel.status=0, TbWaterLevel.user_name, TbWaterLevel.data_introduction, TbWaterLevel.contact_phone, TbWaterLevel.production_unit
         </where>
         GROUP BY
         TbWaterLevel.filepath,
@@ -157,10 +157,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND  observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             and status=0
         </where>

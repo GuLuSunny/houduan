@@ -33,13 +33,13 @@
                 </foreach>
             </if>
             <if test="userClass.username != null and userClass.username.trim() != ''">
-                AND username LIKE CONCAT('%', #{userClass.username},'%')
+                AND username LIKE '%' || #{userClass.username} || '%'
             </if>
             <if test="userClass.tel != null and userClass.tel.trim() != ''">
-                AND tel LIKE CONCAT('%', #{userClass.tel},'%')
+                AND tel LIKE '%' || #{userClass.tel} || '%'
             </if>
             <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
-                AND production_company LIKE CONCAT('%', #{userClass.productionCompany},'%')
+                AND production_company LIKE '%' || #{userClass.productionCompany} || '%'
             </if>
         </where>
     </update>
@@ -73,13 +73,13 @@
         <where>
             <!-- 动态解析JSONObject中的条件 -->
             <if test="userClass.username != null and userClass.username.trim() != ''">
-                AND username LIKE CONCAT('%', #{userClass.username},'%')
+                AND username LIKE '%' || #{userClass.username} || '%'
             </if>
             <if test="userClass.tel != null and userClass.tel.trim() != ''">
-                AND tel LIKE CONCAT('%', #{userClass.tel},'%')
+                AND tel LIKE '%' || #{userClass.tel} || '%'
             </if>
             <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
-                AND productionCompany LIKE CONCAT('%', #{userClass.productionCompany},'%')
+                AND productionCompany LIKE '%' || #{userClass.productionCompany} || '%'
             </if>
         </where>
     </select>
@@ -95,10 +95,10 @@
                 AND username = #{userClass.username}
             </if>
             <if test="userClass.tel != null and userClass.tel.trim() != ''">
-                AND tel LIKE CONCAT('%', #{userClass.tel},'%')
+                AND tel LIKE '%' || #{userClass.tel} || '%'
             </if>
             <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
-                AND productionCompany LIKE CONCAT('%', #{userClass.productionCompany},'%')
+                AND productionCompany LIKE '%' || #{userClass.productionCompany} || '%'
             </if>
             and status=#{userClass.status}
         </where>

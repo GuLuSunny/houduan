@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.FullscreenBirdMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.FullscreenBird">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="imgsrc" column="imgsrc" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="nameLatin" column="name_latin" jdbcType="VARCHAR"/>
+            <result property="resideType" column="reside_type" jdbcType="VARCHAR"/>
+            <result property="protectionLevel" column="protection_level" jdbcType="VARCHAR"/>
+            <result property="morphologicalFeature" column="morphological_feature" jdbcType="VARCHAR"/>
+            <result property="livingHabit" column="living_habit" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,imgsrc,name,
+        name_latin,reside_type,protection_level,
+        morphological_feature,living_habit
+    </sql>
+</mapper>

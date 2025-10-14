@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.BirdMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.Bird">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="speciesId" column="species_id" jdbcType="INTEGER"/>
+            <result property="familyId" column="family_id" jdbcType="INTEGER"/>
+            <result property="orderId" column="order_id" jdbcType="INTEGER"/>
+            <result property="birdLatin" column="bird_latin" jdbcType="VARCHAR"/>
+            <result property="birdFeature" column="bird_feature" jdbcType="VARCHAR"/>
+            <result property="birdLive" column="bird_live" jdbcType="VARCHAR"/>
+            <result property="birdType" column="bird_type" jdbcType="VARCHAR"/>
+            <result property="birdEpi" column="bird_EPI" jdbcType="VARCHAR"/>
+            <result property="filepath" column="filepath" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,species_id,family_id,
+        order_id,bird_latin,bird_feature,
+        bird_live,bird_type,bird_EPI,
+        filepath
+    </sql>
+    <select id="selectAll" resultType="java.util.Map">
+        SELECT distinct bird.id as id,family_id as "familyId",order_id as "orderId",
+                        bird.species_id as "speciesId",bird.bird_latin as "birdLatin",
+                        bird_feature as "birdFeature",bird_live as "birdLive",bird_type as "birdType",
+                        bird_EPI as "birdEPI",filepath from  bird
+        order by bird.id
+    </select>
+
+    <select id="selectById" resultType="java.util.Map">
+        SELECT <include refid="Base_Column_List"/> FROM bird WHERE id = #{id}
+    </select>
+
+    <!--    <update id="deleteById">-->
+    <!--        update bird-->
+    <!--        set status = 1-->
+    <!--        <where>-->
+    <!--            <if test="idList != null and idList.size()>0">-->
+    <!--                and id in-->
+    <!--                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">-->
+    <!--                    #{item}-->
+    <!--                </foreach>-->
+    <!--            </if>-->
+    <!--            and status=0-->
+    <!--        </where>-->
+    <!--    </update>-->
+
+    <select id="selectPage" resultType="java.util.Map">
+        SELECT distinct bird.id as id,family_id as "familyId",order_id as "orderId",
+        bird.species_id as "speciesId",bird.bird_latin as "birdLatin",
+        bird_feature as "birdFeature",bird_live as "birdLive",bird_type as "birdType",
+        bird_EPI as "birdEPI",filepath from  bird
+        <where>
+            <if test="speciesIds != null and speciesIds.size()>0">
+                and species_id in
+                <foreach collection="speciesIds" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="familyId!=null">
+                and family_id =#{familyId}
+            </if>
+            <if test="orderId!=null">
+                and order_id =#{orderId}
+            </if>
+        </where>
+        order by bird.id
+    </select>
+</mapper>

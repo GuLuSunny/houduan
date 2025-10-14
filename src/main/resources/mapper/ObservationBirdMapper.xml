@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.ObservationBirdMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.ObservationBird">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="orderId" column="order_id" jdbcType="INTEGER"/>
+            <result property="familyId" column="family_id" jdbcType="INTEGER"/>
+            <result property="speciesId" column="species_id" jdbcType="INTEGER"/>
+            <result property="watchPiId" column="watch_pi_id" jdbcType="INTEGER"/>
+            <result property="observationTime" column="observation_time" jdbcType="VARCHAR"/>
+            <result property="observationPeriodBegin" column="observation_period_begin" jdbcType="VARCHAR"/>
+            <result property="observationPeriodEnd" column="observation_period_end" jdbcType="VARCHAR"/>
+            <result property="observationAddress" column="observation_address" jdbcType="VARCHAR"/>
+            <result property="habitatType" column="habitat_type" jdbcType="VARCHAR"/>
+            <result property="number" column="number" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="weather" column="weather" jdbcType="VARCHAR"/>
+            <result property="memo" column="memo" jdbcType="VARCHAR"/>
+            <result property="status" column="status" javaType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,order_id,family_id,
+        species_id,watch_pi_id,observation_time,observation_period_begin,
+        observation_period_end,
+        observation_address,habitat_type,number,
+       create_time,weather,
+        memo,status
+    </sql>
+    <select id="selectIdFromTable" resultType="java.util.Map">
+        select id from watch_point_info
+        <where>
+            <if test="watchGroup!=null and watchGroup.trim()!=null">
+                and `group` = #{watchGroup}
+            </if>
+        </where>
+    </select>
+    <select id="selectIdBySpecies" resultType="java.util.Map" parameterType="java.lang.String">
+        select s.id as sid,f.id as fid,o.id as oid from species s join ydsw.family f on
+            f.id = s.family_id join biological_order o on o.id = f.order_id
+        <where>
+            <if test="speciesName!=null and speciesName.trim()!=''">
+                and s.name LIKE '%' ||#{speciesName} || '%';
+            </if>
+            <if test="familyName!=null and familyName.trim()!=''">
+                and f.name LIKE '%' ||#{familyName} || '%';
+            </if>
+            <if test="orderName!=null and orderName.trim()!=''">
+                and o.name LIKE '%' ||#{orderName} || '%';
+            </if>
+        </where>
+    </select>
+    <select id="selectPage" resultType="java.util.Map">
+        select id,order_id as orderId,family_id as familyId,
+               species_id as speciesId,watch_pi_id as watchPiId,
+               number,observation_time as observationTime,observation_period_begin as observationPeriodBegin,
+               observation_period_end as observationPeriodEnd,
+               observation_address as observationAddress,habitat_type as habitatType,
+               weather from observation_bird
+        <where>
+            <if test="observationBirdClass.orderId!=null">
+                and order_id=#{observationBirdClass.orderId}
+            </if>
+            <if test="observationBirdClass.familyId!=null">
+                and family_id=#{observationBirdClass.familyId}
+            </if>
+            <if test="observationBirdClass.speciesId!=null">
+                and species_id=#{observationBirdClass.speciesId}
+            </if>
+            <if test="observationBirdClass.observationTime!=null and observationBirdClass.observationTime.trim()!=''">
+                and observation_time = #{observationBirdClass.observationTime}
+            </if>
+            <if test="observationBirdClass.observationPeriodBegin!=null and observationBirdClass.observationPeriodBegin.trim()!='' and observationBirdClass.observationPeriodEnd!=null and observationBirdClass.observationPeriodEnd.trim()!=''">
+                and observation_period_begin >= #{observationBirdClass.observationPeriodBegin}
+                and observation_period_end &lt;= #{observationBirdClass.observationPeriodEnd}
+            </if>
+            <if test="observationBirdClass.observationAddress!=null and observationBirdClass.observationAddress.trim()!=''">
+                and observation_address=#{observationBirdClass.observationAddress}
+            </if>
+            <if test="observationBirdClass.watchPiId!=null">
+                and watch_pi_id=#{observationBirdClass.watchPiId}
+            </if>
+            <if test="observationBirdClass.habitatType!=null and observationBirdClass.habitatType.trim()!=''">
+                and habitat_type=#{observationBirdClass.habitatType}
+            </if>
+            and status=0
+        </where>
+    </select>
+
+    <select id="selectNameById" resultType="java.util.Map">
+        select s.name as sname,s.name_latin as nameLatin,s.constant_id as constantId,
+               o.name as oname,f.name as fname from species s join ydsw.family f on f.id = s.family_id
+                   join biological_order o on o.id = f.order_id
+        <where>
+            <if test="sid!=null">
+                and s.id=#{sid}
+
+            </if>
+            <if test="fid!=null">
+                and f.id=#{fid}
+            </if>
+            <if test="oid!=null">
+                and o.id=#{oid}
+            </if>
+        </where>
+    </select>
+    <select id="selectGroupById" resultType="java.util.Map">
+        select `group` as groupName from ydsw.watch_point_info
+        <where>
+            <if test="groupId!=null">
+                and id=#{groupId}
+            </if>
+        </where>
+    </select>
+    <select id="selectAllByDay" resultType="java.util.Map" parameterType="java.lang.String">
+        select  order_id as orderId,family_id as familyId,
+               species_id as speciesId,STRING_AGG(watch_pi_id ,',' order by species_id ) as watchPiId,
+               STRING_AGG(number::text ,','order by species_id  ) as number,
+                STRING_AGG(weather, ',' order by species_id ) as weather from ydsw.observation_bird
+            <where>
+                <if test="observationTime!=null and observationTime.trim()!=''">
+                    and observation_time = #{observationTime}
+                </if>
+                <if test="observationTimeBegin!=null and observationTimeBegin.trim()!='' and observationTimeEnd!=null and observationTimeEnd.trim()!=''">
+                    and observation_time between #{observationTimeBegin} and #{observationTimeEnd}
+                </if>
+                <if test="observationPeriodBegin!=null and observationPeriodBegin.trim()!='' and observationPeriodEnd!=null and observationPeriodEnd.trim()!=''">
+                    and observation_period_begin >= #{observationPeriodBegin}
+                    and observation_period_end &lt;= #{observationPeriodEnd}
+                </if>
+                and status=0
+                group by order_id,familyId,species_id
+                order by order_id,familyId,species_id
+            </where>
+    </select>
+    <select id="selectAllSpecies" resultType="java.util.Map">
+        SELECT
+            (SELECT public.family.name FROM public.family WHERE family.id = species.family_id) as "familyName",
+            STRING_AGG(species.name, ',' ORDER BY species.id) as "speciesName",
+            STRING_AGG(species.name_latin, ',' ORDER BY species.id) as "speciesNameLatin",
+            STRING_AGG(species.id::text, ',' ORDER BY species.id) as "speciesId"
+        FROM species
+        GROUP BY family_id
+    </select>
+    <select id="selectAllFamily" resultType="java.util.Map">
+        SELECT
+            (SELECT public.biological_order.name FROM public.biological_order
+             WHERE order_id = biological_order.id) as "orderName",
+            STRING_AGG(public.family.name, ',' ORDER BY public.family.id) as "familyName",
+            STRING_AGG(public.family.id::text, ',' ORDER BY public.family.id) as "familyId"
+        FROM public.family
+        GROUP BY order_id
+    </select>
+    <select id="selectAllOrder" resultType="java.util.Map">
+        select biological_order.name,id
+        from public.biological_order order by biological_order.id
+    </select>
+    <select id="selectMaxTimeBigin" resultType="java.util.Map">
+        select distinct max(observation_time) as "observationTime" from public.observation_bird
+    </select>
+    <select id="selectAllGroup" resultType="java.util.Map">
+        select STRING_AGG( "group",  ',' order by  id) as "groupName",
+               STRING_AGG(id ::text,',' order by id  ) as "groupId"
+        from public.watch_point_info
+    </select>
+    <select id="selectObservationTimes" resultType="java.util.Map">
+        select distinct observation_time as "observationTime" from public.observation_bird
+    </select>
+
+    <update id="deleteWaterLevelByIdList" >
+        update public.observation_bird
+        set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="observationBirdClass.orderId!=null">
+                and order_id=#{observationBirdClass.orderId}
+            </if>
+            <if test="observationBirdClass.familyId!=null">
+                and family_id=#{observationBirdClass.familyId}
+            </if>
+            <if test="observationBirdClass.speciesId!=null">
+                and species_id=#{observationBirdClass.speciesId}
+            </if>
+            <if test="observationBirdClass.observationTime!=null and observationBirdClass.observationTime.trim()!=''">
+                and observation_time = #{observationBirdClass.observationTime}
+            </if>
+            <if test="observationBirdClass.observationPeriodBegin!=null and observationBirdClass.observationPeriodBegin.trim()!='' and observationBirdClass.observationPeriodEnd!=null and observationBirdClass.observationPeriodEnd.trim()!=''">
+                and observation_period_begin >= #{observationBirdClass.observationPeriodBegin}
+                and observation_period_end &lt;= #{observationBirdClass.observationPeriodEnd}
+            </if>
+            <if test="observationBirdClass.observationAddress!=null and observationBirdClass.observationAddress.trim()!=''">
+                and observation_address=#{observationBirdClass.observationAddress}
+            </if>
+            <if test="observationBirdClass.watchPiId!=null">
+                and watch_pi_id=#{observationBirdClass.watchPiId}
+            </if>
+            <if test="observationBirdClass.habitatType!=null and observationBirdClass.habitatType.trim()!=''">
+                and habitat_type=#{observationBirdClass.habitatType}
+            </if>
+            and status=0
+        </where>
+    </update>
+</mapper>

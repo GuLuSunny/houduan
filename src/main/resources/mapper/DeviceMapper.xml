@@ -45,10 +45,10 @@
         <where>
             <!-- 动态解析JSONObject中的条件 -->
             <if test="device.deviceName != null and device.deviceName.trim() != ''">
-                AND device_name LIKE CONCAT('%', #{device.deviceName},'%')
+                AND device_name LIKE '%' || #{device.deviceName} || '%'
             </if>
             <if test="device.type != null and device.type.trim() != ''">
-                AND type LIKE CONCAT('%', #{device.type},'%')
+                AND type LIKE '%' || #{device.type} || '%'
             </if>
         </where>
     </select>

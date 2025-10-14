@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.SpeciesMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.Species">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="nameLatin" column="name_latin" jdbcType="VARCHAR"/>
+            <result property="familyId" column="family_id" jdbcType="VARCHAR"/>
+            <result property="constantId" column="constant_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name,name_latin,
+        family_id,constant_id
+    </sql>
+</mapper>

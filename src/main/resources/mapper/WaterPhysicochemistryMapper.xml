@@ -47,7 +47,7 @@
         SELECT * FROM water_physicochemistry
         <where>
                 <if test="time != null and time.trim() != ''">
-                    AND observation_time LIKE CONCAT('%', #{time}, '%')
+                    AND observation_time LIKE '%' || #{time},  || '%'
                 </if>
                 <if test="device != null and device.trim() != ''">
                     AND device_id = #{device}
@@ -63,10 +63,10 @@
         from water_physicochemistry
             <where>
                 <if test="waterPhysicochemistry.observationTime != null and waterPhysicochemistry.observationTime.trim() != ''">
-                    and observation_time LIKE CONCAT('%', #{waterPhysicochemistry.observationTime}, '%')
+                    and observation_time LIKE '%' || #{waterPhysicochemistry.observationTime},  || '%'
                 </if>
                 <if test="waterPhysicochemistry.filepath!=null and waterPhysicochemistry.filepath.trim()!=''">
-                    and filename  LIKE CONCAT('%',#{waterPhysicochemistry.filepath},'%')
+                    and filename  LIKE '%' ||#{waterPhysicochemistry.filepath} || '%'
                 </if>
                 <if test="waterPhysicochemistry.deviceId != null and waterPhysicochemistry.deviceId.trim() != ''">
                     AND device_id = #{waterPhysicochemistry.deviceId}
@@ -81,7 +81,7 @@
     </select>
     <select id="findDataPageByCondition" resultType="java.util.Map">
         SELECT
-        group_concat( waterPhysicochemistry.id ORDER BY waterPhysicochemistry.filepath ASC SEPARATOR ',' ) AS id,
+        STRING_AGG( waterPhysicochemistry.id,  ','ORDER BY waterPhysicochemistry.filepath ASC ) AS id,
         waterPhysicochemistry.observation_time  AS "observationTime",
         waterPhysicochemistry.filepath AS filepath,
         waterPhysicochemistry.data_introduction AS "dataIntroduction" ,
@@ -93,10 +93,10 @@
         water_physicochemistry AS "waterPhysicochemistry"
         <where>
             <if test="time != null and time.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{time},'%')
+                AND  observation_time LIKE '%' || #{time} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="opens != null">
                 AND  open=#{opens}
@@ -132,10 +132,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND  observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="deviceId != null and deviceId.trim() != ''">
                 AND device_id = #{deviceId}
@@ -154,10 +154,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND  observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             and status=0
         </where>

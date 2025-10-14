@@ -32,7 +32,7 @@
     </sql>
     <select id="findDataPageByCondition" resultType="java.util.Map">
         SELECT
-        group_concat( SateliteRemoteSensing.id ORDER BY SateliteRemoteSensing.filepath SEPARATOR ',' ) AS id,
+        STRING_AGG( SateliteRemoteSensing.id ,',' ORDER BY SateliteRemoteSensing.filepath  ) AS id,
         SateliteRemoteSensing.filepath AS filepath,
         SateliteRemoteSensing.data_introduction AS "dataIntroduction" ,
         SateliteRemoteSensing.user_name AS "userName" ,
@@ -43,13 +43,13 @@
         FROM satelite_remote_sensing as "SateliteRemoteSensing"
         <where>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="opens != null">
                 AND  open=#{opens}
             </if>
             <if test="time != null and time.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{time},'%')
+                AND  observation_time LIKE '%' || #{time} || '%'
             </if>
             and SateliteRemoteSensing.filepath IS NOT NULL and SateliteRemoteSensing.status=0
         </where>
@@ -68,10 +68,10 @@
         from satelite_remote_sensing
         <where>
             <if test="sateliteRemoteSensingClass.observationTime!=null and sateliteRemoteSensingClass.observationTime.trim()!=''">
-                and observation_time LIKE CONCAT('%',#{sateliteRemoteSensingClass.observationTime},'%')
+                and observation_time LIKE '%' ||#{sateliteRemoteSensingClass.observationTime} || '%'
             </if>
             <if test="sateliteRemoteSensingClass.filepath!=null and sateliteRemoteSensingClass.filepath.trim()!=''">
-                and filename  LIKE CONCAT('%',#{sateliteRemoteSensingClass.filepath},'%')
+                and filename  LIKE '%' ||#{sateliteRemoteSensingClass.filepath} || '%'
             </if>
             <if test="sateliteRemoteSensingClass.deviceName!=null and sateliteRemoteSensingClass.deviceName.trim()!=''">
                 and device_name=#{sateliteRemoteSensingClass.deviceName}
@@ -94,10 +94,10 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND  observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             and status=0
         </where>
@@ -112,13 +112,13 @@
                 </foreach>
             </if>
             <if test="dateSelected != null and dateSelected.trim() !=''">
-                AND  observation_time LIKE CONCAT('%', #{dateSelected},'%')
+                AND  observation_time LIKE '%' || #{dateSelected} || '%'
             </if>
             <if test="type != null and type.trim() !=''">
-                AND  type LIKE CONCAT('%', #{type},'%')
+                AND  type LIKE '%' || #{type} || '%'
             </if>
             <if test="filepath != null and filepath.trim() !=''">
-                AND  filename LIKE CONCAT('%', #{filepath},'%')
+                AND  filename LIKE '%' || #{filepath} || '%'
             </if>
             <if test="deviceName != null and deviceName.trim() != ''">
                 AND device_name = #{deviceName}

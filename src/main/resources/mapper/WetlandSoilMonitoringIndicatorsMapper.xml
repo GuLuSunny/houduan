@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.WetlandSoilMonitoringIndicatorsMapper">
+    
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.WaterPhysicochemistry">
+        <id property="id" column="id" />
+        <result property="deviceId" column="device_id" />
+        <result property="waterTemperature" column="water_temperature" />
+        <result property="ph" column="ph" />
+        <result property="turbidity" column="turbidity" />
+        <result property="conductivity" column="conductivity" />
+        <result property="dissolvedOxygen" column="dissolved_oxygen" />
+        <result property="transparency" column="transparency" />
+        <result property="codmn" column="codmn" />
+        <result property="tss" column="tss" />
+        <result property="tn" column="tn" />
+        <result property="tp" column="tp" />
+        <result property="chlorophyll" column="chlorophyll" />
+        <result property="observationTime" column="observation_time" />
+        <result property="createTime" column="create_time" />
+        <result property="type" column="type" />
+        <result property="userName" column="user_name" />
+        <result property="filepath" column="filepath" />
+        <result property="filename" column="filename" />
+        <result property="createUserid" column="create_userid" />
+        <result property="status" column="status" />
+        <result property="contactPhone" column="contact_phone" />
+        <result property="contactAddress" column="contact_address" />
+        <result property="productionUnit" column="production_unit" />
+        <result property="contactEmail" column="contact_email" />
+        <result property="open" column="open" />
+        <result property="dataIntroduction" column="data_introduction" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,device_id,water_temperature,ph,turbidity,conductivity,
+        dissolved_oxygen,transparency,codmn,tss,tn,
+        tp,chlorophyll,observation_time,create_time,type,
+        user_name,filepath,filename,create_userid,status,
+        contact_phone,contact_address,production_unit,contact_email,open,
+        data_introduction
+    </sql>
+
+    <update id="deleteById" >
+        update ydsw.wetland_soil_monitoring_indicators set status = 1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="dateSelected != null and dateSelected.trim() !=''">
+                AND  investigation_time LIKE '%' || #{dateSelected} || '%'
+            </if>
+            and status=0
+        </where>
+    </update>
+    <select id="selectByTimeAndPlant" resultType="com.ydsw.domain.WetlandSoilMonitoringIndicators">
+        SELECT * FROM wetland_soil_monitoring_indicators
+        <where>
+            <if test="wetlandSoilMonitoringIndicatorsClass.investigationTime!=null and wetlandSoilMonitoringIndicatorsClass.investigationTime.trim()!=''">
+                and investigation_time LIKE '%' ||#{wetlandSoilMonitoringIndicatorsClass.investigationTime} || '%'
+            </if>
+            <if test="wetlandSoilMonitoringIndicatorsClass.depthRange !=null and wetlandSoilMonitoringIndicatorsClass.depthRange.trim() != ''">
+                and depth_range = #{wetlandSoilMonitoringIndicatorsClass.depthRange}
+            </if>
+            <if test="wetlandSoilMonitoringIndicatorsClass.deviceId !=null">
+                and device_id = #{wetlandSoilMonitoringIndicatorsClass.deviceId}
+            </if>
+            and status = 0
+        </where>
+    </select>
+    <select id="getAtmosphereDatasPage" resultType="java.util.Map">
+        select * from wetland_soil_monitoring_indicators
+        <where>
+            <if test="wetlandSoilMonitoringIndicatorsClass.investigationTime!=null and wetlandSoilMonitoringIndicatorsClass.investigationTime.trim()!=''">
+                and investigation_time LIKE '%' ||#{wetlandSoilMonitoringIndicatorsClass.investigationTime} || '%'
+            </if>
+            and status = 0
+            order by investigation_time
+        </where>
+    </select>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(investigation_time, 4) FROM wetland_soil_monitoring_indicators where status=0
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(investigation_time, 7) FROM wetland_soil_monitoring_indicators where status=0
+    </select>
+    <select id="fetchObservationTimeByDay" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(investigation_time, 10) FROM wetland_soil_monitoring_indicators where status=0
+    </select>
+</mapper>

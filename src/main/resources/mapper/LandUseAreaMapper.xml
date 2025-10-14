@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.LandUseAreaMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.LandUseArea">
+        <id property="id" column="id" jdbcType="INTEGER"/>
+        <result property="landUseId" column="land_use_id" jdbcType="INTEGER"/>
+        <result property="landName" column="land_name" jdbcType="VARCHAR"/>
+        <result property="investigationTime" column="investigation_time" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="createUserid" column="create_userid" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="withinScopeLine" column="within_scope_line" jdbcType="DECIMAL"/>
+        <result property="outsideScopeLine10" column="outside_scope_line_10" jdbcType="DECIMAL"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="memo" column="memo" jdbcType="VARCHAR"/>
+        <result property="contactPhone" column="contact_phone" jdbcType="VARCHAR"/>
+        <result property="contactAddress" column="contact_address" jdbcType="VARCHAR"/>
+        <result property="productionUnit" column="production_unit" jdbcType="VARCHAR"/>
+        <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
+        <result property="open" column="open" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,land_use_id,land_name,
+        investigation_time,user_name,type,
+        create_userid,status,within_scope_line,
+        outside_scope_line_10,create_time,memo,
+        contact_phone,contact_address,production_unit,
+        contact_email,open
+    </sql>
+</mapper>

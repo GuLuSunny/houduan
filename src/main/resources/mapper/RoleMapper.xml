@@ -32,10 +32,10 @@
         <where>
             <!-- 动态解析JSONObject中的条件 -->
             <if test="roleClass.roleinfo != null and roleClass.roleinfo.trim() != ''">
-                AND roleInfo LIKE CONCAT('%', #{roleClass.roleinfo},'%')
+                AND roleInfo LIKE '%' || #{roleClass.roleinfo} || '%'
             </if>
             <if test="roleClass.roleEng != null and roleClass.roleEng.trim() != ''">
-                AND roleEng LIKE CONCAT('%', #{roleClass.roleEng},'%')
+                AND roleEng LIKE '%' || #{roleClass.roleEng} || '%'
             </if>
         </where>
     </select>
