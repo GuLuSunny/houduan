@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 @Component
 public class ProcessBuilderUtils {
     // 可配置的Python路径
-    private static String pythonPath = "D:\\Ananconda3\\envs\\heigangkouenv\\python.exe";
+    private static String pythonPath = "/user/miniconda3/envs/heigangkouenv/bin/python";
 
     // 默认编码（可根据系统调整）
     private static String defaultEncoding = "GBK";

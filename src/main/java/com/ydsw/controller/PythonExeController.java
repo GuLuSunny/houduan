@@ -55,8 +55,11 @@ public class PythonExeController {
     @Autowired
     private ModelStatusService modelStatusService;
     
-    private final String codeRootPath = "D:\\heigankoumodel\\code\\";
-    private final String ResultRootPath = "D:\\heigankoumodel\\code\\result\\";
+    private final String codeRootPath = "/usr/soft/heigangkoumodel/code/";
+    private final String ResultRootPath = "/usr/soft/heigangkoumodel/code/result/";
+    final private String FileRootDirPath="/usr/soft/heigangkoumodel/fileTemp/";
+    private final String waterChangePYPath="/usr/soft/heigangkoumodel/code/waterchangeforuse.py";
+    private final String condaPYPath="/user/miniconda3/envs/heigangkouenv/bin/python";
     @Autowired
     private ModelFileStatusServiceImpl modelFileStatusServiceImpl;
 
@@ -67,8 +70,8 @@ public class PythonExeController {
         List<String> commons = jsonObject.getBeanList("commons", String.class);
         List<String> envValues = jsonObject.getBeanList("envValues", String.class);
         Map<String, String> values = new HashMap<>();
-        String filepath = "D:\\heigankoumodel\\code\\" + processName + ".py";
-        String fileRaletivePath = "..\\shuju\\";
+        String filepath = codeRootPath + processName + ".py";
+        String fileRaletivePath = ".."+File.separator+"shuju"+File.separator;
         try {
             switch (processName) {
                 case "cluster" -> {
@@ -143,7 +146,7 @@ public class PythonExeController {
         }
 
         // 创建保存目录
-        String baseDir = "D:\\heigankoumodel\\shuju\\";
+        String baseDir = "D:/heigankoumodel/shuju/";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             return ResultTemplate.fail("目录创建失败！请联系管理员");
@@ -277,8 +280,9 @@ public class PythonExeController {
             {
                 String filepath=mapList.get(0).get("filepath").toString();
                 filepath=filepath.replace("\\\\","\\");
-                //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
-                filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+                filepath=filepath.replace("//","/");
+                //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
+                filename=filepath.replace(FileRootDirPath,"");
             }else {
                 return ResultTemplate.fail("请先提交目标文件！");
             }
@@ -341,7 +345,6 @@ public class PythonExeController {
     public ResultTemplate<Object> buildplantCoverProcessWithoutResult(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
-        String filepathroot = "D:\\heigankoumodel\\code"+File.separator;
         String color_map=jsonObject.getStr("color_map");
         String userName=jsonObject.getStr("userName");
         String createUserId=jsonObject.getStr("createUserId");
@@ -389,7 +392,7 @@ public class PythonExeController {
         }
 
         Map<String, String> values = new HashMap<>();
-        String filePath=filepathroot+modelName+".py";
+        String filePath= codeRootPath +modelName+".py";
 
         String filename="";
 
@@ -403,8 +406,9 @@ public class PythonExeController {
         {
             String filepath=mapList.get(0).get("filepath").toString();
             filepath=filepath.replace("\\\\","\\");
-            //filename=className+"\\"+filepath.substring(filepath.lastIndexOf("\\")+1);
-            filename=filepath.replace("D:\\heigankoumodel\\fileTemp\\","");
+            filepath=filepath.replace("//","/");
+            //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
+            filename=filepath.replace(FileRootDirPath,"");
         }else {
             return ResultTemplate.fail("请先提交文件！");
         }
@@ -415,6 +419,7 @@ public class PythonExeController {
         values.put("createUserid",createUserId);
         values.put("userName",userName);
         values.put("createTime",new Date().toString());
+        values.put("filename",filename);
         try {
             ProcessBuilderUtils.executeInBackground(filePath,null,values);
         }catch (RuntimeException e){
@@ -622,7 +627,7 @@ public class PythonExeController {
         }
 
         // 2. 创建保存目录
-        String baseDir = "D:\\heigankoumodel\\tudifugaifenlei\\shuju\\";
+        String baseDir = "D:/heigankoumodel/tudifugaifenlei/shuju/";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             logger.error("临时目录创建失败: {}", baseDir);
@@ -653,8 +658,8 @@ public class PythonExeController {
 
         try {
             ProcessBuilder pb = new ProcessBuilder(
-                    "D:\\Pycharm\\condaInstall\\envs\\yzm38\\python.exe",
-                    "E:\\陆浑湖\\waterchangeforuse\\waterchangeforuse.py",
+                    condaPYPath,
+                    waterChangePYPath,
                     earlySave.getAbsolutePath(),
                     lateSave.getAbsolutePath(),
                     "3"
@@ -783,14 +788,14 @@ public class PythonExeController {
         }
 
         // 2) 临时文件目录
-        String baseDir = "C:\\Users\\俞笙\\Desktop\\水资源监测\\output_results\\";
+        String baseDir = "/usr/soft/heigangkoumodel/code/output_results/";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             return ResultTemplate.fail("临时目录创建失败");
         }
         // 创建 sar 和 optical 子目录
-        File sarDir = new File(baseDir + "sar\\");
-        File optDir = new File(baseDir + "optical\\");
+        File sarDir = new File(baseDir + "sar/");
+        File optDir = new File(baseDir + "optical/");
         if (!sarDir.exists() && !sarDir.mkdirs()) {
             return ResultTemplate.fail("SAR 子目录创建失败");
         }
@@ -826,11 +831,11 @@ public class PythonExeController {
         int exitCode;
         Process process = null;
         try {
-            File pythonWorkDir = new File("C:\\Users\\俞笙\\Desktop\\水资源监测");
+            File pythonWorkDir = new File(codeRootPath);
 
             List<String> command = new ArrayList<>();
-            command.add("D:\\Pycharm\\condaInstall\\envs\\yzm38\\python.exe");
-            command.add("C:\\Users\\俞笙\\Desktop\\水资源监测\\core.py");
+            command.add(condaPYPath);
+            command.add("/usr/soft/heigangkoumodel/code/core.py");
             command.add("--model");
             command.add(model);
             if (sarSave != null) {
@@ -883,7 +888,7 @@ public class PythonExeController {
             String outputStr = output.toString().trim();
             System.out.println("原始 Python 输出: " + outputStr);
             // 提取 JSON 部分
-            Pattern jsonPattern = Pattern.compile("\\[\\{.*\\}\\]");
+            Pattern jsonPattern = Pattern.compile("/[/{.*/}/]");
             Matcher matcher = jsonPattern.matcher(outputStr);
             if (!matcher.find()) {
                 return ResultTemplate.fail("无法从 Python 输出中提取 JSON: \n" + outputStr);

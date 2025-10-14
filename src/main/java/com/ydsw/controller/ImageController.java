@@ -17,7 +17,7 @@ import java.util.UUID;
 @RestController
 public class ImageController {
 
-    private static final String PYTHON_UPLOAD_FOLDER = "D:\\heigankoumodel\\基于光学和SAR图像融合的水网提取\\code\\Unet部分\\code\\uploads";
+    private static final String PYTHON_UPLOAD_FOLDER =  "/usr/soft/heigangkoumodel/code/uploads";
     private static final String PYTHON_OUTPUT_FOLDER = "./outputs";
 
     @PreAuthorize("hasAnyAuthority('api_water_process')")

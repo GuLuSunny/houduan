@@ -36,9 +36,9 @@ import java.util.*;
 public class ModelFileStatusController {
     @Autowired
     private ModelFileStatusService modelFileStatusService;
-    final private String FileRootDirPath="D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"";
+    final private String FileRootDirPath="/usr/soft/heigangkoumodel/fileTemp/";
 
-    private final String ResultRootPath = "D:"+File.separator+"heigankoumodel"+File.separator+"code"+File.separator+"result"+File.separator+"";
+    private final String ResultRootPath = "/usr/soft/heigangkoumodel/code/result/";
     @Autowired
     private UserService userService;
 
@@ -66,7 +66,7 @@ public class ModelFileStatusController {
             return ResultTemplate.fail("文件类型错误！");
         }
 
-        if (couldUpload(className)) {
+        if (!couldUpload(className)) {
             return ResultTemplate.fail("服务器繁忙，请稍后重试");
         }
 
@@ -274,7 +274,7 @@ public class ModelFileStatusController {
                 String filepath=mapList.get(0).get("filepath").toString();
                 filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
                 //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
-                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
+                String filename=filepath.replace(FileRootDirPath,"");
 
                 relativePath =year+File.separator+month+File.separator+
                         filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
@@ -312,7 +312,7 @@ public class ModelFileStatusController {
                 String filepath=mapList.get(0).get("filepath").toString();
                 filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
                 //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
-                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
+                String filename=filepath.replace(FileRootDirPath,"");
 
                 relativePath =year+File.separator+month+File.separator+
                         filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
@@ -351,7 +351,7 @@ public class ModelFileStatusController {
                 String filepath=mapList.get(0).get("filepath").toString();
                 filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
                 //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
-                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
+                String filename=filepath.replace(FileRootDirPath,"");
 
                 relativePath =year+File.separator+month+File.separator+
                         filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
@@ -397,9 +397,9 @@ public class ModelFileStatusController {
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                filepath=filepath.replace(File.separator+File.separator,File.separator);
                 //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
-                String filename=filepath.replace("D:"+File.separator+"heigankoumodel"+File.separator+"fileTemp"+File.separator+"","");
+                String filename=filepath.replace(FileRootDirPath,"");
 
                 relativePath =year+File.separator+month+File.separator+
                         filename.substring(0,filename.lastIndexOf('.'))+"_"+modelName+File.separator;
