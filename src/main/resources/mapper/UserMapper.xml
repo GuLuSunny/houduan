@@ -68,7 +68,7 @@
         where id=#{userClass.id}
     </update>
     <select id="selectUserPageByCondition" resultType="java.util.Map">
-        SELECT id,username,tel,address,email,productionCompany ,roleId,roleInfo
+        SELECT id,username,tel,address,email,"productionCompany" ,"roleId","roleInfo"
         FROM "user_role_info"
         <where>
             <!-- 动态解析JSONObject中的条件 -->
@@ -84,7 +84,7 @@
         </where>
     </select>
     <select id="selectUserByCondition" resultType="java.util.Map">
-        SELECT id,password,username,tel,address,email,production_company as productionCompany
+        SELECT id,password,username,tel,address,email,production_company as "productionCompany"
         FROM "user"
         <where>
             <!-- 动态解析JSONObject中的条件 -->

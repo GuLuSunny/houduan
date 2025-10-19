@@ -47,7 +47,7 @@
         SELECT * FROM water_physicochemistry
         <where>
                 <if test="time != null and time.trim() != ''">
-                    AND observation_time LIKE '%' || #{time},  || '%'
+                    AND observation_time LIKE '%' || #{time}  || '%'
                 </if>
                 <if test="device != null and device.trim() != ''">
                     AND device_id = #{device}

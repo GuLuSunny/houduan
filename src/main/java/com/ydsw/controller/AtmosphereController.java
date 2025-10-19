@@ -543,6 +543,10 @@ public class AtmosphereController {
         }
         IPage<Map<String,Object>> data=atmosphereService.fetchFilepathByObservationTimeAndClassName(currentPage,pageSize,idList,observationTimeBegin,observationTimeEnd,className,filepath,type,typeDetail,deviceId,deviceName);
         for (Map<String,Object> map : data.getRecords()) {
+            if(!map.containsKey("filepath"))
+            {
+                continue;
+            }
             filepath=map.get("filepath").toString();
             map.put("filepathLink",filepath.replaceAll(".*Trash",""));
             filepath=map.get("filepath").toString();
