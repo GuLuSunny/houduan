@@ -888,12 +888,22 @@ public class PythonExeController {
             String outputStr = output.toString().trim();
             System.out.println("原始 Python 输出: " + outputStr);
             // 提取 JSON 部分
-            Pattern jsonPattern = Pattern.compile("/[/{.*/}/]");
-            Matcher matcher = jsonPattern.matcher(outputStr);
-            if (!matcher.find()) {
-                return ResultTemplate.fail("无法从 Python 输出中提取 JSON: \n" + outputStr);
+            // 方法1: 查找第一个 [ 和最后一个 ]
+            int start = outputStr.indexOf('[');
+            int end = outputStr.lastIndexOf(']');
+
+            if (start == -1 || end == -1 || start >= end) {
+                // 方法2: 查找第一个 { 和最后一个 }
+                start = outputStr.indexOf('{');
+                end = outputStr.lastIndexOf('}');
+                if (start == -1 || end == -1 || start >= end) {
+                    return ResultTemplate.fail("无法从 Python 输出中提取 JSON: \n" + outputStr);
+                }
             }
-            String jsonStr = matcher.group(0);
+
+            String jsonStr = outputStr.substring(start, end + 1);
+            System.out.println("提取的 JSON: " + jsonStr);
+
             JsonNode root = mapper.readTree(jsonStr);
 
             if (root.isObject() && root.has("error")) {
