@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ydsw.dao.ModelProductMapper">
+
+    <resultMap id="BaseResultMap" type="com.ydsw.domain.ModelProduct">
+            <id property="id" column="id" />
+            <result property="className" column="class_name" />
+            <result property="filepath" column="filepath" />
+            <result property="filename" column="filename" />
+            <result property="observationTime" column="observation_time" />
+            <result property="startTime" column="start_time" />
+            <result property="endTime" column="end_time" />
+            <result property="createTime" column="create_time" />
+            <result property="type" column="type" />
+            <result property="owner" column="owner" />
+            <result property="status" column="status" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,class_name,filepath,filename,observation_time,start_time,
+        end_time,create_time,type,owner,status
+    </sql>
+    <update id="updateModelProduct">
+        update model_product set status =1
+        <where>
+            <if test="idList != null and idList.size()>0">
+                and id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
+                and class_name Like '%' || #{modelProduct.className} || '%'
+            </if>
+            <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
+                and filepath Like '%' || #{modelProduct.filepath} || '%'
+            </if>
+            <if test="modelProduct.filename != null and modelProduct.filename.trim()!=''">
+                and filename Like '%' || #{modelProduct.filename} || '%'
+            </if>
+            <if test="modelProduct.observationTime != null ">
+                and date_trunc('day', observation_time) = date_trunc('day', #{modelProduct.observationTime})
+            </if>
+            <if test="modelProduct.startTime != null">
+                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+            </if>
+            <if test="modelProduct.endTime != null">
+                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+            </if>
+            <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
+                and "type" Like '%' || #{modelProduct.type} || '%'
+            </if>
+            <if test="modelProduct.owner != null and modelProduct.owner.trim()!=''">
+                and "owner" Like '%' || #{modelProduct.owner} || '%'
+            </if>
+            and status =0;
+        </where>
+    </update>
+    <select id="getModelProductByCondition" resultType="java.util.Map"
+            parameterType="com.ydsw.domain.ModelProduct">
+        select id,class_name as "className",filepath,filename,observation_time as "observationTime",
+               start_time as "startTime",end_time as "endTime",type,owner
+               from model_product
+        <where>
+            <if test="modelProduct.id != null">
+                and id = #{modelProduct.id} =
+            </if>
+            <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
+                and class_name Like '%' || #{modelProduct.className} || '%'
+            </if>
+            <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
+                and filepath Like '%' || #{modelProduct.filepath} || '%'
+            </if>
+            <if test="modelProduct.filename != null and modelProduct.filename.trim()!=''">
+                and filename Like '%' || #{modelProduct.filename} || '%'
+            </if>
+            <if test="modelProduct.observationTime != null ">
+                and to_char(observation_time, 'YYYY-MM-DD') Like '%' ||  to_char(#{modelProduct.observationTime}::date, 'YYYY-MM-DD') || '%'
+            </if>
+            <if test="modelProduct.startTime != null">
+                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+            </if>
+            <if test="modelProduct.endTime != null">
+                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+            </if>
+            <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
+                and "type" Like '%' || #{modelProduct.type} || '%'
+            </if>
+            <if test="modelProduct.owner != null and modelProduct.owner.trim()!=''">
+                and "owner" Like '%' || #{modelProduct.owner} || '%'
+            </if>
+            and status =0
+        </where>
+    </select>
+    <select id="selectObservationTime" resultType="java.lang.String">
+        SELECT DISTINCT  to_char(observation_time, 'YYYY-MM-DD')  FROM model_product where status=0
+    </select>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(to_char(observation_time, 'YYYY-MM-DD'), 4) FROM model_product where status=0
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(to_char(observation_time, 'YYYY-MM-DD'), 7) FROM model_product where status=0
+    </select>
+</mapper>

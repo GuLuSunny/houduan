@@ -37,14 +37,16 @@ public class UtilsController {
     private TbFlowService tbFlowService;
     @Autowired
     private TbWaterLevelService tbWaterLevelService;
-//    @Autowired
-//    private WetlandSoilMonitoringIndicatorsService wetlandSoilMonitoringIndicatorsService;//湿地土壤
-//    @Autowired
-//    private VegetationMonitoringIndicatorsService vegetationMonitoringIndicatorsService;//植被监测指标
-//    @Autowired
+    @Autowired
+    private WetlandSoilMonitoringIndicatorsService wetlandSoilMonitoringIndicatorsService;//湿地土壤
+    @Autowired
+    private VegetationMonitoringIndicatorsService vegetationMonitoringIndicatorsService;//植被监测指标
+    @Autowired
     private DroneImageService droneImageService;
     @Autowired
     private SateliteRemoteSensingService sateliteRemoteSensingService;
+    @Autowired
+    private ModelProductService modelProductService;
     /**
      * 通过类型，查询时间列表
      *
@@ -113,26 +115,26 @@ public class UtilsController {
                 stringList = tbWaterLevelService.fetchObservationTimeByMonth1(filepath);
             }
         }
-//        if ("shiditurang".equals(type)) {
-//            String searchTimeType = (String) jsonObject.get("searchTimeType");
-//            if ("year".equals(searchTimeType)) {
-//                stringList = wetlandSoilMonitoringIndicatorsService.fetchObservationTimeByYear();
-//            } else if ("month".equals(searchTimeType)) {
-//                stringList = wetlandSoilMonitoringIndicatorsService.fetchObservationTimeByMonth();
-//            }else {
-//                stringList = wetlandSoilMonitoringIndicatorsService.fetchObservationTimeByDay();
-//            }
-//        }
-//        if ("shidizhibei".equals(type)) {
-//            String searchTimeType = (String) jsonObject.get("searchTimeType");
-//            if ("year".equals(searchTimeType)) {
-//                stringList = vegetationMonitoringIndicatorsService.fetchObservationTimeByYear();
-//            } else if ("month".equals(searchTimeType)) {
-//                stringList = vegetationMonitoringIndicatorsService.fetchObservationTimeByMonth();
-//            }else {
-//                stringList = vegetationMonitoringIndicatorsService.fetchObservationTimeByDay();
-//            }
-//        }
+        if ("shiditurang".equals(type)) {
+            String searchTimeType = (String) jsonObject.get("searchTimeType");
+            if ("year".equals(searchTimeType)) {
+                stringList = wetlandSoilMonitoringIndicatorsService.fetchObservationTimeByYear();
+            } else if ("month".equals(searchTimeType)) {
+                stringList = wetlandSoilMonitoringIndicatorsService.fetchObservationTimeByMonth();
+            }else {
+                stringList = wetlandSoilMonitoringIndicatorsService.fetchObservationTimeByDay();
+            }
+        }
+        if ("shidizhibei".equals(type)) {
+            String searchTimeType = (String) jsonObject.get("searchTimeType");
+            if ("year".equals(searchTimeType)) {
+                stringList = vegetationMonitoringIndicatorsService.fetchObservationTimeByYear();
+            } else if ("month".equals(searchTimeType)) {
+                stringList = vegetationMonitoringIndicatorsService.fetchObservationTimeByMonth();
+            }else {
+                stringList = vegetationMonitoringIndicatorsService.fetchObservationTimeByDay();
+            }
+        }
         if ("weixing".equals(type)) {
             String searchTimeType = (String) jsonObject.get("searchTimeType");
             if ("year".equals(searchTimeType)) {
@@ -147,6 +149,17 @@ public class UtilsController {
                 stringList = droneImageService.fetchObservationTimeByYear();
             } else if ("month".equals(searchTimeType)) {
                 stringList = droneImageService.fetchObservationTimeByMonth();
+            }
+        }
+        if ("modelproducts".equals(type)) {
+            String searchTimeType = (String) jsonObject.get("searchTimeType");
+            if ("year".equals(searchTimeType)) {
+                stringList = modelProductService.fetchObservationTimeByYear();
+            } else if ("month".equals(searchTimeType)) {
+                stringList = modelProductService.fetchObservationTimeByMonth();
+            }else
+            {
+                stringList = modelProductService.fetchObservationTime();
             }
         }
         map.put("date", stringList);

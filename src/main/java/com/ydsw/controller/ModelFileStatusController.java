@@ -476,7 +476,7 @@ public class ModelFileStatusController {
     }
 
     // 通用方法：获取图片响应
-    private ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {
+    public ResponseEntity<Resource> getImageResponse(Path filePath, String fileName) {
         try {
             File file = filePath.toFile();
             if (!file.exists()) {
@@ -506,41 +506,6 @@ public class ModelFileStatusController {
                             "attachment; filename=\"" + fileName + "\"")
                     .body(resource);
         } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
-    // 通用方法：获取文件下载响应（自动检测Content-Type）
-    private ResponseEntity<Resource> getFileDownloadResponse(String filePath, String fileName) {
-        try {
-            Path path = Paths.get(filePath).resolve(fileName).normalize();
-            File file = path.toFile();
-
-            if (!file.exists()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Resource resource = new FileSystemResource(file);
-
-            // 自动检测文件类型
-            String contentType = Files.probeContentType(path);
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
-            headers.add(HttpHeaders.CONTENT_TYPE, contentType);
-            headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
-            headers.add("Pragma", "no-cache");
-            headers.add("Expires", "0");
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .contentLength(file.length())
-                    .body(resource);
-
-        } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
