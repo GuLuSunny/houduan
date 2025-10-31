@@ -3,10 +3,12 @@ package com.ydsw.controller;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fengwenyi.api.result.ResultTemplate;
 import com.ydsw.domain.ModelProduct;
 import com.ydsw.service.ModelProductService;
 import lombok.extern.slf4j.Slf4j;
+import org.geolatte.geom.M;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -49,6 +51,16 @@ public class ModelProductController {
             return ResponseEntity.notFound().build();
         }
 
+    }
+
+    @PostMapping(value = "/api/modelFile/getProductPageByConditions")
+    public ResultTemplate<Object> getProductPageByConditions(@RequestBody JSONObject jsonObject) {
+        ModelProduct modelProduct = JSONUtil.toBean(jsonObject, ModelProduct.class);
+        int currentPage = jsonObject.get("currentPage") == null ? 1 : jsonObject.getInt("currentPage");
+        int pageSize = jsonObject.get("pageSize") == null ? 10 : jsonObject.getInt("pageSize");
+
+        IPage<Map<String,Object>> page= modelProductService.getProductPageByConditions(currentPage,pageSize,modelProduct);
+        return ResultTemplate.success(page);
     }
 
     @PostMapping(value = "/api/modelFile/deleteByConditions")

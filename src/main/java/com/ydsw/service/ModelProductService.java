@@ -1,5 +1,6 @@
 package com.ydsw.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ydsw.domain.ModelProduct;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
@@ -19,6 +20,8 @@ public interface ModelProductService extends IService<ModelProduct> {
     List<Map<String, Object>> getModelProductByCondition( ModelProduct modelProduct);
 
     boolean updateModelProduct(List<Integer> idList,ModelProduct modelProduct);
+
+    IPage<Map<String,Object>> getProductPageByConditions(int currentPage, int pageSize,ModelProduct modelProduct);
 
     List<String> fetchObservationTime();
 

@@ -1,5 +1,6 @@
 package com.ydsw.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ydsw.domain.ModelProduct;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -22,6 +23,7 @@ public interface ModelProductMapper extends BaseMapper<ModelProduct> {
 
     boolean updateModelProduct(@Param("idList") List<Integer> idList,@Param("modelProduct") ModelProduct modelProduct);
 
+    IPage<Map<String,Object>> getProductPageByConditions(IPage<?> page,@Param("modelProduct") ModelProduct modelProduct);
     List<String> selectObservationTime();
 
     List<String> fetchObservationTimeByYear();

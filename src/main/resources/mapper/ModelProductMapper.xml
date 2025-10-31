@@ -103,4 +103,39 @@
     <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
         SELECT DISTINCT LEFT(to_char(observation_time, 'YYYY-MM-DD'), 7) FROM model_product where status=0
     </select>
+    <select id="getProductPageByConditions" resultType="java.util.Map">
+        select id,class_name as "className",filepath,filename,observation_time as "observationTime",
+        start_time as "startTime",end_time as "endTime",type,owner
+        from model_product
+        <where>
+            <if test="modelProduct.id != null">
+                and id = #{modelProduct.id} =
+            </if>
+            <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
+                and class_name Like '%' || #{modelProduct.className} || '%'
+            </if>
+            <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
+                and filepath Like '%' || #{modelProduct.filepath} || '%'
+            </if>
+            <if test="modelProduct.filename != null and modelProduct.filename.trim()!=''">
+                and filename Like '%' || #{modelProduct.filename} || '%'
+            </if>
+            <if test="modelProduct.observationTime != null ">
+                and to_char(observation_time, 'YYYY-MM-DD') Like '%' ||  to_char(#{modelProduct.observationTime}::date, 'YYYY-MM-DD') || '%'
+            </if>
+            <if test="modelProduct.startTime != null">
+                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+            </if>
+            <if test="modelProduct.endTime != null">
+                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+            </if>
+            <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
+                and "type" Like '%' || #{modelProduct.type} || '%'
+            </if>
+            <if test="modelProduct.owner != null and modelProduct.owner.trim()!=''">
+                and "owner" Like '%' || #{modelProduct.owner} || '%'
+            </if>
+            and status =0
+        </where>
+    </select>
 </mapper>

@@ -1,5 +1,7 @@
 package com.ydsw.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ydsw.domain.ModelProduct;
 import com.ydsw.service.ModelProductService;
@@ -49,6 +51,12 @@ public class ModelProductServiceImpl extends ServiceImpl<ModelProductMapper, Mod
     public List<String> fetchObservationTimeByMonth()
     {
         return modelProductMapper.fetchObservationTimeByMonth();
+    }
+    @Override
+    public IPage<Map<String,Object>> getProductPageByConditions(int currentPage, int pageSize, ModelProduct modelProduct)
+    {
+        IPage<Map<String,Object>> page = new Page<>(currentPage, pageSize);
+        return modelProductMapper.getProductPageByConditions(page,modelProduct);
     }
 }
 
