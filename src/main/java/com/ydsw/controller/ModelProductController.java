@@ -33,7 +33,10 @@ public class ModelProductController {
     @PostMapping(value = "/api/modelFile/getAllProductByConditions")
     public ResultTemplate<Object> getAllProductByConditions(@RequestBody JSONObject jsonObject) {
         ModelProduct modelProduct = JSONUtil.toBean(jsonObject, ModelProduct.class);
-        List<Map<String,Object>> res = modelProductService.getModelProductByCondition(modelProduct);
+        List<String> idArray = jsonObject.getBeanList("ids", String.class);
+        List<Integer> idList = new ArrayList<>();
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
+        List<Map<String,Object>> res = modelProductService.getModelProductByCondition(idList,modelProduct);
         return ResultTemplate.success(res);
 
     }
@@ -41,7 +44,10 @@ public class ModelProductController {
     @PostMapping(value = "/api/modelFile/getFilesByConditions")
     public ResponseEntity<Resource> getFilesByConditions(@RequestBody JSONObject jsonObject) {
         ModelProduct modelProduct = JSONUtil.toBean(jsonObject, ModelProduct.class);
-        List<Map<String,Object>> res = modelProductService.getModelProductByCondition(modelProduct);
+        List<String> idArray = jsonObject.getBeanList("ids", String.class);
+        List<Integer> idList = new ArrayList<>();
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
+        List<Map<String,Object>> res = modelProductService.getModelProductByCondition(idList,modelProduct);
         if(res != null && !res.isEmpty()) {
             Map<String,Object> map = res.get(0);
             String filepath = map.get("filepath").toString();

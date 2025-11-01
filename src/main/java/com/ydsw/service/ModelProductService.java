@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Service
 public interface ModelProductService extends IService<ModelProduct> {
-    List<Map<String, Object>> getModelProductByCondition( ModelProduct modelProduct);
+    List<Map<String, Object>> getModelProductByCondition(List<Integer> idList, ModelProduct modelProduct);
 
     boolean updateModelProduct(List<Integer> idList,ModelProduct modelProduct);
 

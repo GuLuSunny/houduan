@@ -19,7 +19,7 @@ import java.util.Map;
 @Mapper
 public interface ModelProductMapper extends BaseMapper<ModelProduct> {
 
-    List<Map<String, Object>> getModelProductByCondition(@Param("modelProduct") ModelProduct modelProduct);
+    List<Map<String, Object>> getModelProductByCondition(@Param("idList") List<Integer> idList,@Param("modelProduct") ModelProduct modelProduct);
 
     boolean updateModelProduct(@Param("idList") List<Integer> idList,@Param("modelProduct") ModelProduct modelProduct);
 

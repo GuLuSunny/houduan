@@ -24,9 +24,9 @@ public class ModelProductServiceImpl extends ServiceImpl<ModelProductMapper, Mod
     @Autowired
     private ModelProductMapper modelProductMapper;
     @Override
-    public List<Map<String, Object>> getModelProductByCondition(ModelProduct modelProduct)
+    public List<Map<String, Object>> getModelProductByCondition(List<Integer> idList,ModelProduct modelProduct)
     {
-        return baseMapper.getModelProductByCondition(modelProduct);
+        return baseMapper.getModelProductByCondition(idList,modelProduct);
     }
 
     @Override
