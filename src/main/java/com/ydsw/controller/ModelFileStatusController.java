@@ -8,6 +8,7 @@ import com.ydsw.domain.User;
 import com.ydsw.service.ModelFileStatusService;
 import com.ydsw.service.ModelListService;
 import com.ydsw.service.UserService;
+import com.ydsw.utils.ZipFileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.geolatte.geom.M;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,15 +31,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
 public class ModelFileStatusController {
     @Autowired
     private ModelFileStatusService modelFileStatusService;
-    final private String FileRootDirPath="/usr/soft/heigangkoumodel/fileTemp/";
+    final private String FileRootDirPath="D:"+File.separator+"heigangkoumodel"+File.separator+"fileTemp"+File.separator;
 
-    private final String ResultRootPath = "/usr/soft/heigangkoumodel/code/result/";
+    private final String ResultRootPath = "D://heigangkoumodel/code/result/";
     @Autowired
     private UserService userService;
 
@@ -50,8 +52,18 @@ public class ModelFileStatusController {
                                                   @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
-                                                  @RequestParam("observationTime")String observationTime) {
-
+                                                  @RequestParam("observationTime")String observationTime,
+                                                  @RequestParam("tifType") String tifType) {
+        if(tifType!=null)
+        {
+            if(!tifType.equals("VH")&&!tifType.equals("VV")&&!tifType.equals("HH"))
+            {
+                return ResultTemplate.fail("非法的tif类型");
+            }
+        }
+        if (file == null || file.isEmpty()) {
+            return ResultTemplate.fail("文件不能为空");
+        }
         List<String> classNameList = modelListService.getAllClassName();
         if (!classNameList.contains(className)) {
             return ResultTemplate.fail("非法的类型参数！");
@@ -62,7 +74,7 @@ public class ModelFileStatusController {
 
         String originalFilename = file.getOriginalFilename();
         String fileType = originalFilename.substring(originalFilename.lastIndexOf("."));
-        if (!fileType.equalsIgnoreCase(".tif")) {
+        if (!fileType.equalsIgnoreCase(".tif")&&!fileType.equalsIgnoreCase(".zip")) {
             return ResultTemplate.fail("文件类型错误！");
         }
 
@@ -73,8 +85,14 @@ public class ModelFileStatusController {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         Date date = new Date();
         String formattedDate = sdf.format(date);
-        String filename = userName + "-" + userUid+"_"+ observationTime +
-                "_" + formattedDate + "_HH.tif";
+
+        String filename ="";
+        if(fileType.equalsIgnoreCase(".tif")) {
+            filename = userName + "-" + userUid + "_" + observationTime +
+                    "_" + formattedDate + "_" + (tifType == null ? "HH" : tifType) + ".tif";
+        } else if (fileType.equalsIgnoreCase(".zip")) {
+            filename = userName + "-" + userUid + "_" + formattedDate + ".zip";
+        }
         String directoryPath = FileRootDirPath + File.separator + className;
         String filepath = directoryPath + File.separator + filename;
         ModelFileStatus modelFileStatus = new ModelFileStatus();
@@ -104,6 +122,7 @@ public class ModelFileStatusController {
 
             // 保存文件记录到数据库
 
+            modelFileStatus.setType(tifType);
             modelFileStatus.setDealStatus("success");
             modelFileStatusService.updateDealStatusViod(modelFileStatus);
 
@@ -131,6 +150,7 @@ public class ModelFileStatusController {
         modelFileStatus.setUserName(userName);
         modelFileStatus.setClassName(className);
         modelFileStatus.setFilepath(filepath);
+
         try {
             // 创建目录（如果不存在）
             modelFileStatus.setDealStatus("executing");
@@ -158,6 +178,176 @@ public class ModelFileStatusController {
             return ResultTemplate.fail("文件保存失败: " + e.getMessage());
         }
     }
+
+    @PostMapping(value = "/api/model/plantFilesUpload")
+    public ResultTemplate<Object> plantFilesUpload(@RequestParam("files") MultipartFile[] files,
+                                                   @RequestParam("createUserid") String userUid,
+                                                   @RequestParam("userName") String userName,
+                                                   @RequestParam("modelMame") String modelMame,
+                                                   @RequestParam("className") String className,
+                                                   @RequestParam("observationTime") String observationTime) {
+
+        String directoryPath = FileRootDirPath + className + File.separator;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = new Date();
+        String formattedDate = sdf.format(date);
+        String filename = userName + "-" + userUid + "_" + modelMame + "_" +
+                observationTime + "_" + formattedDate + File.separator;
+        directoryPath += filename;
+
+        // 创建文件状态记录
+        ModelFileStatus modelFileStatus = new ModelFileStatus();
+        modelFileStatus.setCreateUserid(userUid);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setFilepath(directoryPath);
+        modelFileStatus.setDealStatus("executing");
+        modelFileStatus.setType("multiple");
+        modelFileStatus.setObservationTime(observationTime);
+        modelFileStatus.setCreateTime(new Date());
+        modelFileStatus.setUpdateTime(new Date());
+
+        try {
+            // 创建目录（如果不存在）
+            File directory = new File(directoryPath);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // 步骤1: 先进行基本文件验证
+            List<String> validationErrors = ZipFileUtils.validateFilesBeforeSaving(files, modelMame);
+            if (!validationErrors.isEmpty()) {
+                modelFileStatus.setDealStatus("failed");
+                modelFileStatusService.save(modelFileStatus);
+                return ResultTemplate.fail("文件验证失败: " + String.join(", ", validationErrors));
+            }
+
+            // 步骤2: 验证通过后才保存记录到数据库
+            modelFileStatusService.save(modelFileStatus);
+
+            // 步骤3: 过滤并只保存需要的文件
+            List<String> savedFilePaths = new ArrayList<>();
+            List<MultipartFile> filesToSave = ZipFileUtils.filterRequiredFiles(files, modelMame);
+
+            for (MultipartFile file : filesToSave) {
+                String filepath = directoryPath + File.separator + file.getOriginalFilename();
+
+                try {
+                    File dest = new File(filepath);
+                    file.transferTo(dest);
+                    savedFilePaths.add(filepath);
+                } catch (IOException e) {
+                    log.error("文件保存失败: {}", filepath, e);
+                    // 删除已保存的文件
+                    for (String savedPath : savedFilePaths) {
+                        new File(savedPath).delete();
+                    }
+                    modelFileStatus.setDealStatus("failed");
+                    modelFileStatusService.updateDealStatusViod(modelFileStatus);
+                    return ResultTemplate.fail("文件保存失败: " + e.getMessage());
+                }
+            }
+
+            // 步骤4: 对ZIP文件进行详细验证
+            List<String> zipValidationErrors = ZipFileUtils.validateZipFilesAfterSaving(savedFilePaths, modelMame);
+            if (!zipValidationErrors.isEmpty()) {
+                // 删除所有已保存的文件
+                for (String savedPath : savedFilePaths) {
+                    new File(savedPath).delete();
+                }
+                modelFileStatus.setDealStatus("failed");
+                modelFileStatusService.updateDealStatusViod(modelFileStatus);
+                return ResultTemplate.fail("ZIP文件内容验证失败: " + String.join(", ", zipValidationErrors));
+            }
+
+            // 步骤5: 处理ZIP文件解压
+            List<String> finalFilePaths = new ArrayList<>();
+            List<String> requiredFiles = ZipFileUtils.getRequiredFilesByModel(modelMame);
+
+            for (String savedPath : savedFilePaths) {
+                if (savedPath.toLowerCase().endsWith(".zip")) {
+                    modelFileStatus.setType("zip");
+                    try {
+                        // 解压ZIP文件中的必需文件
+                        List<String> extractedFiles = ZipFileUtils.unzipRequiredFiles(savedPath, directoryPath, requiredFiles);
+                        finalFilePaths.addAll(extractedFiles);
+
+                        // 删除ZIP文件
+                        boolean deleted = ZipFileUtils.deleteFile(savedPath);
+                        if (!deleted) {
+                            log.warn("ZIP文件删除失败: {}", savedPath);
+                        }
+                    } catch (IOException e) {
+                        log.error("ZIP文件解压失败: {}", savedPath, e);
+                        // 删除所有已保存的文件
+                        for (String path : savedFilePaths) {
+                            new File(path).delete();
+                        }
+                        modelFileStatus.setDealStatus("failed");
+                        modelFileStatusService.updateDealStatusViod(modelFileStatus);
+                        return ResultTemplate.fail("ZIP文件解压失败: " + e.getMessage());
+                    }
+                } else {
+                    // 非ZIP文件直接保留
+                    finalFilePaths.add(savedPath);
+                }
+            }
+
+            // 步骤6: 清理目录中不需要的文件（确保只保留必需的文件）
+            cleanUnnecessaryFiles(directoryPath, requiredFiles);
+
+            // 步骤7: 更新状态为成功
+            modelFileStatus.setDealStatus("success");
+            modelFileStatusService.updateDealStatusViod(modelFileStatus);
+
+            return ResultTemplate.success("文件上传并解压成功");
+
+        } catch (Exception e) {
+            log.error("文件上传处理失败", e);
+            modelFileStatus.setDealStatus("failed");
+            try {
+                modelFileStatusService.updateDealStatusViod(modelFileStatus);
+            } catch (Exception ex) {
+                modelFileStatusService.save(modelFileStatus);
+            }
+            return ResultTemplate.fail("文件上传失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 清理目录中不需要的文件，只保留必需的文件
+     */
+    private void cleanUnnecessaryFiles(String directoryPath, List<String> requiredFiles) {
+        File directory = new File(directoryPath);
+        if (!directory.exists() || !directory.isDirectory()) {
+            return;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        Set<String> requiredFileSet = requiredFiles.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        for (File file : files) {
+            if (file.isFile()) {
+                String fileName = file.getName().toLowerCase();
+                // 如果不是必需的文件，且不是ZIP文件（ZIP文件已经在解压后删除），则删除
+                if (!requiredFileSet.contains(fileName) && !fileName.endsWith(".zip")) {
+                    boolean deleted = file.delete();
+                    if (deleted) {
+                        log.info("删除不需要的文件: {}", file.getAbsolutePath());
+                    } else {
+                        log.warn("删除不需要的文件失败: {}", file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
+
 
     public boolean userAlive(String userUid, String userName, String className) {
         User user=new User();

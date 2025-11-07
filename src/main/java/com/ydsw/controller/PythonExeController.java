@@ -55,13 +55,10 @@ public class PythonExeController {
     @Autowired
     private ModelStatusService modelStatusService;
     
-    private final String codeRootPath = "/usr/soft/heigangkoumodel/code/";
-    private final String ResultRootPath = "/usr/soft/heigangkoumodel/code/result/";
-    final private String FileRootDirPath="/usr/soft/heigangkoumodel/fileTemp/";
-    private final String waterChangePYPath="/usr/soft/heigangkoumodel/code/waterchangeforuse.py";
+    private final String codeRootPath = "D:"+File.separator+"heigankoumodel"+File.separator+"code"+File.separator;
+    final private String FileRootDirPath="D:"+File.separator+"heigangkoumodel"+File.separator+"fileTemp"+File.separator;
+    private final String waterChangePYPath="D:/heigangkoumodel/code/waterchangeforuse.py";
     private final String condaPYPath="/user/miniconda3/envs/heigangkouenv/bin/python";
-    @Autowired
-    private ModelFileStatusServiceImpl modelFileStatusServiceImpl;
 
     @PreAuthorize("hasAnyAuthority('api_groupType')")
     @PostMapping(value = "/api/groupType")
@@ -788,7 +785,7 @@ public class PythonExeController {
         }
 
         // 2) 临时文件目录
-        String baseDir = "/usr/soft/heigangkoumodel/code/output_results/";
+        String baseDir = "D://heigangkoumodel/code/output_results/";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             return ResultTemplate.fail("临时目录创建失败");
@@ -835,7 +832,7 @@ public class PythonExeController {
 
             List<String> command = new ArrayList<>();
             command.add(condaPYPath);
-            command.add("/usr/soft/heigangkoumodel/code/core.py");
+            command.add("D://heigangkoumodel/code/core.py");
             command.add("--model");
             command.add(model);
             if (sarSave != null) {
@@ -1000,6 +997,96 @@ public class PythonExeController {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
+    }
+    @PostMapping(value = "/api/plantCoverV2")
+    public ResultTemplate<Object> buildplantCoverProcessV2(@RequestBody JSONObject jsonObject) {
+        String modelName = jsonObject.getStr("modelName");
+        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
+        String color_map=jsonObject.getStr("color_map");
+        String userName=jsonObject.getStr("userName");
+        String createUserId=jsonObject.getStr("createUserId");
+        String input_dir=jsonObject.getStr("input_dir");
+        String funcitionSelected="null";
+        String className="plant";
+        String observationTime=jsonObject.getStr("observationTime");
+        User user=new User();
+        user.setUsername(userName);
+        user.setStatus(0);
+        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
+        boolean flag=false;
+        for (Map<String,Object> map : userList) {
+            if(Objects.equals(map.get("id").toString(), createUserId)){
+                flag=true;
+            }
+        }
+        if(!flag){
+            return ResultTemplate.fail("非法用户！");
+        }
+        user.setId(Integer.valueOf(createUserId));
+        user.setMemo(modelName);
+        if(!couldVisit(modelName))
+        {
+            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
+        }
+        if(preview_png.equals("True"))
+        {
+            funcitionSelected+="preview_png";
+        }
+
+//        if(funcitionSelected.startsWith(","))
+//        {
+//            funcitionSelected=funcitionSelected.substring(1);
+//        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        String formattedDate = sdf.format(new Date());
+        if(modelName==null || modelName.isEmpty()){
+            return ResultTemplate.fail("非法参数！");
+        }
+
+        if(!modelName.equals("fanyanV2"))
+        {
+            return ResultTemplate.fail("未知操作！");
+        }
+
+        Map<String, String> values = new HashMap<>();
+        String filePath= codeRootPath +modelName+".py";
+
+        String filename="";
+
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        if(!mapList.isEmpty())
+        {
+            String filepath=mapList.get(0).get("filepath").toString();
+            filepath=filepath.replace("\\\\","\\");
+            filepath=filepath.replace("//","/");
+            //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
+            filename=filepath.replace(FileRootDirPath,"");
+        }else {
+            return ResultTemplate.fail("请先提交文件！");
+        }
+        values.put("preview_png",preview_png);
+        if(input_dir!=null) {
+            values.put("input_dir", input_dir);
+        }
+        values.put("createUserid",createUserId);
+        values.put("userName",userName);
+        values.put("createTime",new Date().toString());
+        values.put("filename",filename);
+        try {
+            ProcessBuilderUtils.executeInBackground(filePath,null,values);
+        }catch (RuntimeException e){
+            ResultTemplate.fail("程序执行失败！");
+        }catch (Exception e){
+            ResultTemplate.fail("未知错误!");
+        }
+
+
+        return ResultTemplate.success("程序已在后台运行!");
     }
 }
 

@@ -41,6 +41,9 @@
             <if test="modelStatusClass.createUserid!=null and modelStatusClass.createUserid.trim()!=''">
                 AND create_userid = #{modelStatusClass.createUserid}
             </if>
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
+            </if>
             AND status = 0
         </where>
         ORDER BY id DESC

@@ -42,8 +42,8 @@ public class FarmlandController {
                 farmland.setCreateTime(new Date());
                 farmland.setStatus(0);
             }
-            //farmlandService.saveBatch(farmlandList);
-            System.out.println("farmlandList:"+farmlandList);
+            farmlandService.saveBatch(farmlandList);
+            //System.out.println("farmlandList:"+farmlandList);
         } catch (IOException e) {
             return ResultTemplate.fail("文件："+fileGroup[0].getOriginalFilename()+"提交格式错误！");
         }

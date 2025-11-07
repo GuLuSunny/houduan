@@ -45,6 +45,12 @@
             <if test="modelFileStatusClass.filepath!=null and modelFileStatusClass.filepath.trim()!=''">
                 and filepath=#{modelFileStatusClass.filepath}
             </if>
+            <if test="modelFileStatusClass.createTime!=null">
+                and create_time=#{modelFileStatusClass.createTime}
+            </if>
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
+            </if>
             and status =0
         </where>
     </update>

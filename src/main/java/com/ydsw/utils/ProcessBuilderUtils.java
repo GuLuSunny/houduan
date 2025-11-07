@@ -27,6 +27,9 @@ public class ProcessBuilderUtils {
     private static final ExecutorService executorService =
             Executors.newFixedThreadPool(10);
 
+    private static String winPythonPath = "D:\\Ananconda3\\envs\\heigangkouenv\\python.exe";
+    private static String lowerPythonPath = "D:\\Ananconda3\\envs\\lowerVersion\\python.exe";
+
     @Autowired
     public void setModelStatusService(ModelStatusService modelStatusService)
     {
@@ -296,7 +299,7 @@ public class ProcessBuilderUtils {
             try {
                 // 构建命令
                 List<String> command = new ArrayList<>();
-                command.add(pythonPath);
+                command.add(winPythonPath);
                 command.add(scriptPath);
                 if (args != null) {
                     command.addAll(args);
@@ -390,7 +393,7 @@ public class ProcessBuilderUtils {
             try {
                 // 构建命令
                 List<String> command = new ArrayList<>();
-                command.add(pythonPath);
+                command.add(winPythonPath);
                 command.add(scriptPath);
                 if (args != null) {
                     command.addAll(args);
