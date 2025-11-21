@@ -89,6 +89,13 @@ public class ModelFileStatus implements Serializable {
     @TableField(value = "type")
     private String type;
 
+
+    /**
+     * 待定字段
+     */
+    @TableField(value = "model_name")
+    private String modelName;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -107,7 +114,7 @@ public class ModelFileStatus implements Serializable {
         this.dataIntroduction = (String)map.get("dataIntroduction");
         this.observationTime = (String)map.get("observationTime");
         this.type = (String)map.get("type");
-
+        this.modelName = (String)map.get("modelName");
     }
 
     @Override
@@ -133,7 +140,8 @@ public class ModelFileStatus implements Serializable {
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
             && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()))
             && (this.getObservationTime() == null ? other.getObservationTime() == null : this.getObservationTime().equals(other.getObservationTime()))
-            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()));
+            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
+            && (this.getModelName() == null ? other.getModelName() == null : this.getModelName().equals(other.getModelName()));
     }
 
     @Override
@@ -152,6 +160,7 @@ public class ModelFileStatus implements Serializable {
         result = prime * result + ((getDataIntroduction() == null) ? 0 : getDataIntroduction().hashCode());
         result = prime * result + ((getObservationTime() == null) ? 0 : getObservationTime().hashCode());
         result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
+        result = prime * result + ((getModelName() == null) ? 0 : getModelName().hashCode());
         return result;
     }
 
@@ -173,6 +182,7 @@ public class ModelFileStatus implements Serializable {
         sb.append(", dataIntroduction=").append(dataIntroduction);
         sb.append(", observationTime=").append(observationTime);
         sb.append(", type=").append(type);
+        sb.append(", modelName=").append(modelName);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

@@ -260,18 +260,19 @@ public class PythonExeController {
         switch (modelName){
             case "mlp", "rf", "svm", "xgb" -> processname = "predict";
             case "XGB","CNN" -> processname = "predictV2";
+            case "rfV2","CNNV2" -> processname = "predictV3";
             default -> {
                 return ResultTemplate.fail("非法的参数名！");
             }
         }
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        modelFileStatus.setObservationTime(observationTime);
         if(processname.equals("predictV2"))
         {
-            ModelFileStatus modelFileStatus=new ModelFileStatus();
-            modelFileStatus.setDealStatus("success");
-            modelFileStatus.setClassName(className);
-            modelFileStatus.setUserName(userName);
-            modelFileStatus.setCreateUserid(createUserId);
-            modelFileStatus.setObservationTime(observationTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
@@ -283,11 +284,26 @@ public class PythonExeController {
             }else {
                 return ResultTemplate.fail("请先提交目标文件！");
             }
+        } else if (processname.equals("predictV3")) {
+            modelFileStatus.setType("multiple");
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace("\\\\","\\");
+                filepath=filepath.replace("//","/");
+                input_dir=filepath;
+                mapFilesInDirectory(filepath,values);
+                //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
+                filename=filepath.replace(FileRootDirPath,"");
+            }else {
+                return ResultTemplate.fail("请先提交目标文件！");
+            }
         }
         String filepath = codeRootPath + processname + ".py";
         try {
             switch (modelName) {
-                case "mlp", "rf", "svm", "xgb","XGB","CNN" -> values.put("modelSelected",modelName);
+                case "mlp", "rf", "svm", "xgb","XGB","CNN","rfV2","CNNV2" -> values.put("modelSelected",modelName);
                 default -> {
                     return ResultTemplate.fail("非法的参数名！");
                 }
@@ -337,16 +353,33 @@ public class PythonExeController {
         }
     }
 
+
+    private static void mapFilesInDirectory(String dirPath, Map<String, String> values) {
+        File dir = new File(dirPath);
+        if (dir.exists() && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        String name = file.getName();
+                        if (name.endsWith("pre_VV.tif")) values.put("t1_vv_path", file.getAbsolutePath());
+                        else if (name.endsWith("pre_VH.tif")) values.put("t1_vh_path", file.getAbsolutePath());
+                        else if (name.endsWith("next_VV.tif")) values.put("t2_vv_path", file.getAbsolutePath());
+                        else if (name.endsWith("next_VH.tif")) values.put("t2_vh_path", file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
+    }
+
     @PreAuthorize("hasAnyAuthority('api_plantCover')")
     @PostMapping(value = "/api/plantCover")
     public ResultTemplate<Object> buildplantCoverProcessWithoutResult(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
-        String color_map=jsonObject.getStr("color_map");
         String userName=jsonObject.getStr("userName");
         String createUserId=jsonObject.getStr("createUserId");
-        String input_dir=jsonObject.getStr("input_dir");
-        String funcitionSelected="null";
         String className="plant";
         String observationTime=jsonObject.getStr("observationTime");
         User user=new User();
@@ -368,10 +401,6 @@ public class PythonExeController {
         {
             return ResultTemplate.fail("服务器繁忙，请稍后重试。");
         }
-        if(preview_png.equals("True"))
-        {
-            funcitionSelected+="preview_png";
-        }
 
 //        if(funcitionSelected.startsWith(","))
 //        {
@@ -383,7 +412,7 @@ public class PythonExeController {
             return ResultTemplate.fail("非法参数！");
         }
 
-        if(!modelName.equals("fanyan") && !modelName.equals("fanyanNN"))
+        if(!modelName.startsWith("fanyan"))
         {
             return ResultTemplate.fail("未知操作！");
         }
@@ -398,21 +427,23 @@ public class PythonExeController {
         modelFileStatus.setClassName(className);
         modelFileStatus.setUserName(userName);
         modelFileStatus.setCreateUserid(createUserId);
+        modelFileStatus.setObservationTime(observationTime);
+        modelFileStatus.setModelName(modelName);
         List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        String input_dir;
         if(!mapList.isEmpty())
         {
             String filepath=mapList.get(0).get("filepath").toString();
             filepath=filepath.replace("\\\\","\\");
             filepath=filepath.replace("//","/");
+            input_dir=filepath;
             //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
             filename=filepath.replace(FileRootDirPath,"");
         }else {
             return ResultTemplate.fail("请先提交文件！");
         }
         values.put("preview_png",preview_png);
-        if(input_dir!=null) {
-            values.put("input_dir", input_dir);
-        }
+        values.put("input_dir", input_dir);
         values.put("createUserid",createUserId);
         values.put("userName",userName);
         values.put("createTime",new Date().toString());

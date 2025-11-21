@@ -52,15 +52,8 @@ public class ModelFileStatusController {
                                                   @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
-                                                  @RequestParam("observationTime")String observationTime,
-                                                  @RequestParam("tifType") String tifType) {
-        if(tifType!=null)
-        {
-            if(!tifType.equals("VH")&&!tifType.equals("VV")&&!tifType.equals("HH"))
-            {
-                return ResultTemplate.fail("非法的tif类型");
-            }
-        }
+                                                  @RequestParam("observationTime")String observationTime) {
+
         if (file == null || file.isEmpty()) {
             return ResultTemplate.fail("文件不能为空");
         }
@@ -89,7 +82,7 @@ public class ModelFileStatusController {
         String filename ="";
         if(fileType.equalsIgnoreCase(".tif")) {
             filename = userName + "-" + userUid + "_" + observationTime +
-                    "_" + formattedDate + "_" + (tifType == null ? "HH" : tifType) + ".tif";
+                    "_" + formattedDate + "_" +  "HH"  + ".tif";
         } else if (fileType.equalsIgnoreCase(".zip")) {
             filename = userName + "-" + userUid + "_" + formattedDate + ".zip";
         }
@@ -122,7 +115,88 @@ public class ModelFileStatusController {
 
             // 保存文件记录到数据库
 
-            modelFileStatus.setType(tifType);
+            modelFileStatus.setType("only");
+            modelFileStatus.setDealStatus("success");
+            modelFileStatusService.updateDealStatusViod(modelFileStatus);
+
+            return ResultTemplate.success("文件上传成功");
+
+        } catch (IOException e) {
+            log.error("文件保存失败", e);
+            modelFileStatus.setDealStatus("failed");
+            modelFileStatusService.save(modelFileStatus);
+            return ResultTemplate.fail("文件保存失败: " + e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/api/modelFile/uploadMul")
+    public ResultTemplate<Object> uploadModelFile(@RequestParam("tiffiles") MultipartFile[] files,
+                                                  @RequestParam("createUserId") String userUid,
+                                                  @RequestParam("userName") String userName,
+                                                  @RequestParam("className") String className,
+                                                  @RequestParam("observationTime")String observationTime) {
+
+        if (files == null || files.length == 0) {
+            return ResultTemplate.fail("文件不能为空");
+        }
+        List<String> classNameList = modelListService.getAllClassName();
+        if (!classNameList.contains(className)) {
+            return ResultTemplate.fail("非法的类型参数！");
+        }
+        if (!userAlive(userUid, userName, className)) {
+            return ResultTemplate.fail("非法用户！");
+        }
+        String fileType="tif";
+        for (MultipartFile file : files) {
+            String originalFilename = file.getOriginalFilename();
+            fileType = originalFilename.substring(originalFilename.lastIndexOf("."));
+            if (!fileType.equalsIgnoreCase(".tif")&&!fileType.equalsIgnoreCase(".zip")) {
+                return ResultTemplate.fail("文件类型错误！");
+            }
+
+        }
+
+        if (!couldUpload(className)) {
+            return ResultTemplate.fail("服务器繁忙，请稍后重试");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date date = new Date();
+        String formattedDate = sdf.format(date);
+        String filename = userName + "-" + userUid + "_" + observationTime +
+                "_" + formattedDate;
+        String directoryPath = FileRootDirPath + File.separator + className+File.separator+filename+File.separator;
+        ModelFileStatus modelFileStatus = new ModelFileStatus();
+        modelFileStatus.setCreateUserid(userUid);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setFilepath(directoryPath);
+        modelFileStatus.setCreateTime(date);
+        modelFileStatus.setUpdateTime(date);
+        modelFileStatus.setObservationTime(observationTime);
+        List<Map<String,Object>> list = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        if(!list.isEmpty()){
+            return ResultTemplate.fail("当天数据已经存在！");
+        }
+        try {
+            // 创建目录（如果不存在）
+            modelFileStatus.setDealStatus("executing");
+            modelFileStatusService.save(modelFileStatus);
+            File directory = new File(directoryPath);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // 保存文件
+            for(MultipartFile file : files) {
+                File dest = new File(directoryPath+File.separator+file.getOriginalFilename());
+                file.transferTo(dest);
+            }
+
+            // 保存文件记录到数据库
+
+            modelFileStatus.setType("multiple");
             modelFileStatus.setDealStatus("success");
             modelFileStatusService.updateDealStatusViod(modelFileStatus);
 
@@ -192,7 +266,7 @@ public class ModelFileStatusController {
         Date date = new Date();
         String formattedDate = sdf.format(date);
         String filename = userName + "-" + userUid + "_" + modelMame + "_" +
-                observationTime + "_" + formattedDate + File.separator;
+                observationTime + "-" + formattedDate + File.separator;
         directoryPath += filename;
 
         // 创建文件状态记录

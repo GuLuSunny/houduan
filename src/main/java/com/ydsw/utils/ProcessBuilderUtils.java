@@ -380,6 +380,18 @@ public class ProcessBuilderUtils {
         System.out.println(modelStatus);
     }
 
+    private static void logUsageStatus(ModelStatus modelStatus0,String status) {
+        ModelStatus modelStatus = new ModelStatus(modelStatus0);
+        modelStatus.setUsageStatus(status);
+        if (Objects.equals(status, "executing")) {
+            modelStatus.setCreateTime(new Date());
+            modelStatusService.save(modelStatus);
+            System.out.println(modelStatus);
+            return;
+        }
+        modelStatusService.updateModelStatus(modelStatus);
+        System.out.println(modelStatus);
+    }
     /**
      * 后台执行Python脚本（完全异步，不关心结果）
      *
@@ -434,7 +446,80 @@ public class ProcessBuilderUtils {
             }
         });
     }
+    //plant
+    public static void executeInBackground(String scriptPath, List<String> args,
+                                           Map<String, String> envVars,ModelStatus modelStatus) {
+        executorService.submit(() -> {
+            try {
+                // 构建命令
+                List<String> command = new ArrayList<>();
+                if (modelStatus.getType().equals("lower"))
+                {
+                    command.add(lowerPythonPath);
+                }else
+                {
+                    command.add(winPythonPath);
+                }
 
+                command.add(scriptPath);
+                if (args != null) {
+                    command.addAll(args);
+                }
+
+                ProcessBuilder pb = new ProcessBuilder(command);
+
+                // 设置工作目录
+                File workingDir = new File(scriptPath).getParentFile();
+                if (workingDir != null) {
+                    pb.directory(workingDir);
+                }
+
+                // 添加环境变量
+                if (envVars != null) {
+                    Map<String, String> env = pb.environment();
+                    env.putAll(envVars);
+                }
+                // 关键环境变量设置
+                pb.environment().put("PYTHONIOENCODING", "UTF-8");
+                pb.environment().put("PYTHONUNBUFFERED", "1");
+                pb.environment().put("PYTHONUTF8", "1");  // Python 3.7+ 额外保险
+
+                // 重定向输出到日志文件（可选）
+                File logFile = new File(workingDir, "python_background.log");
+                pb.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
+                pb.redirectError(ProcessBuilder.Redirect.appendTo(logFile));
+
+                // 启动进程（不等待结束）
+                Process process = pb.start();
+                logUsageStatus(modelStatus,"executing");
+
+                // 仅记录进程启动信息
+                System.out.println("Python脚本已在后台启动，PID: " + getProcessId(process));
+                // 不调用process.waitFor()，让进程自主运行
+
+                // 监听结束事件
+                new Thread(() -> {
+                    try {
+                        int exitCode = process.waitFor();
+                        System.out.println("🏁 执行结束 | 退出码: " + exitCode);
+
+                        if(exitCode == 0) {
+                            logUsageStatus(modelStatus,"success") ; // 成功回调
+                        } else {
+                            logUsageStatus(modelStatus,"failed");  // 失败回调
+                        }
+
+                    } catch (InterruptedException e) {
+                        System.err.println("监听线程被中断");
+                        Thread.currentThread().interrupt();
+                    }
+                }).start();
+            } catch (IOException e) {
+                logUsageStatus(modelStatus,"failed");
+                System.err.println("后台执行Python脚本失败: " + e.getMessage());
+            }
+        });
+    }
 
     /**
      * 获取进程ID（跨平台实现）

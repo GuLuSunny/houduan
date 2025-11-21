@@ -99,6 +99,21 @@ public class ModelStatus implements Serializable {
 
     public ModelStatus() {}
 
+    public ModelStatus(ModelStatus modelStatus) {
+        this.id=null;
+        this.modelName = modelStatus.getModelName();
+        this.usageStatus = modelStatus.getUsageStatus();
+        this.status = modelStatus.getStatus();
+        this.createTime = modelStatus.getCreateTime();
+        this.updateTime = modelStatus.getUpdateTime();
+        this.userName = modelStatus.getUserName();
+        this.createUserid = modelStatus.getCreateUserid();
+        this.dataIntroduction = modelStatus.getDataIntroduction();
+        this.functionSelected = modelStatus.getFunctionSelected();
+        this.className = modelStatus.getClassName();
+        this.observationTime = modelStatus.getObservationTime();
+        this.type = modelStatus.getType();
+    }
     public ModelStatus(Map<String,Object> map) {
         this.setId((Integer)map.get("id"));
         this.setModelName((String)map.get("model_name"));

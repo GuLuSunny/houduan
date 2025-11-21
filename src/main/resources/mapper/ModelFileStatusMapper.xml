@@ -17,12 +17,13 @@
             <result property="dataIntroduction" column="data_introduction" />
             <result property="observationTime" column="observation_time" />
             <result property="type" column="type" />
+            <result property="modelName" column="model_name"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,class_name,deal_status,filepath,user_name,create_userid,
         create_time,update_time,status,data_introduction,observation_time,
-        type
+        type,model_name
     </sql>
     <update id="dropModelFileStatus">
         update model_file_status set status=1
@@ -55,7 +56,7 @@
         </where>
     </update>
     <update id="updateDealStatusViod">
-        update model_file_status set deal_status = #{modelFileStatusClass.dealStatus}
+        update model_file_status set deal_status = #{modelFileStatusClass.dealStatus}, "type" = #{modelFileStatusClass.type}
         <where>
             <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
                 class_name = #{modelFileStatusClass.className}
@@ -75,7 +76,7 @@
         select "user_name" as "userName",
                "create_userid" as "createUserid","deal_status" as "dealStatus",
                "observation_time" as "observationTime","create_time" as "createTime" ,
-               "filepath"
+               "filepath",model_name as "modelName"
         from model_file_status
         <where>
             <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
@@ -92,6 +93,9 @@
             </if>
             <if test="modelFileStatusClass.dealStatus!=null and modelFileStatusClass.dealStatus.trim()!=''">
                 and deal_status=#{modelFileStatusClass.dealStatus}
+            </if>
+            <if test="modelFileStatusClass.modelName!=null and modelFileStatusClass.modelName.trim()!=''">
+                and model_name = #{modelFileStatusClass.modelName}
             </if>
             and status =0
         </where>
