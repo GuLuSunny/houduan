@@ -157,7 +157,7 @@ public class ModelFileStatusController {
 
         }
 
-        if (!couldUpload(className)) {
+        if (!couldUpload(className,observationTime)) {
             return ResultTemplate.fail("服务器繁忙，请稍后重试");
         }
 
@@ -214,7 +214,7 @@ public class ModelFileStatusController {
     public ResultTemplate<Object> getTrainData(@RequestParam("dataset") MultipartFile dataset,
                                                @RequestParam("createUserid") String userUid,
                                                @RequestParam("userName") String userName,
-                                               @RequestParam("modelMame") String modelMame,
+                                               @RequestParam("modelName") String modelMame,
                                                @RequestParam("className") String className) {
         String filename = userName + "-" + userUid+"_"+modelMame+ "_train.tif";
         String directoryPath = FileRootDirPath + File.separator + className;
@@ -257,7 +257,7 @@ public class ModelFileStatusController {
     public ResultTemplate<Object> plantFilesUpload(@RequestParam("files") MultipartFile[] files,
                                                    @RequestParam("createUserid") String userUid,
                                                    @RequestParam("userName") String userName,
-                                                   @RequestParam("modelMame") String modelMame,
+                                                   @RequestParam("modelName") String modelMame,
                                                    @RequestParam("className") String className,
                                                    @RequestParam("observationTime") String observationTime) {
 
@@ -492,6 +492,27 @@ public class ModelFileStatusController {
             {
                 SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
                 if(fmt.format(date1).equals(fmt.format((Date) map.get("createTime")))) {
+                    return false;
+                }
+                ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
+                modelFileStatusService.dropModelFileStatus(new ArrayList<>(), modelFileStatus1);
+            }
+        }
+        return true;
+    }
+
+    private boolean couldUpload(String className,String observationTime)
+    {
+        ModelFileStatus modelFileStatus = new ModelFileStatus();
+        modelFileStatus.setClassName(className);
+        List<Map<String,Object>> usages = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        for (Map<String,Object> map : usages) {
+            if(Objects.equals(map.get("dealStatus").toString(), "executing"))
+            {
+                return false;
+            }else if(Objects.equals(map.get("dealStatus").toString(), "success"))
+            {
+                if(observationTime.equals(map.get("observationTime"))) {
                     return false;
                 }
                 ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
