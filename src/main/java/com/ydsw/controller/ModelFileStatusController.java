@@ -537,29 +537,29 @@ public class ModelFileStatusController {
         String modelName = jsonObject.getStr("modelName");
         String userName=jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
-        String fileName=modelName+"_prediction_preview.png";
         String relativePath="";
+        String observationTime= jsonObject.getStr("observationTime");
+        String className = jsonObject.getStr("className");
+        if(observationTime.isEmpty() || className.isEmpty())
+        {
+            return ResponseEntity.status(500).build();
+        }
+        String year=observationTime.substring(0,4);
+        String month=observationTime.substring(5,7);
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        modelFileStatus.setObservationTime(observationTime);
+
         if(modelName.equals("XGB")||modelName.equals("CNN"))
         {
-            String observationTime= jsonObject.getStr("observationTime");
-            String className = jsonObject.getStr("className");
-            if(observationTime.isEmpty() || className.isEmpty())
-            {
-                return ResponseEntity.status(500).build();
-            }
-            String year=observationTime.substring(0,4);
-            String month=observationTime.substring(5,7);
-            ModelFileStatus modelFileStatus=new ModelFileStatus();
-            modelFileStatus.setDealStatus("success");
-            modelFileStatus.setClassName(className);
-            modelFileStatus.setUserName(userName);
-            modelFileStatus.setCreateUserid(createUserId);
-            modelFileStatus.setObservationTime(observationTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
                 //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
                 String filename=filepath.replace(FileRootDirPath,"");
 
@@ -569,7 +569,27 @@ public class ModelFileStatusController {
                 return ResponseEntity.status(400).build();
             }
         }
+        else if(modelName.equals("rfV2")||modelName.equals("CNNV2"))
+        {
+            modelFileStatus.setType("multiple");
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace(FileRootDirPath+"land"+File.separator,"");
+                filename = filename.substring(0,filename.length()-1)+"_SAR";
+                relativePath =year+File.separator+month+File.separator+
+                        filename+File.separator;
+                modelName=filename;
+            }else {
+                return ResponseEntity.status(400).build();
+            }
+        }
+        String fileName=modelName+"_prediction_preview.png";
         Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
+
         return getImageResponse(filePath, fileName);
     }
 
@@ -703,24 +723,66 @@ public class ModelFileStatusController {
     @PostMapping("/api/modelFile/PlantDownload")
     public ResponseEntity<Resource> downloadPlantFiles(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
+        String userName=jsonObject.getStr("userName");
+        String createUserId = jsonObject.getStr("createUserId");
+        String relativePath="";
+        String observationTime= jsonObject.getStr("observationTime");
+        String className = jsonObject.getStr("className");
+        String fileName = "200502_"+modelName ;
         if(modelName.equals("fanyan"))
         {
             modelName="RF";
+            fileName = "200502_"+modelName ;
         } else if (modelName.equals("fanyanNN")) {
             modelName="GA_1DResNet";
+            fileName = "200502_"+modelName ;
+        }else {
+            String year=observationTime.substring(0,4);
+            String month=observationTime.substring(5,7);
+            ModelFileStatus modelFileStatus=new ModelFileStatus();
+            modelFileStatus.setDealStatus("success");
+            modelFileStatus.setClassName(className);
+            modelFileStatus.setUserName(userName);
+            modelFileStatus.setCreateUserid(createUserId);
+            modelFileStatus.setObservationTime(observationTime);
+            modelFileStatus.setModelName(modelName);
+            if (modelName.equals("fanyanV2")) {
+                modelName = "Ada_XGB";
+                fileName=modelName;
+
+            } else if (modelName.equals("fanyanRF")) {
+                modelName = "RF";
+                fileName=modelName;
+            }
+            modelFileStatus.setType("multiple");
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace(FileRootDirPath+"plant"+File.separator,"");
+
+                relativePath =year+File.separator+month+File.separator+
+                        filename.substring(0,filename.length()-1)+"_"+modelName+File.separator;
+            }else {
+                return ResponseEntity.status(400).build();
+            }
         }
+
         String type=  jsonObject.get("type").toString();
         String pngType = (jsonObject.get("pngType").toString().isEmpty()?"simple":jsonObject.get("pngType").toString());
-        String fileName = "200502_"+modelName ;
-        Path filePath = Paths.get(plantResultPath, fileName);
+
+
+        Path filePath;
         if(Objects.equals(type, "tif"))
         {
             fileName+="."+type;
-            filePath =Paths.get(plantResultPath, fileName);
+            filePath =Paths.get(plantResultPath+relativePath, fileName);
             return getFileResponse(filePath, fileName, "image/tiff");
         } else if (Objects.equals(type, "png")) {
             fileName+="_"+pngType+"."+type;
-            filePath =  Paths.get(plantResultPath, fileName);
+            filePath =  Paths.get(plantResultPath+relativePath, fileName);
             return getImageResponse(filePath, fileName);
         }else{
             return ResponseEntity.status(500).body(null);

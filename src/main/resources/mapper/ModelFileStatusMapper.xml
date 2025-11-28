@@ -97,6 +97,9 @@
             <if test="modelFileStatusClass.modelName!=null and modelFileStatusClass.modelName.trim()!=''">
                 and model_name = #{modelFileStatusClass.modelName}
             </if>
+            <if test="modelFileStatusClass.type!=null and modelFileStatusClass.type.trim()!=''">
+                and "type" = #{modelFileStatusClass.type}
+            </if>
             and status =0
         </where>
     </select>
