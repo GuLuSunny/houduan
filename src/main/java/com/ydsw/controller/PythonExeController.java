@@ -55,10 +55,10 @@ public class PythonExeController {
     @Autowired
     private ModelStatusService modelStatusService;
     
-    private final String codeRootPath = "D:"+File.separator+"heigankoumodel"+File.separator+"code"+File.separator;
-    final private String FileRootDirPath="D:"+File.separator+"heigangkoumodel"+File.separator+"fileTemp"+File.separator;
-    private final String waterChangePYPath="D:/heigangkoumodel/code/waterchangeforuse.py";
-    private final String condaPYPath="/user/miniconda3/envs/heigangkouenv/bin/python";
+    private final String codeRootPath = "D:"+File.separator+"recognition"+File.separator+"code"+File.separator;
+    final private String FileRootDirPath="D:"+File.separator+"recognition"+File.separator+"fileTemp"+File.separator;
+    private final String waterChangePYPath="D:/recognition/code/waterchangeforuse.py";
+    private final String condaPYPath="C:\\Users\\lenovo\\miniconda3\\envs\\version12\\python.exe";
 
     @PreAuthorize("hasAnyAuthority('api_groupType')")
     @PostMapping(value = "/api/groupType")
@@ -143,7 +143,7 @@ public class PythonExeController {
         }
 
         // 创建保存目录
-        String baseDir = "D:/heigankoumodel/shuju/";
+        String baseDir = "D:/recognition/shuju/";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             return ResultTemplate.fail("目录创建失败！请联系管理员");
@@ -248,7 +248,7 @@ public class PythonExeController {
         }
         user.setId(Integer.valueOf(createUserId));
         user.setMemo(modelName);
-        if(!couldVisit(modelName))
+        if(!couldVisit(modelName,observationTime))
         {
             return ResultTemplate.fail("服务器繁忙，请稍后重试。");
         }
@@ -449,7 +449,23 @@ public class PythonExeController {
         values.put("createTime",new Date().toString());
         values.put("filename",filename);
         try {
-            ProcessBuilderUtils.executeInBackground(filePath,null,values);
+            if (!modelName.equals("fanyanV2"))
+            {
+                user.setAddress("preview_png");
+                user.setProductionCompany(className);
+                ProcessBuilderUtils.executeInBackground(filePath,null,values,user);
+            }else  {
+                ModelStatus modelStatus = new ModelStatus();
+                modelStatus.setUserName(userName);
+                modelStatus.setCreateUserid(createUserId);
+                modelStatus.setObservationTime(observationTime);
+                modelStatus.setModelName(modelName);
+                modelStatus.setClassName(className);
+                modelStatus.setUpdateTime(new Date());
+                modelStatus.setCreateTime(new Date());
+                ProcessBuilderUtils.executeInBackground(filePath,null,values,modelStatus);
+            }
+
         }catch (RuntimeException e){
             ResultTemplate.fail("程序执行失败！");
         }catch (Exception e){
@@ -519,7 +535,31 @@ public class PythonExeController {
         }
         return true;
     }
-    
+
+    private  boolean couldVisit(String modelName,String observationTime)
+    {
+        ModelStatus modelStatus = new ModelStatus();
+        modelStatus.setModelName(modelName);
+        List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
+        for (Map<String,Object> map : usages) {
+            Date date1=new Date();
+            if(Objects.equals(map.get("usageStatus").toString(), "executing"))
+            {
+                return false;
+            }else if(Objects.equals(map.get("usageStatus").toString(), "success"))
+            {
+                if(observationTime.equals(map.get("observationTime"))) {
+                    return false;
+                }
+                if(Objects.equals(map.get("modelName").toString(), modelStatus.getModelName()))
+                {
+                    ModelStatus modelStatus1 = new ModelStatus(map);
+                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
+                }
+            }
+        }
+        return true;
+    }
 
     // 1. 获取文件URL的接口
     @PostMapping(value = "/api/modelFile/getLandResult")
@@ -530,7 +570,7 @@ public class PythonExeController {
         Integer createUserId = jsonObject.getInt("createUserId");
 
         // 验证modelName合法性
-        if (!Arrays.asList("mlp", "rf", "xgb", "svm","XGB","CNN").contains(modelName)) {
+        if (!Arrays.asList("mlp", "rf", "xgb", "svm","XGB","CNN","rfV2","CNNV2").contains(modelName)) {
             return ResultTemplate.fail("非法的模型名");
         }
         User user = new User();
@@ -655,7 +695,7 @@ public class PythonExeController {
         }
 
         // 2. 创建保存目录
-        String baseDir = "D:/heigankoumodel/tudifugaifenlei/shuju/";
+        String baseDir = "D:/recognition/tudifugaifenlei/shuju/";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             logger.error("临时目录创建失败: {}", baseDir);
@@ -816,7 +856,7 @@ public class PythonExeController {
         }
 
         // 2) 临时文件目录
-        String baseDir = "D://heigangkoumodel/code/output_results/";
+        String baseDir = "D://recognition/code/output_results/";
         File dir = new File(baseDir);
         if (!dir.exists() && !dir.mkdirs()) {
             return ResultTemplate.fail("临时目录创建失败");
@@ -863,7 +903,7 @@ public class PythonExeController {
 
             List<String> command = new ArrayList<>();
             command.add(condaPYPath);
-            command.add("D://heigangkoumodel/code/core.py");
+            command.add("D://recognition/code/core.py");
             command.add("--model");
             command.add(model);
             if (sarSave != null) {
@@ -917,7 +957,7 @@ public class PythonExeController {
             System.out.println("原始 Python 输出: " + outputStr);
             // 提取 JSON 部分
             // 方法1: 查找第一个 [ 和最后一个 ]
-            int start = outputStr.indexOf('[');
+            int start = outputStr.lastIndexOf('[');
             int end = outputStr.lastIndexOf(']');
 
             if (start == -1 || end == -1 || start >= end) {

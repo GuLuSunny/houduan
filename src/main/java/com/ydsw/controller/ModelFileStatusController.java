@@ -38,9 +38,9 @@ import java.util.stream.Collectors;
 public class ModelFileStatusController {
     @Autowired
     private ModelFileStatusService modelFileStatusService;
-    final private String FileRootDirPath="D:"+File.separator+"heigangkoumodel"+File.separator+"fileTemp"+File.separator;
+    final private String FileRootDirPath="D:"+File.separator+"recognition"+File.separator+"fileTemp"+File.separator;
 
-    private final String ResultRootPath = "D://heigangkoumodel/code/result/";
+    private final String ResultRootPath = "D://recognition/code/result/";
     @Autowired
     private UserService userService;
 
@@ -71,7 +71,7 @@ public class ModelFileStatusController {
             return ResultTemplate.fail("文件类型错误！");
         }
 
-        if (!couldUpload(className)) {
+        if (!couldUpload(className,observationTime)) {
             return ResultTemplate.fail("服务器繁忙，请稍后重试");
         }
 
@@ -135,7 +135,8 @@ public class ModelFileStatusController {
                                                   @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
-                                                  @RequestParam("observationTime")String observationTime) {
+                                                  @RequestParam("observationTime")String observationTime,
+                                                  @RequestParam("modelName") String modelName) {
 
         if (files == null || files.length == 0) {
             return ResultTemplate.fail("文件不能为空");
@@ -274,6 +275,7 @@ public class ModelFileStatusController {
         modelFileStatus.setCreateUserid(userUid);
         modelFileStatus.setUserName(userName);
         modelFileStatus.setClassName(className);
+        modelFileStatus.setModelName(modelMame);
         modelFileStatus.setFilepath(directoryPath);
         modelFileStatus.setDealStatus("executing");
         modelFileStatus.setType("multiple");

@@ -84,6 +84,17 @@ public class ExcelParserUtils {
         CTE.put("雨量累计(mm)", "rainfallAccumulation");
         CTE.put("辐射累计(MJ/m2)", "radiationAccumulation");
         CTE.put("PM10 (ug/m3)", "pm10");
+        CTE.put("相对湿度（%）", "relativeHumidity");
+        CTE.put("AQI指数", "aqiIndex");
+        CTE.put("首要污染物", "primaryPollutant");
+        CTE.put("空气质量等级", "airQualityLevel");
+        CTE.put("PM2.5(μg/m3)", "pm25");
+        CTE.put("PM10(μg/m3)", "pm10");
+        CTE.put("二氧化硫(μg/m3)", "sulfurDioxide");
+        CTE.put("二氧化氮(μg/m3)", "nitrogenDioxide");
+        CTE.put("一氧化碳（mg/m3）", "carbonMonoxide");
+        CTE.put("臭氧(μg/m3)", "ozone");
+        CTE.put("8小时臭氧（μg/m3）", "ozone8Hour");
 
         //径流//待定
         CTE.put("\n" +

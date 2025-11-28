@@ -41,7 +41,7 @@
             <if test="modelStatusClass.createUserid!=null and modelStatusClass.createUserid.trim()!=''">
                 AND create_userid = #{modelStatusClass.createUserid}
             </if>
-            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+            <if test="modelStatusClass.observationTime!=null and modelStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelStatusClass.observationTime}
             </if>
             AND status = 0

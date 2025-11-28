@@ -27,8 +27,8 @@ public class ProcessBuilderUtils {
     private static final ExecutorService executorService =
             Executors.newFixedThreadPool(10);
 
-    private static String winPythonPath = "D:\\Ananconda3\\envs\\heigangkouenv\\python.exe";
-    private static String lowerPythonPath = "D:\\Ananconda3\\envs\\lowerVersion\\python.exe";
+    private static String winPythonPath = "C:\\Users\\lenovo\\miniconda3\\envs\\version12\\python.exe";
+    private static String lowerPythonPath = "C:\\Users\\lenovo\\miniconda3\\envs\\version8\\python.exe";
 
     @Autowired
     public void setModelStatusService(ModelStatusService modelStatusService)
@@ -383,7 +383,9 @@ public class ProcessBuilderUtils {
     private static void logUsageStatus(ModelStatus modelStatus0,String status) {
         ModelStatus modelStatus = new ModelStatus(modelStatus0);
         modelStatus.setUsageStatus(status);
+        modelStatus.setUpdateTime(new Date());
         if (Objects.equals(status, "executing")) {
+
             modelStatus.setCreateTime(new Date());
             modelStatusService.save(modelStatus);
             System.out.println(modelStatus);
