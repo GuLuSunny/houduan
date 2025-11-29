@@ -463,6 +463,7 @@ public class PythonExeController {
                 modelStatus.setClassName(className);
                 modelStatus.setUpdateTime(new Date());
                 modelStatus.setCreateTime(new Date());
+                modelStatus.setType("lower");
                 ProcessBuilderUtils.executeInBackground(filePath,null,values,modelStatus);
             }
 

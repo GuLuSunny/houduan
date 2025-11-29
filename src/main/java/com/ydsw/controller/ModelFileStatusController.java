@@ -729,6 +729,9 @@ public class ModelFileStatusController {
         String observationTime= jsonObject.getStr("observationTime");
         String className = jsonObject.getStr("className");
         String fileName = "200502_"+modelName ;
+        String type=  jsonObject.get("type").toString();
+        String pngType = (jsonObject.get("pngType")==null?"simple":jsonObject.get("pngType").toString());
+
         if(modelName.equals("fanyan"))
         {
             modelName="RF";
@@ -747,9 +750,9 @@ public class ModelFileStatusController {
             modelFileStatus.setObservationTime(observationTime);
             modelFileStatus.setModelName(modelName);
             if (modelName.equals("fanyanV2")) {
-                modelName = "Ada_XGB";
+                modelName = "Ada-XGB";
                 fileName=modelName;
-
+                pngType = "prediction_preview";
             } else if (modelName.equals("fanyanRF")) {
                 modelName = "RF";
                 fileName=modelName;
@@ -770,14 +773,11 @@ public class ModelFileStatusController {
             }
         }
 
-        String type=  jsonObject.get("type").toString();
-        String pngType = (jsonObject.get("pngType").toString().isEmpty()?"simple":jsonObject.get("pngType").toString());
-
 
         Path filePath;
         if(Objects.equals(type, "tif"))
         {
-            fileName+="."+type;
+            fileName+="_prediction."+type;
             filePath =Paths.get(plantResultPath+relativePath, fileName);
             return getFileResponse(filePath, fileName, "image/tiff");
         } else if (Objects.equals(type, "png")) {
