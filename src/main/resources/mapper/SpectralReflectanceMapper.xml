@@ -64,11 +64,11 @@
     </select>
 
     <select id="selecetSpectralReflectancPageByObservationAndOrderBywavelength" resultType="java.util.Map">
-        select wavelength,filepath,observationTime, deviceId , "data", id
+        select wavelength,filepath,"observationTime", "deviceId" , "data", id
         FROM spectral_reflectance_view
         <where>
             <if test="spectralReflectanceClass.observationTime != null and spectralReflectanceClass.observationTime.trim() !=''">
-                AND observationTime LIKE '%' || #{spectralReflectanceClass.observationTime} || '%'
+                AND "observationTime" LIKE '%' || #{spectralReflectanceClass.observationTime} || '%'
             </if>
             <if test="spectralReflectanceClass.filepath != null and spectralReflectanceClass.filepath.trim() !=''">
                 AND filepath LIKE '%' || #{spectralReflectanceClass.filepath} || '%'
