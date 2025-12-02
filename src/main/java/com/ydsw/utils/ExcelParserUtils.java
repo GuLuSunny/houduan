@@ -161,10 +161,9 @@ public class ExcelParserUtils {
                     }
                 }
             }
-            List<String> objectFieldNameList = Arrays.stream(fields).map(o -> o.getName()).collect(Collectors.toList());
+            List<String> objectFieldNameList = Arrays.stream(fields).map(Field::getName).toList();
             //获取excel第fieldsRowNum行作为对象的字段名
             List<String> excelFieldNameList = new ArrayList<>();
-            rownum = 0;
             // 迭代行
             for (int m = 0; m <= sheet.getLastRowNum(); m++) {
 
@@ -653,7 +652,7 @@ public class ExcelParserUtils {
     public static void main(String[] args) throws IOException {
         //watetlevelExcelLocalFileTest();
         //spectralReflectance();
-        ObservationBirdExcelFill();
+        //ObservationBirdExcelFill();
     }
 
 

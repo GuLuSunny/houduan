@@ -36,6 +36,15 @@
         <result property="contactEmail" column="contact_email" />
         <result property="open" column="open" />
         <result property="dataIntroduction" column="data_introduction" />
+        <result property="relativeHumidity" column="relative_humidity" />
+        <result property="aqiIndex" column="aqi_index" />
+        <result property="primaryPollutant" column="primary_pollutant" />
+        <result property="airQualityLevel" column="air_quality_level" />
+        <result property="sulfurDioxide" column="sulfur_dioxide" />
+        <result property="nitrogenDioxide" column="nitrogen_dioxide" />
+        <result property="carbonMonoxide" column="carbon_monoxide" />
+        <result property="ozone" column="ozone" />
+        <result property="ozone8Our" column="ozone_8_our" />
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -44,7 +53,9 @@
         pm25,salinity,negative_oxygen_ion,rainfall_accumulation,radiation_accumulation,
         pm10,observation_time,create_time,type,user_name,
         filepath,filename,create_userid,status,contact_phone,
-        contact_address,production_unit,contact_email,open,data_introduction
+        contact_address,production_unit,contact_email,open,data_introduction,
+        relative_humidity,aqi_index,primary_pollutant,air_quality_level,sulfur_dioxide,
+        nitrogen_dioxide,carbon_monoxide,ozone,ozone_8_our
     </sql>
     <select id="fetchFilepathByObservationTimeAndClassName" resultType="java.util.Map">
         select  min(observation_time) as "observationTimeBegin",max(observation_time) as "observationTimeEnd",

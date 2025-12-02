@@ -466,10 +466,11 @@ public class AtmosphereController {
             return ResultTemplate.fail(e.getMessage());
         }
 
-        boolean flag = atmosphereService.saveBatch(atmosphereList);
-        if (flag) {
-            return ResultTemplate.success("运行成功，文件已保存！");
-        }
+        System.out.println("atmosphereList:"+atmosphereList);
+//        boolean flag = atmosphereService.saveBatch(atmosphereList);
+//        if (flag) {
+//            return ResultTemplate.success("运行成功，文件已保存！");
+//        }
         return ResultTemplate.fail("数据入库时出错！");
     }
     /*

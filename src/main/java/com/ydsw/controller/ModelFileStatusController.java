@@ -517,8 +517,8 @@ public class ModelFileStatusController {
                 if(observationTime.equals(map.get("observationTime"))) {
                     return false;
                 }
-                ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
-                modelFileStatusService.dropModelFileStatus(new ArrayList<>(), modelFileStatus1);
+//                ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
+//                modelFileStatusService.dropModelFileStatus(new ArrayList<>(), modelFileStatus1);
             }
         }
         return true;

@@ -67,6 +67,9 @@
             <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
                 and create_userid=#{modelFileStatusClass.createUserid}
             </if>
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
+            </if>
             and deal_status != 'failed'
             and status=0;
         </where>

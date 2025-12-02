@@ -203,6 +203,60 @@ public class Atmosphere implements Serializable {
     @TableField(value = "data_introduction")
     private String dataIntroduction;
 
+    /**
+     * 相对湿度（%）
+     */
+    @TableField(value = "relative_humidity")
+    private String relativeHumidity;
+
+    /**
+     * AQI指数
+     */
+    @TableField(value = "aqi_index")
+    private String aqiIndex;
+
+    /**
+     * 首要污染物
+     */
+    @TableField(value = "primary_pollutant")
+    private String primaryPollutant;
+
+    /**
+     * 空气质量等级
+     */
+    @TableField(value = "air_quality_level")
+    private String airQualityLevel;
+
+    /**
+     * 二氧化硫(μg/m3)
+     */
+    @TableField(value = "sulfur_dioxide")
+    private String sulfurDioxide;
+
+    /**
+     * 二氧化氮(μg/m3)
+     */
+    @TableField(value = "nitrogen_dioxide")
+    private String nitrogenDioxide;
+
+    /**
+     * 一氧化碳（mg/m3）
+     */
+    @TableField(value = "carbon_monoxide")
+    private String carbonMonoxide;
+
+    /**
+     * 臭氧(μg/m3)
+     */
+    @TableField(value = "ozone")
+    private String ozone;
+
+    /**
+     * 8小时臭氧（μg/m3）
+     */
+    @TableField(value = "ozone_8_hour")
+    private String ozone8Hour;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
     public Atmosphere() {}
@@ -222,8 +276,8 @@ public class Atmosphere implements Serializable {
         this.contactEmail = contactEmail;
         this.open = open;
         this.dataIntroduction = dataIntroduction;
-
     }
+
 
     @Override
     public boolean equals(Object that) {
@@ -267,7 +321,16 @@ public class Atmosphere implements Serializable {
                 && (this.getProductionUnit() == null ? other.getProductionUnit() == null : this.getProductionUnit().equals(other.getProductionUnit()))
                 && (this.getContactEmail() == null ? other.getContactEmail() == null : this.getContactEmail().equals(other.getContactEmail()))
                 && (this.getOpen() == null ? other.getOpen() == null : this.getOpen().equals(other.getOpen()))
-                && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()));
+                && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()))
+                && (this.getRelativeHumidity() == null ? other.getRelativeHumidity() == null : this.getRelativeHumidity().equals(other.getRelativeHumidity()))
+                && (this.getAqiIndex() == null ? other.getAqiIndex() == null : this.getAqiIndex().equals(other.getAqiIndex()))
+                && (this.getPrimaryPollutant() == null ? other.getPrimaryPollutant() == null : this.getPrimaryPollutant().equals(other.getPrimaryPollutant()))
+                && (this.getAirQualityLevel() == null ? other.getAirQualityLevel() == null : this.getAirQualityLevel().equals(other.getAirQualityLevel()))
+                && (this.getSulfurDioxide() == null ? other.getSulfurDioxide() == null : this.getSulfurDioxide().equals(other.getSulfurDioxide()))
+                && (this.getNitrogenDioxide() == null ? other.getNitrogenDioxide() == null : this.getNitrogenDioxide().equals(other.getNitrogenDioxide()))
+                && (this.getCarbonMonoxide() == null ? other.getCarbonMonoxide() == null : this.getCarbonMonoxide().equals(other.getCarbonMonoxide()))
+                && (this.getOzone() == null ? other.getOzone() == null : this.getOzone().equals(other.getOzone()))
+                && (this.getOzone8Hour() == null ? other.getOzone8Hour() == null : this.getOzone8Hour().equals(other.getOzone8Hour()));
     }
 
     @Override
@@ -305,6 +368,15 @@ public class Atmosphere implements Serializable {
         result = prime * result + ((getContactEmail() == null) ? 0 : getContactEmail().hashCode());
         result = prime * result + ((getOpen() == null) ? 0 : getOpen().hashCode());
         result = prime * result + ((getDataIntroduction() == null) ? 0 : getDataIntroduction().hashCode());
+        result = prime * result + ((getRelativeHumidity() == null) ? 0 : getRelativeHumidity().hashCode());
+        result = prime * result + ((getAqiIndex() == null) ? 0 : getAqiIndex().hashCode());
+        result = prime * result + ((getPrimaryPollutant() == null) ? 0 : getPrimaryPollutant().hashCode());
+        result = prime * result + ((getAirQualityLevel() == null) ? 0 : getAirQualityLevel().hashCode());
+        result = prime * result + ((getSulfurDioxide() == null) ? 0 : getSulfurDioxide().hashCode());
+        result = prime * result + ((getNitrogenDioxide() == null) ? 0 : getNitrogenDioxide().hashCode());
+        result = prime * result + ((getCarbonMonoxide() == null) ? 0 : getCarbonMonoxide().hashCode());
+        result = prime * result + ((getOzone() == null) ? 0 : getOzone().hashCode());
+        result = prime * result + ((getOzone8Hour() == null) ? 0 : getOzone8Hour().hashCode());
         return result;
     }
 
@@ -345,6 +417,15 @@ public class Atmosphere implements Serializable {
         sb.append(", contactEmail=").append(contactEmail);
         sb.append(", open=").append(open);
         sb.append(", dataIntroduction=").append(dataIntroduction);
+        sb.append(", relativeHumidity=").append(relativeHumidity);
+        sb.append(", aqiIndex=").append(aqiIndex);
+        sb.append(", primaryPollutant=").append(primaryPollutant);
+        sb.append(", airQualityLevel=").append(airQualityLevel);
+        sb.append(", sulfurDioxide=").append(sulfurDioxide);
+        sb.append(", nitrogenDioxide=").append(nitrogenDioxide);
+        sb.append(", carbonMonoxide=").append(carbonMonoxide);
+        sb.append(", ozone=").append(ozone);
+        sb.append(", ozone8Hour=").append(ozone8Hour);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
