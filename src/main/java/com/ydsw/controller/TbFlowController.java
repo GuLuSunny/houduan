@@ -291,86 +291,103 @@ public class TbFlowController {
             // Extract sheet names and first cell content
             Map<String, String> sheetNames = ExcelParserUtils.getSheetNamesAndFirstCellOfExcel(inputStream, fileType);
 
-                String firstCell = sheetNames.get("firstCell");
-                year = ExcelParserUtils.getOnlyNumsFromStr(firstCell.substring(0, 4));  // Extract 4-digit year
-                month = ExcelParserUtils.getOnlyNumsFromStr(firstCell.replaceAll(".*年", "").replaceAll("月.*", "")); // Extract month
+            String firstCell = sheetNames.get("firstCell");
+            year = ExcelParserUtils.getOnlyNumsFromStr(firstCell.substring(0, 4));  // Extract 4-digit year
+            month = ExcelParserUtils.getOnlyNumsFromStr(firstCell.replaceAll(".*年", "").replaceAll("月.*", "")); // Extract month
 
-                month = (month.length() == 1) ? "0" + month : month;
+            month = (month.length() == 1) ? "0" + month : month;
 
-                JSONArray singleRCArray = new JSONArray();
-                List list = new ArrayList();
-                list.add(1);
-                list.add(0);
-                singleRCArray.add(list);
+            JSONArray singleRCArray = new JSONArray();
+            List list = new ArrayList();
+            list.add(1);
+            list.add(0);
+            singleRCArray.add(list);
 
-                // Make sure to reset the InputStream for the new sheet
-                inputStream = fileMul.getInputStream();  // Reset the stream
-                JSONObject flowData = ExcelParserUtils.parseExcelFile(inputStream, FlowExcel.class, 0, 3, 4, singleRCArray, fileType);
-                JSONArray rows = flowData.getJSONArray("classlist");
+            // Make sure to reset the InputStream for the new sheet
+            inputStream = fileMul.getInputStream();  // Reset the stream
+            JSONObject flowData = ExcelParserUtils.parseExcelFile(inputStream, FlowExcel.class, 0, 3, 4, singleRCArray, fileType);
+            JSONArray rows = flowData.getJSONArray("classlist");
 
-                List<FlowExcel> flowExcelList = JSONUtil.toList(rows, FlowExcel.class);
-                List<Device> deviceList= deviceService.fetchDeviceData(null,"伊河东湾","02");
-                Integer deviceId1 =deviceList.get(0).getId();
-                deviceList= deviceService.fetchDeviceData(null,"伊河陆浑坝下","02");
-                Integer deviceId2 =deviceList.get(0).getId();
-                  for (FlowExcel flowExcel : flowExcelList) {
-                    // Ensure 'row' is not null and has necessary data
-                    if (flowExcel == null || flowExcel.getDay() == null || flowExcel.getDay().isEmpty()) {
-                        continue; // Skip if the row is null or day is empty
-                    }
+            List<FlowExcel> flowExcelList = JSONUtil.toList(rows, FlowExcel.class);
 
-                    String day = flowExcel.getDay();
-                    day=day.substring(0,day.length()-2);
-                    day = (day.length() == 1) ? "0" + day : day;
+            Integer deviceId1;
+            Integer deviceId2;
+            String deviceName1="";
+            String deviceName2="";
+            inputStream = fileMul.getInputStream();
+            Map<String,String> AllCellInRow=ExcelParserUtils.getAllCellByRowNum(inputStream,fileType,2);
 
-                    String observationTime = year + "-" + month + "-" + day;
-                      String regex = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
-                      Pattern pattern = Pattern.compile(regex);
-                      Matcher m = pattern.matcher(observationTime);
-                      boolean dateFlag = m.matches();
-                      if (!dateFlag) {
-                          return ResultTemplate.fail("请检查日期是否按模板填写！");
-                      }
-                      DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                      try{
-                          Date date = formatter.parse(observationTime);
-                          System.out.println(date);
-                      }catch(Exception e){
-                            return ResultTemplate.fail("请检查日期是否按模板填写！");
-                      }
-                    // Add each location's flow data for this date
-                    String data1=flowExcel.getData1();
-                    String data2=flowExcel.getData2();// Convert List<String> to String[]
-                      if(data1==null||data2==null)
-                      {
-                          return ResultTemplate.fail("数据不在允许范围内!");
-                      }
-                    if(!data1.isEmpty())
-                    {
-                        TbFlow tbFlow1=new TbFlow(deviceId1,data1,observationTime,new Date(),fileType,userName,filePathName,fileNameOutOfType,userUid,0,contactPhone,contactAddress,productionUnit,contactEmail,open,dataIntroduction);
-                        List<Map<String,Object>> mapList=tbFlowService.selectFlowByObservationTimeAndDeviceId(observationTime,deviceId1);
-                        for (Map<String,Object> map : mapList) {
-                            if(Objects.equals(observationTime,map.get("observationTime"))&&Objects.equals(deviceId1,map.get("deviceId"))){
-                                deviceList=deviceService.fetchDeviceData(deviceId1,null,"02");
-                                return ResultTemplate.fail("该日："+observationTime+",此地："+deviceList.get(0).getDeviceName()+"已经存在！");
-                            }
-                        }
-                        tbFlowList.add(tbFlow1);
-                    }
-                    if(!data2.isEmpty())
-                    {
-                        TbFlow tbFlow2=new TbFlow(deviceId2,data2,observationTime,new Date(),fileType,userName,filePathName,fileNameOutOfType,userUid,0,contactPhone,contactAddress,productionUnit,contactEmail,open,dataIntroduction);
-                        List<Map<String,Object>> mapList=tbFlowService.selectFlowByObservationTimeAndDeviceId(observationTime,deviceId2);
-                        for (Map<String,Object> map : mapList) {
-                            if(Objects.equals(observationTime,map.get("observationTime"))&&Objects.equals(deviceId2,map.get("deviceId"))){
-                                deviceList=deviceService.fetchDeviceData(deviceId2,null,"02");
-                                return ResultTemplate.fail("该日："+observationTime+",此地："+deviceList.get(0).getDeviceName()+"已经存在！");
-                            }
-                        }
-                        tbFlowList.add(tbFlow2);
-                    }
+            if (AllCellInRow != null) {
+                String[] Cells = AllCellInRow.get("Cells").split("##");
+                String[] Cell = Cells[0].split(",");
+                deviceName1 = Cell[1];
+                deviceName2 = Cell[2];
 
+            }else {
+                return ResultTemplate.fail("未知的站点信息");
+            }
+            List<Device> deviceList = deviceService.fetchDeviceData(null, deviceName1, "02");
+            deviceId1 = deviceList.get(0).getId();
+            deviceList = deviceService.fetchDeviceData(null, deviceName2, "02");
+            deviceId2 = deviceList.get(0).getId();
+              for (FlowExcel flowExcel : flowExcelList) {
+                // Ensure 'row' is not null and has necessary data
+                if (flowExcel == null || flowExcel.getDay() == null || flowExcel.getDay().isEmpty()) {
+                    continue; // Skip if the row is null or day is empty
                 }
+
+                String day = flowExcel.getDay();
+                day=day.substring(0,day.length()-2);
+                day = (day.length() == 1) ? "0" + day : day;
+
+                String observationTime = year + "-" + month + "-" + day;
+                  String regex = "[0-9]{4}-[0-9]{2}-[0-9]{2}";
+                  Pattern pattern = Pattern.compile(regex);
+                  Matcher m = pattern.matcher(observationTime);
+                  boolean dateFlag = m.matches();
+                  if (!dateFlag) {
+                      return ResultTemplate.fail("请检查日期是否按模板填写！");
+                  }
+                  DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                  try{
+                      Date date = formatter.parse(observationTime);
+                      System.out.println(date);
+                  }catch(Exception e){
+                        return ResultTemplate.fail("请检查日期是否按模板填写！");
+                  }
+                // Add each location's flow data for this date
+                String data1=flowExcel.getData1();
+                String data2=flowExcel.getData2();// Convert List<String> to String[]
+                if(data1==null||data2==null)
+                {
+                    return ResultTemplate.fail("数据不在允许范围内!");
+                }
+                if(!data1.isEmpty())
+                {
+                    TbFlow tbFlow1=new TbFlow(deviceId1,data1,observationTime,new Date(),fileType,userName,filePathName,fileNameOutOfType,userUid,0,contactPhone,contactAddress,productionUnit,contactEmail,open,dataIntroduction);
+                    List<Map<String,Object>> mapList=tbFlowService.selectFlowByObservationTimeAndDeviceId(observationTime,deviceId1);
+                    for (Map<String,Object> map : mapList) {
+                        if(Objects.equals(observationTime,map.get("observationTime"))&&Objects.equals(deviceId1,map.get("deviceId"))){
+                            deviceList=deviceService.fetchDeviceData(deviceId1,null,"02");
+                            return ResultTemplate.fail("该日："+observationTime+",此地："+deviceList.get(0).getDeviceName()+"已经存在！");
+                        }
+                    }
+                    tbFlowList.add(tbFlow1);
+                }
+                if(!data2.isEmpty())
+                {
+                    TbFlow tbFlow2=new TbFlow(deviceId2,data2,observationTime,new Date(),fileType,userName,filePathName,fileNameOutOfType,userUid,0,contactPhone,contactAddress,productionUnit,contactEmail,open,dataIntroduction);
+                    List<Map<String,Object>> mapList=tbFlowService.selectFlowByObservationTimeAndDeviceId(observationTime,deviceId2);
+                    for (Map<String,Object> map : mapList) {
+                        if(Objects.equals(observationTime,map.get("observationTime"))&&Objects.equals(deviceId2,map.get("deviceId"))){
+                            deviceList=deviceService.fetchDeviceData(deviceId2,null,"02");
+                            return ResultTemplate.fail("该日："+observationTime+",此地："+deviceList.get(0).getDeviceName()+"已经存在！");
+                        }
+                    }
+                    tbFlowList.add(tbFlow2);
+                }
+
+            }
             // Save the file
             ExcelParserUtils.saveFile(maps.get("savePath"), maps.get("fileName"), fileMul);
         } catch (IOException e) {

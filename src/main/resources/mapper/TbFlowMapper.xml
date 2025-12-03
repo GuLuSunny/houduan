@@ -87,10 +87,10 @@
         from tb_flow
         <where>
             <if test="tbFlowClass.observationTime != null and tbFlowClass.observationTime.trim() != ''">
-                and observation_time LIKE '%' || #{tbFlowClass.observationTime},  || '%'
+                and observation_time LIKE '%' || #{tbFlowClass.observationTime}  || '%'
             </if>
             <if test="tbFlowClass.filepath != null and tbFlowClass.filepath.trim() != ''">
-                and filename LIKE '%' || #{tbFlowClass.filepath},  || '%'
+                and filename LIKE '%' || #{tbFlowClass.filepath}  || '%'
             </if>
             <if test="tbFlowClass.deviceId != null">
                 AND device_id = #{tbFlowClass.deviceId}
