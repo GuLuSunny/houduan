@@ -389,8 +389,8 @@ public class TbWaterLevelController {
                 }
                 p.putInArray(Result);//重写实体类方法
                 for (int i = 0; i < 12; i++) {
-                    if (Result[i].isEmpty() || Result[i] == null) {
-
+                    if (Result[i].isEmpty() || Result[i] == null || Result[i].equals("")) {
+                        continue;
                     } else {
                         //观测时间
                         ResultTime = "";
@@ -421,6 +421,7 @@ public class TbWaterLevelController {
                     }
                 }
             }
+
             //保存文件
             try {
                 ExcelParserUtils.saveFile(maps.get("savePath"), maps.get("fileName"), fileMul);

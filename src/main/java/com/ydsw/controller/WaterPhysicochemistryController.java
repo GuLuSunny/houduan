@@ -210,6 +210,16 @@ public class WaterPhysicochemistryController {
                         waterPhysicochemistryList.remove(waterPhysicochemistry);
                         break;
                     }
+                    if (waterPhysicochemistry.getWaterTemperature() == null || waterPhysicochemistry.getWaterTemperature().isEmpty()
+                    && (waterPhysicochemistry.getChlorophyll() == null || waterPhysicochemistry.getChlorophyll().isEmpty())
+                    && (waterPhysicochemistry.getCodmn() == null || waterPhysicochemistry.getCodmn().isEmpty())
+                    && (waterPhysicochemistry.getDissolvedOxygen() == null  || waterPhysicochemistry.getDissolvedOxygen().isEmpty())
+                    && (waterPhysicochemistry.getTn() == null || waterPhysicochemistry.getTn().isEmpty())
+                    && (waterPhysicochemistry.getTp() == null || waterPhysicochemistry.getTp().isEmpty())
+                    ){
+                        waterPhysicochemistryList.remove(waterPhysicochemistry);
+                        break;
+                    }
                     String deviceId = waterPhysicochemistry.getDeviceId();
                     List<Device> deviceList= deviceService.fetchDeviceData(null,deviceId,"01");
                     deviceId = String.valueOf(deviceList.get(0).getId());
