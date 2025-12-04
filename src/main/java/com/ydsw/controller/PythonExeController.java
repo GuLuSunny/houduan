@@ -724,8 +724,10 @@ public class PythonExeController {
         int exitCode = -1;
         Process process = null;
         BufferedReader reader = null;
+        // 添加环境变量
 
         try {
+// 修改 ProcessBuilder 设置
             ProcessBuilder pb = new ProcessBuilder(
                     condaPYPath,
                     waterChangePYPath,
@@ -734,6 +736,20 @@ public class PythonExeController {
                     "3"
             );
             pb.redirectErrorStream(true);
+
+            // 设置工作目录为脚本所在目录
+            File scriptFile = new File(waterChangePYPath);
+            File scriptDir = scriptFile.getParentFile();
+            if (scriptDir != null && scriptDir.exists()) {
+                pb.directory(scriptDir);
+            }
+
+            pb.environment().put("EARLY_PATH", earlySave.getAbsolutePath());
+            pb.environment().put("LATE_PATH", lateSave.getAbsolutePath());
+
+            // 添加环境变量来指定结果目录（可选，也可以让Python脚本自动使用工作目录）
+            pb.environment().put("RESULT_DIR", scriptDir != null ?
+                    new File(scriptDir, "result").getAbsolutePath() : "./result");
 
             process = pb.start();
 
