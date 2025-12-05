@@ -324,6 +324,7 @@ public class PythonExeController {
             }
             user.setAddress(funcitionSelected);
             user.setProductionCompany(className);
+            user.setPassword(observationTime);
             ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
         }catch (RuntimeException e) {
 
@@ -397,7 +398,8 @@ public class PythonExeController {
         }
         user.setId(Integer.valueOf(createUserId));
         user.setMemo(modelName);
-        if(!couldVisit(modelName))
+        user.setPassword(observationTime);
+        if(!couldVisit(modelName,observationTime))
         {
             return ResultTemplate.fail("服务器繁忙，请稍后重试。");
         }
@@ -511,31 +513,31 @@ public class PythonExeController {
         }
         return true;
     }
-    private  boolean couldVisit(String modelName)
-    {
-        ModelStatus modelStatus = new ModelStatus();
-        modelStatus.setModelName(modelName);
-        List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
-        for (Map<String,Object> map : usages) {
-            Date date1=new Date();
-            if(Objects.equals(map.get("usageStatus").toString(), "executing"))
-            {
-                return false;
-            }else if(Objects.equals(map.get("usageStatus").toString(), "success"))
-            {
-                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
-                if(fmt.format(date1).equals(fmt.format((Date) map.get("createTime")))) {
-                    return false;
-                }
-                if(Objects.equals(map.get("modelName").toString(), modelStatus.getModelName()))
-                {
-                    ModelStatus modelStatus1 = new ModelStatus(map);
-                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
-                }
-            }
-        }
-        return true;
-    }
+//    private  boolean couldVisit(String modelName)
+//    {
+//        ModelStatus modelStatus = new ModelStatus();
+//        modelStatus.setModelName(modelName);
+//        List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
+//        for (Map<String,Object> map : usages) {
+//            Date date1=new Date();
+//            if(Objects.equals(map.get("usageStatus").toString(), "executing"))
+//            {
+//                return false;
+//            }else if(Objects.equals(map.get("usageStatus").toString(), "success"))
+//            {
+//                SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+//                if(fmt.format(date1).equals(fmt.format((Date) map.get("createTime")))) {
+//                    return false;
+//                }
+//                if(Objects.equals(map.get("modelName").toString(), modelStatus.getModelName()))
+//                {
+//                    ModelStatus modelStatus1 = new ModelStatus(map);
+//                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
+//                }
+//            }
+//        }
+//        return true;
+//    }
 
     private  boolean couldVisit(String modelName,String observationTime)
     {
@@ -543,7 +545,6 @@ public class PythonExeController {
         modelStatus.setModelName(modelName);
         List<Map<String,Object>> usages= modelStatusService.selectModelStatusByConditions(modelStatus);
         for (Map<String,Object> map : usages) {
-            Date date1=new Date();
             if(Objects.equals(map.get("usageStatus").toString(), "executing"))
             {
                 return false;
@@ -551,11 +552,6 @@ public class PythonExeController {
             {
                 if(observationTime.equals(map.get("observationTime"))) {
                     return false;
-                }
-                if(Objects.equals(map.get("modelName").toString(), modelStatus.getModelName()))
-                {
-                    ModelStatus modelStatus1 = new ModelStatus(map);
-                    modelStatusService.dropModelLogs(new ArrayList<>(), modelStatus1);
                 }
             }
         }
@@ -610,74 +606,78 @@ public class PythonExeController {
 //        Path filePath = Paths.get(ResultRootPath, fileName);
 //        return getFileResponse(filePath, fileName, "image/tiff");
 //    }
-    @PostMapping(value = "/api/model/predictV2")
-    public ResultTemplate<Object> predictV2(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        List<String> commons = jsonObject.getBeanList("commons", String.class);
-        List<String> envValues = jsonObject.getBeanList("envValues", String.class);
-        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
-        String userName=jsonObject.getStr("userName");
-        String createUserId=jsonObject.getStr("createUserId");
-        String funcitionSelected=jsonObject.getStr("funcitionSelected");
-        funcitionSelected=funcitionSelected.replace("null","");
-        String className="land";
-        if(preview_png.equals("True"))
-        {
-            funcitionSelected+="preview_png";
-        }
-        if(funcitionSelected.startsWith(","))
-        {
-            funcitionSelected=funcitionSelected.substring(1);
-        }
-        User user=new User();
-        user.setUsername(userName);
-        user.setStatus(0);
-        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
-        boolean flag=false;
-        for (Map<String,Object> map : userList) {
-            if(Objects.equals(map.get("id").toString(), createUserId)){
-                flag=true;
-            }
-        }
-        if(!flag){
-            return ResultTemplate.fail("非法用户！");
-        }
-        user.setId(Integer.valueOf(createUserId));
-        user.setMemo(modelName);
-        if(!couldVisit(modelName))
-        {
-            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
-        }
-        Map<String, String> values = new HashMap<>();
-        String processname="";
-        switch (modelName){
-            case "XGB" -> processname = "XGB_predict";
-            case "CNN" -> processname = "CNN_predict";
-            default -> {
-                return ResultTemplate.fail("非法的参数名！");
-            }
-        }
-        String filepath = codeRootPath + processname + ".py";
-        try {
-            switch (modelName) {
-                case "XGB" -> values.put("modelSelected",modelName);
-                case "CNN" -> values.put("modelSelected",modelName);
-                default -> {
-                    return ResultTemplate.fail("非法的参数名！");
-                }
-            }
-            values.put("preview_png",preview_png);
-            user.setAddress(funcitionSelected);
-            user.setProductionCompany(className);
-            ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
-        }catch (RuntimeException e) {
 
-            return ResultTemplate.fail("数据处理失败!");
-        } catch (Exception e) {
-            return ResultTemplate.fail("未知错误");
-        }
-        return ResultTemplate.success("预测已开始，请稍后查询。预计十分钟内完成。");
-    }
+
+//    @PostMapping(value = "/api/model/predictV2")
+//    public ResultTemplate<Object> predictV2(@RequestBody JSONObject jsonObject) {
+//        String modelName = jsonObject.getStr("modelName");
+//        List<String> commons = jsonObject.getBeanList("commons", String.class);
+//        List<String> envValues = jsonObject.getBeanList("envValues", String.class);
+//        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
+//        String userName=jsonObject.getStr("userName");
+//        String createUserId=jsonObject.getStr("createUserId");
+//        String funcitionSelected=jsonObject.getStr("funcitionSelected");
+//        funcitionSelected=funcitionSelected.replace("null","");
+//        String className="land";
+//        if(preview_png.equals("True"))
+//        {
+//            funcitionSelected+="preview_png";
+//        }
+//        if(funcitionSelected.startsWith(","))
+//        {
+//            funcitionSelected=funcitionSelected.substring(1);
+//        }
+//        User user=new User();
+//        user.setUsername(userName);
+//        user.setStatus(0);
+//        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
+//        boolean flag=false;
+//        for (Map<String,Object> map : userList) {
+//            if(Objects.equals(map.get("id").toString(), createUserId)){
+//                flag=true;
+//            }
+//        }
+//        if(!flag){
+//            return ResultTemplate.fail("非法用户！");
+//        }
+//        user.setId(Integer.valueOf(createUserId));
+//        user.setMemo(modelName);
+//        if(!couldVisit(modelName))
+//        {
+//            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
+//        }
+//        Map<String, String> values = new HashMap<>();
+//        String processname="";
+//        switch (modelName){
+//            case "XGB" -> processname = "XGB_predict";
+//            case "CNN" -> processname = "CNN_predict";
+//            default -> {
+//                return ResultTemplate.fail("非法的参数名！");
+//            }
+//        }
+//        String filepath = codeRootPath + processname + ".py";
+//        try {
+//            switch (modelName) {
+//                case "XGB" -> values.put("modelSelected",modelName);
+//                case "CNN" -> values.put("modelSelected",modelName);
+//                default -> {
+//                    return ResultTemplate.fail("非法的参数名！");
+//                }
+//            }
+//            values.put("preview_png",preview_png);
+//            user.setAddress(funcitionSelected);
+//            user.setProductionCompany(className);
+//            ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
+//        }catch (RuntimeException e) {
+//
+//            return ResultTemplate.fail("数据处理失败!");
+//        } catch (Exception e) {
+//            return ResultTemplate.fail("未知错误");
+//        }
+//        return ResultTemplate.success("预测已开始，请稍后查询。预计十分钟内完成。");
+//    }
+
+
     //分析水域面积变化的接口
     //@PreAuthorize("hasAnyAuthority('api_groupType_all')")
     @PostMapping("/api/waterChange")
@@ -1086,95 +1086,96 @@ public class PythonExeController {
             return ResponseEntity.internalServerError().build();
         }
     }
-    @PostMapping(value = "/api/plantCoverV2")
-    public ResultTemplate<Object> buildplantCoverProcessV2(@RequestBody JSONObject jsonObject) {
-        String modelName = jsonObject.getStr("modelName");
-        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
-        String color_map=jsonObject.getStr("color_map");
-        String userName=jsonObject.getStr("userName");
-        String createUserId=jsonObject.getStr("createUserId");
-        String input_dir=jsonObject.getStr("input_dir");
-        String funcitionSelected="null";
-        String className="plant";
-        String observationTime=jsonObject.getStr("observationTime");
-        User user=new User();
-        user.setUsername(userName);
-        user.setStatus(0);
-        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
-        boolean flag=false;
-        for (Map<String,Object> map : userList) {
-            if(Objects.equals(map.get("id").toString(), createUserId)){
-                flag=true;
-            }
-        }
-        if(!flag){
-            return ResultTemplate.fail("非法用户！");
-        }
-        user.setId(Integer.valueOf(createUserId));
-        user.setMemo(modelName);
-        if(!couldVisit(modelName))
-        {
-            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
-        }
-        if(preview_png.equals("True"))
-        {
-            funcitionSelected+="preview_png";
-        }
 
-//        if(funcitionSelected.startsWith(","))
-//        {
-//            funcitionSelected=funcitionSelected.substring(1);
+//    @PostMapping(value = "/api/plantCoverV2")
+//    public ResultTemplate<Object> buildplantCoverProcessV2(@RequestBody JSONObject jsonObject) {
+//        String modelName = jsonObject.getStr("modelName");
+//        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
+//        String color_map=jsonObject.getStr("color_map");
+//        String userName=jsonObject.getStr("userName");
+//        String createUserId=jsonObject.getStr("createUserId");
+//        String input_dir=jsonObject.getStr("input_dir");
+//        String funcitionSelected="null";
+//        String className="plant";
+//        String observationTime=jsonObject.getStr("observationTime");
+//        User user=new User();
+//        user.setUsername(userName);
+//        user.setStatus(0);
+//        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
+//        boolean flag=false;
+//        for (Map<String,Object> map : userList) {
+//            if(Objects.equals(map.get("id").toString(), createUserId)){
+//                flag=true;
+//            }
 //        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        String formattedDate = sdf.format(new Date());
-        if(modelName==null || modelName.isEmpty()){
-            return ResultTemplate.fail("非法参数！");
-        }
-
-        if(!modelName.equals("fanyanV2"))
-        {
-            return ResultTemplate.fail("未知操作！");
-        }
-
-        Map<String, String> values = new HashMap<>();
-        String filePath= codeRootPath +modelName+".py";
-
-        String filename="";
-
-        ModelFileStatus modelFileStatus=new ModelFileStatus();
-        modelFileStatus.setDealStatus("success");
-        modelFileStatus.setClassName(className);
-        modelFileStatus.setUserName(userName);
-        modelFileStatus.setCreateUserid(createUserId);
-        List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
-        if(!mapList.isEmpty())
-        {
-            String filepath=mapList.get(0).get("filepath").toString();
-            filepath=filepath.replace("\\\\","\\");
-            filepath=filepath.replace("//","/");
-            //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
-            filename=filepath.replace(FileRootDirPath,"");
-        }else {
-            return ResultTemplate.fail("请先提交文件！");
-        }
-        values.put("preview_png",preview_png);
-        if(input_dir!=null) {
-            values.put("input_dir", input_dir);
-        }
-        values.put("createUserid",createUserId);
-        values.put("userName",userName);
-        values.put("createTime",new Date().toString());
-        values.put("filename",filename);
-        try {
-            ProcessBuilderUtils.executeInBackground(filePath,null,values);
-        }catch (RuntimeException e){
-            ResultTemplate.fail("程序执行失败！");
-        }catch (Exception e){
-            ResultTemplate.fail("未知错误!");
-        }
-
-
-        return ResultTemplate.success("程序已在后台运行!");
-    }
+//        if(!flag){
+//            return ResultTemplate.fail("非法用户！");
+//        }
+//        user.setId(Integer.valueOf(createUserId));
+//        user.setMemo(modelName);
+//        if(!couldVisit(modelName))
+//        {
+//            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
+//        }
+//        if(preview_png.equals("True"))
+//        {
+//            funcitionSelected+="preview_png";
+//        }
+//
+////        if(funcitionSelected.startsWith(","))
+////        {
+////            funcitionSelected=funcitionSelected.substring(1);
+////        }
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+//        String formattedDate = sdf.format(new Date());
+//        if(modelName==null || modelName.isEmpty()){
+//            return ResultTemplate.fail("非法参数！");
+//        }
+//
+//        if(!modelName.equals("fanyanV2"))
+//        {
+//            return ResultTemplate.fail("未知操作！");
+//        }
+//
+//        Map<String, String> values = new HashMap<>();
+//        String filePath= codeRootPath +modelName+".py";
+//
+//        String filename="";
+//
+//        ModelFileStatus modelFileStatus=new ModelFileStatus();
+//        modelFileStatus.setDealStatus("success");
+//        modelFileStatus.setClassName(className);
+//        modelFileStatus.setUserName(userName);
+//        modelFileStatus.setCreateUserid(createUserId);
+//        List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+//        if(!mapList.isEmpty())
+//        {
+//            String filepath=mapList.get(0).get("filepath").toString();
+//            filepath=filepath.replace("\\\\","\\");
+//            filepath=filepath.replace("//","/");
+//            //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
+//            filename=filepath.replace(FileRootDirPath,"");
+//        }else {
+//            return ResultTemplate.fail("请先提交文件！");
+//        }
+//        values.put("preview_png",preview_png);
+//        if(input_dir!=null) {
+//            values.put("input_dir", input_dir);
+//        }
+//        values.put("createUserid",createUserId);
+//        values.put("userName",userName);
+//        values.put("createTime",new Date().toString());
+//        values.put("filename",filename);
+//        try {
+//            ProcessBuilderUtils.executeInBackground(filePath,null,values);
+//        }catch (RuntimeException e){
+//            ResultTemplate.fail("程序执行失败！");
+//        }catch (Exception e){
+//            ResultTemplate.fail("未知错误!");
+//        }
+//
+//
+//        return ResultTemplate.success("程序已在后台运行!");
+//    }
 }
 

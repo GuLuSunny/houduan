@@ -78,8 +78,8 @@
     <select id="selectModelStatusByConditions" resultType="java.util.Map">
         select "user_name" as "userName","create_userid" as "createUserid",
                "usage_status" as "usageStatus","create_time" as "createTime",
-               "function_selected" as functionSelected,"class_name" as "className",
-               "observation_time" as observationTime,"model_name" as "modelName"
+               "function_selected" as "functionSelected","class_name" as "className",
+               "observation_time" as "observationTime","model_name" as "modelName"
           from model_status
         <where>
             <if test="modelStatusClass.modelName!=null and modelStatusClass.modelName.trim()!=''">
@@ -95,7 +95,7 @@
                 and create_userid=#{modelStatusClass.createUserid}
             </if>
             <if test="modelStatusClass.observationTime!=null and modelStatusClass.observationTime.trim()!=''">
-                and observation_time=#{modelStatusClass.observationTime} || observation_time is null
+                and observation_time=#{modelStatusClass.observationTime}
             </if>
             and status =0
         </where>
