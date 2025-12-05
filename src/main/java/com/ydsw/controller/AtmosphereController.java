@@ -368,6 +368,37 @@ public class AtmosphereController {
         }
         return ResultTemplate.fail();
     }
+    @PostMapping(value = "/api/atmosphere/insertOnly")
+    @Transactional
+    public ResultTemplate<Object> atmosphereInsertOnly(@RequestBody JSONObject jsonObject) {
+
+        // 假设JSONUtil.toList方法可以将JSONArray转换为List<Atmosphere>
+        Atmosphere atmosphere = JSONUtil.toBean(jsonObject, Atmosphere.class);
+
+        List<Device> deviceList=deviceService.fetchDeviceData(atmosphere.getDeviceId(), "", "03");
+        if(deviceList==null)
+        {
+            return ResultTemplate.fail("不存在的站点！");
+        }else if(deviceList.isEmpty())
+        {
+            return ResultTemplate.fail("不存在的站点！");
+        }
+//        if (atmosphere.getDeviceId().equals(atmosphere.getDeviceId())||atmosphere.getObservationTime().equals(atmosphere.getObservationTime())) {
+//            return ResultTemplate.fail(deviceList.get(0).getDeviceName()+"站点"+atmosphere.getObservationTime()+"的数据已经存在！");
+//        }
+         atmosphere.setCreateTime(new Date());
+         atmosphere.setType("form");
+         atmosphere.setStatus(0);
+
+        // 调用服务层保存数据
+        Boolean flag = atmosphereService.save(atmosphere);
+
+        // 根据操作结果返回相应信息
+        if (flag) {
+            return ResultTemplate.success();
+        }
+        return ResultTemplate.fail();
+    }
     /*
     * 气象Excel提交接口
     * */
