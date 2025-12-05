@@ -364,7 +364,7 @@ public class ProcessBuilderUtils {
         ModelStatus modelStatus = new ModelStatus();
         modelStatus.setUsageStatus(status);
         modelStatus.setModelName(user.getMemo());
-
+        modelStatus.setObservationTime(user.getPassword());
         modelStatus.setUpdateTime(new Date());
         modelStatus.setCreateUserid(user.getId().toString());
         modelStatus.setUserName(user.getUsername());

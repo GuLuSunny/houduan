@@ -52,7 +52,8 @@ public class ModelFileStatusController {
                                                   @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
-                                                  @RequestParam("observationTime")String observationTime) {
+                                                  @RequestParam("observationTime")String observationTime,
+                                                  @RequestParam("dataIntroduction") String dataIntroduction) {
 
         if (file == null || file.isEmpty()) {
             return ResultTemplate.fail("文件不能为空");
@@ -96,6 +97,7 @@ public class ModelFileStatusController {
         modelFileStatus.setCreateTime(date);
         modelFileStatus.setUpdateTime(date);
         modelFileStatus.setObservationTime(observationTime);
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         List<Map<String,Object>> list = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
         if(!list.isEmpty()){
             return ResultTemplate.fail("当天数据已经存在！");
@@ -136,7 +138,8 @@ public class ModelFileStatusController {
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
                                                   @RequestParam("observationTime")String observationTime,
-                                                  @RequestParam("modelName") String modelName) {
+                                                  @RequestParam("modelName") String modelName,
+                                                  @RequestParam("dataIntroduction") String dataIntroduction) {
 
         if (files == null || files.length == 0) {
             return ResultTemplate.fail("文件不能为空");
@@ -176,6 +179,7 @@ public class ModelFileStatusController {
         modelFileStatus.setCreateTime(date);
         modelFileStatus.setUpdateTime(date);
         modelFileStatus.setObservationTime(observationTime);
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         List<Map<String,Object>> list = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
         if(!list.isEmpty()){
             return ResultTemplate.fail("当天数据已经存在！");
@@ -216,7 +220,8 @@ public class ModelFileStatusController {
                                                @RequestParam("createUserid") String userUid,
                                                @RequestParam("userName") String userName,
                                                @RequestParam("modelName") String modelMame,
-                                               @RequestParam("className") String className) {
+                                               @RequestParam("className") String className,
+                                               @RequestParam("dataIntroduction") String dataIntroduction) {
         String filename = userName + "-" + userUid+"_"+modelMame+ "_train.tif";
         String directoryPath = FileRootDirPath + File.separator + className;
         String filepath = directoryPath + File.separator + filename;
@@ -225,7 +230,10 @@ public class ModelFileStatusController {
         modelFileStatus.setUserName(userName);
         modelFileStatus.setClassName(className);
         modelFileStatus.setFilepath(filepath);
-
+        modelFileStatus.setCreateTime(new Date());
+        modelFileStatus.setUpdateTime(new Date());
+        modelFileStatus.setObservationTime(dataIntroduction);
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         try {
             // 创建目录（如果不存在）
             modelFileStatus.setDealStatus("executing");
@@ -260,7 +268,8 @@ public class ModelFileStatusController {
                                                    @RequestParam("userName") String userName,
                                                    @RequestParam("modelName") String modelMame,
                                                    @RequestParam("className") String className,
-                                                   @RequestParam("observationTime") String observationTime) {
+                                                   @RequestParam("observationTime") String observationTime,
+                                                   @RequestParam("dataIntroduction") String dataIntroduction) {
 
         String directoryPath = FileRootDirPath + className + File.separator;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -282,7 +291,7 @@ public class ModelFileStatusController {
         modelFileStatus.setObservationTime(observationTime);
         modelFileStatus.setCreateTime(new Date());
         modelFileStatus.setUpdateTime(new Date());
-
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         try {
             // 创建目录（如果不存在）
             File directory = new File(directoryPath);

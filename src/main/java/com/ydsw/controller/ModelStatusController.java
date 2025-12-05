@@ -22,6 +22,7 @@ public class ModelStatusController {
     @Autowired
     private ModelStatusService modelStatusService;
 
+    //获取目标程序状态
     @PostMapping(value = "/api/model/getModelStatusByConditions")
     public ResultTemplate<Object> getModelStatus(@RequestBody JSONObject jsonObject) {
         ModelStatus modelStatus = jsonObject.toBean(ModelStatus.class);
@@ -63,4 +64,9 @@ public class ModelStatusController {
         return ResultTemplate.success("已遗弃记录");
     }
 
+    @PostMapping(value = "/api/model/suspendForStatusReturn")
+    public ResultTemplate<Object> suspendForStatusReturn(@RequestBody JSONObject jsonObject) {
+        ModelStatus modelStatus = jsonObject.toBean(ModelStatus.class);
+        return ResultTemplate.fail("");
+    }
 }
