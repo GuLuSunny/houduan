@@ -44,7 +44,7 @@
         <result property="nitrogenDioxide" column="nitrogen_dioxide" />
         <result property="carbonMonoxide" column="carbon_monoxide" />
         <result property="ozone" column="ozone" />
-        <result property="ozone8Our" column="ozone_8_our" />
+        <result property="ozone8Hour" column="ozone_8_hour" />
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -55,7 +55,7 @@
         filepath,filename,create_userid,status,contact_phone,
         contact_address,production_unit,contact_email,open,data_introduction,
         relative_humidity,aqi_index,primary_pollutant,air_quality_level,sulfur_dioxide,
-        nitrogen_dioxide,carbon_monoxide,ozone,ozone_8_our
+        nitrogen_dioxide,carbon_monoxide,ozone,ozone_8_hour
     </sql>
     <select id="fetchFilepathByObservationTimeAndClassName" resultType="java.util.Map">
         select  min(observation_time) as "observationTimeBegin",max(observation_time) as "observationTimeEnd",
@@ -176,11 +176,16 @@
         rainfall_accumulation as "rainfallAccumulation",
         radiation_accumulation as "radiationAccumulation",pm10,
         observation_time as "observationTime",
-        filename as "filepath"
+        filename as "filepath",
+        relative_humidity as "relativeHumidity",
+        aqi_index as "aqiIndex",primary_pollutant as "primaryPollutant",
+        air_quality_level as "airQualityLevel",sulfur_dioxide as "sulfurDioxide",
+        nitrogen_dioxide as "nitrogenDioxide",carbon_monoxide as "carbonMonoxide",
+        ozone,ozone_8_hour as "ozone8Hour"
         FROM atmosphere
         <where>
             <if test="atmosphereClass.observationTime != null and atmosphereClass.observationTime.trim() != ''">
-                and observation_time LIKE '%' || #{atmosphereClass.observationTime},  || '%'
+                and observation_time LIKE '%' || #{atmosphereClass.observationTime}  || '%'
             </if>
             <if test="atmosphereClass.filepath!=null and atmosphereClass.filepath.trim()!=''">
                 and filename  LIKE '%' ||#{atmosphereClass.filepath} || '%'
