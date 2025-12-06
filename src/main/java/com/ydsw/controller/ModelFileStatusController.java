@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -137,9 +138,10 @@ public class ModelFileStatusController {
                                                   @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
-                                                  @RequestParam("observationTime")String observationTime,
                                                   @RequestParam("modelName") String modelName,
-                                                  @RequestParam("dataIntroduction") String dataIntroduction) {
+                                                  @RequestParam("dataIntroduction") String dataIntroduction,
+                                                  @RequestParam("firstTime")String firstTime,
+                                                  @RequestParam("secondTime")String secondTime) {
 
         if (files == null || files.length == 0) {
             return ResultTemplate.fail("文件不能为空");
@@ -161,14 +163,15 @@ public class ModelFileStatusController {
 
         }
 
-        if (!couldUpload(className,observationTime)) {
+        if (!couldUpload(className,firstTime,secondTime)) {
             return ResultTemplate.fail("服务器繁忙，请稍后重试");
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         Date date = new Date();
         String formattedDate = sdf.format(date);
-        String filename = userName + "-" + userUid + "_" + observationTime +
+
+        String filename = userName + "-" + userUid + "_" + firstTime +"_" +secondTime+
                 "_" + formattedDate;
         String directoryPath = FileRootDirPath + File.separator + className+File.separator+filename+File.separator;
         ModelFileStatus modelFileStatus = new ModelFileStatus();
@@ -178,7 +181,8 @@ public class ModelFileStatusController {
         modelFileStatus.setFilepath(directoryPath);
         modelFileStatus.setCreateTime(date);
         modelFileStatus.setUpdateTime(date);
-        modelFileStatus.setObservationTime(observationTime);
+        modelFileStatus.setStartTime(firstTime);
+        modelFileStatus.setEndTime(secondTime);
         modelFileStatus.setDataIntroduction(dataIntroduction);
         List<Map<String,Object>> list = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
         if(!list.isEmpty()){
@@ -533,6 +537,28 @@ public class ModelFileStatusController {
         return true;
     }
 
+    private boolean couldUpload(String className,String firstTime,String secondTime)
+    {
+        ModelFileStatus modelFileStatus = new ModelFileStatus();
+        modelFileStatus.setClassName(className);
+        List<Map<String,Object>> usages = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        for (Map<String,Object> map : usages) {
+            if(Objects.equals(map.get("dealStatus").toString(), "executing"))
+            {
+                return false;
+            }else if(Objects.equals(map.get("dealStatus").toString(), "success"))
+            {
+                if(firstTime.equals(map.get("startTime"))&& secondTime.equals(map.get("endTime")) ||
+                firstTime.equals(map.get("endTime")) && secondTime.equals(map.get("startTime"))) {
+                    return false;
+                }
+//                ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
+//                modelFileStatusService.dropModelFileStatus(new ArrayList<>(), modelFileStatus1);
+            }
+        }
+        return true;
+    }
+
     @PostMapping(value = "/api/modelFile/getModelFileStatus")
     public ResultTemplate<Object> getModelFileStatus(@RequestBody JSONObject jsonObject) {
         ModelFileStatus modelFileStatus=jsonObject.toBean(ModelFileStatus.class);
@@ -547,10 +573,14 @@ public class ModelFileStatusController {
         String userName=jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
         String relativePath="";
-        String observationTime= jsonObject.getStr("observationTime");
+        String observationTime= jsonObject.getStr("observationTime")==null?"":jsonObject.getStr("observationTime");
+        String startTime=jsonObject.getStr("firstTime")==null?"":jsonObject.getStr("firstTime");
+        String endTime=jsonObject.getStr("secondTime")==null?"":jsonObject.getStr("secondTime");
+        if (startTime==null&&endTime==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         String className = jsonObject.getStr("className");
-        if(observationTime.isEmpty() || className.isEmpty())
-        {
+        if (observationTime != null && (observationTime.isEmpty() || className.isEmpty())) {
             return ResponseEntity.status(500).build();
         }
         String year=observationTime.substring(0,4);
@@ -580,7 +610,12 @@ public class ModelFileStatusController {
         }
         else if(modelName.equals("rfV2")||modelName.equals("CNNV2"))
         {
+            year=startTime.substring(0,4);
+            month=startTime.substring(5,7);
             modelFileStatus.setType("multiple");
+            modelFileStatus.setStartTime(startTime);
+            modelFileStatus.setEndTime(endTime);
+            modelFileStatus.setObservationTime(null);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {

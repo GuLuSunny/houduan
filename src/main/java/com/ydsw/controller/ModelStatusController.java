@@ -64,9 +64,4 @@ public class ModelStatusController {
         return ResultTemplate.success("已遗弃记录");
     }
 
-    @PostMapping(value = "/api/model/suspendForStatusReturn")
-    public ResultTemplate<Object> suspendForStatusReturn(@RequestBody JSONObject jsonObject) {
-        ModelStatus modelStatus = jsonObject.toBean(ModelStatus.class);
-        return ResultTemplate.fail("");
-    }
 }

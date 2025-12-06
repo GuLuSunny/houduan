@@ -18,12 +18,14 @@
             <result property="observationTime" column="observation_time" />
             <result property="type" column="type" />
             <result property="modelName" column="model_name"/>
+            <result property="startTime" column="start_time"/>
+            <result property="endTime" column="end_time"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,class_name,deal_status,filepath,user_name,create_userid,
         create_time,update_time,status,data_introduction,observation_time,
-        type,model_name
+        type,model_name,start_time,end_time
     </sql>
     <update id="dropModelFileStatus">
         update model_file_status set status=1
@@ -52,6 +54,12 @@
             <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelFileStatusClass.observationTime}
             </if>
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
+            </if>
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
+            </if>
             and status =0
         </where>
     </update>
@@ -70,6 +78,12 @@
             <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelFileStatusClass.observationTime}
             </if>
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
+            </if>
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
+            </if>
             and deal_status != 'failed'
             and status=0;
         </where>
@@ -79,7 +93,8 @@
         select "user_name" as "userName",
                "create_userid" as "createUserid","deal_status" as "dealStatus",
                "observation_time" as "observationTime","create_time" as "createTime" ,
-               "filepath",model_name as "modelName"
+               "filepath",model_name as "modelName",start_time as "startTime",
+               "end_time" as "endTime"
         from model_file_status
         <where>
             <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
@@ -102,6 +117,12 @@
             </if>
             <if test="modelFileStatusClass.type!=null and modelFileStatusClass.type.trim()!=''">
                 and "type" = #{modelFileStatusClass.type}
+            </if>
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
+            </if>
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
             </if>
             and status =0
         </where>

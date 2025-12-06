@@ -94,6 +94,20 @@ public class ModelStatus implements Serializable {
      */
     @TableField(value = "type")
     private String type;
+
+
+    /**
+     * 开始时间
+     */
+    @TableField(value = "start_time")
+    private String startTime;
+
+    /**
+     * 结束时间
+     */
+    @TableField(value = "end_time")
+    private String endTime;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -152,7 +166,9 @@ public class ModelStatus implements Serializable {
                 && (this.getFunctionSelected() == null ? other.getFunctionSelected() == null : this.getFunctionSelected().equals(other.getFunctionSelected()))
                 && (this.getClassName() == null ? other.getClassName() == null : this.getClassName().equals(other.getClassName()))
                 && (this.getObservationTime() == null ? other.getObservationTime() == null : this.getObservationTime().equals(other.getObservationTime()))
-                && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()));
+                && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
+                && (this.getStartTime() == null ? other.getStartTime() == null : this.getStartTime().equals(other.getStartTime()))
+                && (this.getEndTime() == null ? other.getEndTime() == null : this.getEndTime().equals(other.getEndTime()));
     }
 
     @Override
@@ -172,6 +188,8 @@ public class ModelStatus implements Serializable {
         result = prime * result + ((getClassName() == null) ? 0 : getClassName().hashCode());
         result = prime * result + ((getObservationTime() == null) ? 0 : getObservationTime().hashCode());
         result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
+        result = prime * result + ((getStartTime() == null) ? 0 : getStartTime().hashCode());
+        result = prime * result + ((getEndTime() == null) ? 0 : getEndTime().hashCode());
         return result;
     }
 
@@ -194,6 +212,8 @@ public class ModelStatus implements Serializable {
         sb.append(", className=").append(className);
         sb.append(", observationTime=").append(observationTime);
         sb.append(", type=").append(type);
+        sb.append(", startTime=").append(startTime);
+        sb.append(", endTime=").append(endTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

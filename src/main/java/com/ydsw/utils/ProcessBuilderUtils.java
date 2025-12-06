@@ -370,6 +370,8 @@ public class ProcessBuilderUtils {
         modelStatus.setUserName(user.getUsername());
         modelStatus.setFunctionSelected(user.getAddress());
         modelStatus.setClassName(user.getProductionCompany());
+        modelStatus.setStartTime(user.getEmail());
+        modelStatus.setEndTime(user.getTel());
         if (Objects.equals(status, "executing")) {
             modelStatus.setCreateTime(new Date());
             modelStatusService.save(modelStatus);

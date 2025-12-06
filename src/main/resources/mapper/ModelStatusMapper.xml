@@ -18,12 +18,14 @@
             <result property="className" column="class_name" />
             <result property="observationTime" column="observation_time" />
             <result property="type" column="type" />
+            <result property="startTime" column="start_time"/>
+            <result property="endTime" column="end_time"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,model_name,usage_status,status,create_time,update_time,
         user_name,create_userid,data_introduction,function_selected,class_name,
-        observation_time,type
+        observation_time,type,start_time,end_time
     </sql>
     <update id="updateModelStatus" parameterType="com.ydsw.domain.ModelStatus">
         UPDATE model_status
@@ -43,6 +45,12 @@
             </if>
             <if test="modelStatusClass.observationTime!=null and modelStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelStatusClass.observationTime}
+            </if>
+            <if test="modelStatusClass.startTime!=null and modelStatusClass.startTime.trim()!=''">
+                and start_time=#{modelStatusClass.startTime}
+            </if>
+            <if test="modelStatusClass.endTime!=null and modelStatusClass.endTime.trim()!=''">
+                and end_time=#{modelStatusClass.endTime}
             </if>
             AND status = 0
         </where>
@@ -72,6 +80,12 @@
             <if test="modelStatusClass.observationTime!=null and modelStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelStatusClass.observationTime}
             </if>
+            <if test="modelStatusClass.startTime!=null and modelStatusClass.startTime.trim()!=''">
+                and start_time=#{modelStatusClass.startTime}
+            </if>
+            <if test="modelStatusClass.endTime!=null and modelStatusClass.endTime.trim()!=''">
+                and end_time=#{modelStatusClass.endTime}
+            </if>
             and status =0
         </where>
     </update>
@@ -96,6 +110,12 @@
             </if>
             <if test="modelStatusClass.observationTime!=null and modelStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelStatusClass.observationTime}
+            </if>
+            <if test="modelStatusClass.startTime!=null and modelStatusClass.startTime.trim()!=''">
+                and start_time=#{modelStatusClass.startTime}
+            </if>
+            <if test="modelStatusClass.endTime!=null and modelStatusClass.endTime.trim()!=''">
+                and end_time=#{modelStatusClass.endTime}
             </if>
             and status =0
         </where>

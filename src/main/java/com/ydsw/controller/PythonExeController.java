@@ -209,8 +209,13 @@ public class PythonExeController {
         String userName=jsonObject.getStr("userName");
         String createUserId=jsonObject.getStr("createUserId");
         String input_dir=jsonObject.getStr("input_dir");
-        String observationTime=jsonObject.getStr("observationTime");
+        String observationTime=jsonObject.getStr("observationTime")==null?"":jsonObject.getStr("observationTime");
         String funcitionSelected="null";
+        String startTime=jsonObject.getStr("firstTime")==null?"":jsonObject.getStr("firstTime");
+        String endTime=jsonObject.getStr("secondTime")==null?"":jsonObject.getStr("secondTime");
+        if (observationTime==null&&(startTime==null&&endTime==null)) {
+            return ResultTemplate.fail("未知的时间段！");
+        }
         funcitionSelected=funcitionSelected.replace("null","");
         String className="land";
         if(preview_png.equals("True"))
@@ -286,6 +291,9 @@ public class PythonExeController {
             }
         } else if (processname.equals("predictV3")) {
             modelFileStatus.setType("multiple");
+            modelFileStatus.setObservationTime(null);
+            modelFileStatus.setStartTime(startTime);
+            modelFileStatus.setEndTime(endTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
@@ -325,6 +333,8 @@ public class PythonExeController {
             user.setAddress(funcitionSelected);
             user.setProductionCompany(className);
             user.setPassword(observationTime);
+            user.setEmail(startTime);
+            user.setTel(endTime);
             ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
         }catch (RuntimeException e) {
 
