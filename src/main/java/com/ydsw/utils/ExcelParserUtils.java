@@ -64,6 +64,35 @@ public class ExcelParserUtils {
         CTE.put("TN", "tn");
         CTE.put("TP", "tp");
         CTE.put("叶绿素", "chlorophyll");
+        CTE.put("水位", "waterLevel");
+        CTE.put("流速", "flowRate");
+        CTE.put("流量", "flowVolume");
+        CTE.put("气温", "airTemperature");
+        CTE.put("CODCR", "codcr");
+        CTE.put("BOD5", "bod5");
+        CTE.put("氨氮", "ammoniaNitrogen");
+        CTE.put("铜", "copper");
+        CTE.put("锌", "zinc");
+        CTE.put("氟化物", "fluoride");
+        CTE.put("SE", "selenium");
+        CTE.put("ARS", "arsenic");
+        CTE.put("HG", "mercury");
+        CTE.put("CD", "cadmium");
+        CTE.put("CR6", "cr6");
+        CTE.put("PB", "pb");
+        CTE.put("CN", "cyanide");
+        CTE.put("VLPH", "volatilePhenols");
+        CTE.put("OIL", "oil");
+        CTE.put("LAS", "las");
+        CTE.put("S2", "s2");
+        CTE.put("FCG", "fcg");
+        CTE.put("蓄水量", "waterStorage");
+        CTE.put("SO4", "so4");
+        CTE.put("CL", "cl");
+        CTE.put("NO3", "no3");
+        CTE.put("FE", "fe");
+        CTE.put("MN", "mn");
+
 
         //气象
         //CTE.put("序号","id");

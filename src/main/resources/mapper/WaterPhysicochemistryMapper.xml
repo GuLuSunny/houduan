@@ -30,18 +30,49 @@
         <result property="productionUnit" column="production_unit" jdbcType="VARCHAR"/>
         <result property="contactEmail" column="contact_email" jdbcType="VARCHAR"/>
         <result property="open" column="open" jdbcType="INTEGER"/>
+        <result property="dataIntroduction" column="data_introduction" />
+        <result property="waterLevel" column="water_level" />
+        <result property="flowRate" column="flow_rate" />
+        <result property="flowVolume" column="flow_volume" />
+        <result property="waterStorage" column="water_storage" />
+        <result property="airTemperature" column="air_temperature" />
+        <result property="codcr" column="codcr" />
+        <result property="bod5" column="bod5" />
+        <result property="ammoniaNitrogen" column="ammonia_nitrogen" />
+        <result property="copper" column="copper" />
+        <result property="zinc" column="zinc" />
+        <result property="fluoride" column="fluoride" />
+        <result property="selenium" column="selenium" />
+        <result property="arsenic" column="arsenic" />
+        <result property="mercury" column="mercury" />
+        <result property="cadmium" column="cadmium" />
+        <result property="cr6" column="cr6" />
+        <result property="pb" column="pb" />
+        <result property="cyanide" column="cyanide" />
+        <result property="volatilePhenols" column="volatile_phenols" />
+        <result property="oil" column="oil" />
+        <result property="las" column="las" />
+        <result property="s2" column="s2" />
+        <result property="fcg" column="fcg" />
+        <result property="so4" column="so4" />
+        <result property="cl" column="cl" />
+        <result property="no3" column="no3" />
+        <result property="fe" column="fe" />
+        <result property="mn" column="mn" />
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,device_id,water_temperature,
-        ph,turbidity,conductivity,
-        dissolved_oxygen,transparency,codmn,
-        tss,tn,tp,
-        chlorophyll,observation_time,create_time,
-        type,user_name,filepath,
-        create_userid,status,contact_phone,
-        contact_address,production_unit,contact_email,
-        open
+        id,device_id,water_temperature,ph,turbidity,conductivity,
+        dissolved_oxygen,transparency,codmn,tss,tn,
+        tp,chlorophyll,observation_time,create_time,type,
+        user_name,filepath,filename,create_userid,status,
+        contact_phone,contact_address,production_unit,contact_email,open,
+        data_introduction,water_level,flow_rate,flow_volume,water_storage,
+        air_temperature,codcr,bod5,ammonia_nitrogen,copper,
+        zinc,fluoride,selenium,arsenic,mercury,
+        cadmium,cr6,pb,cyanide,volatile_phenols,
+        oil,las,s2,fcg,so4,
+        cl,no3,fe,mn
     </sql>
     <select id="getDatas" resultType="com.ydsw.domain.WaterPhysicochemistry">
         SELECT * FROM water_physicochemistry

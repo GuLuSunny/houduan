@@ -179,6 +179,176 @@ public class WaterPhysicochemistry implements Serializable {
      * */
     @TableField(value = "data_introduction")
     private String dataIntroduction;
+
+    /**
+     * 水位
+     */
+    @TableField(value = "water_level")
+    private String waterLevel;
+
+    /**
+     * 流速
+     */
+    @TableField(value = "flow_rate")
+    private String flowRate;
+
+    /**
+     * 流量
+     */
+    @TableField(value = "flow_volume")
+    private String flowVolume;
+
+    /**
+     * 水容量
+     */
+    @TableField(value = "water_storage")
+    private String waterStorage;
+
+    /**
+     * 气温
+     */
+    @TableField(value = "air_temperature")
+    private String airTemperature;
+
+    /**
+     * 化学需氧量
+     */
+    @TableField(value = "codcr")
+    private String codcr;
+
+    /**
+     * 五日生化需氧量
+     */
+    @TableField(value = "bod5")
+    private String bod5;
+
+    /**
+     * 氨氮
+     */
+    @TableField(value = "ammonia_nitrogen")
+    private String ammoniaNitrogen;
+
+    /**
+     * 铜
+     */
+    @TableField(value = "copper")
+    private String copper;
+
+    /**
+     * 锌
+     */
+    @TableField(value = "zinc")
+    private String zinc;
+
+    /**
+     * 氟化物
+     */
+    @TableField(value = "fluoride")
+    private String fluoride;
+
+    /**
+     * 硒
+     */
+    @TableField(value = "selenium")
+    private String selenium;
+
+    /**
+     * 砷
+     */
+    @TableField(value = "arsenic")
+    private String arsenic;
+
+    /**
+     * 汞
+     */
+    @TableField(value = "mercury")
+    private String mercury;
+
+    /**
+     * 镉
+     */
+    @TableField(value = "cadmium")
+    private String cadmium;
+
+    /**
+     * 六价铬
+
+     */
+    @TableField(value = "cr6")
+    private String cr6;
+
+    /**
+     * 铅
+     */
+    @TableField(value = "pb")
+    private String pb;
+
+    /**
+     * 氰化物
+     */
+    @TableField(value = "cyanide")
+    private String cyanide;
+
+    /**
+     * 挥发酚
+     */
+    @TableField(value = "volatile_phenols")
+    private String volatilePhenols;
+
+    /**
+     * 石油类
+     */
+    @TableField(value = "oil")
+    private String oil;
+
+    /**
+     * 阴离子表面活性剂
+     */
+    @TableField(value = "las")
+    private String las;
+
+    /**
+     * 硫化物
+     */
+    @TableField(value = "s2")
+    private String s2;
+
+    /**
+     * 粪大肠杆菌群
+     */
+    @TableField(value = "fcg")
+    private String fcg;
+
+    /**
+     * 硫酸盐
+     */
+    @TableField(value = "so4")
+    private String so4;
+
+    /**
+     * 氯化物
+     */
+    @TableField(value = "cl")
+    private String cl;
+
+    /**
+     * 硝酸盐氮
+     */
+    @TableField(value = "no3")
+    private String no3;
+
+    /**
+     * 铁
+     */
+    @TableField(value = "fe")
+    private String fe;
+
+    /**
+     * 锰
+     */
+    @TableField(value = "mn")
+    private String mn;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
     // 无参构造函数
@@ -273,7 +443,35 @@ public class WaterPhysicochemistry implements Serializable {
                 && (this.getProductionUnit() == null ? other.getProductionUnit() == null : this.getProductionUnit().equals(other.getProductionUnit()))
                 && (this.getContactEmail() == null ? other.getContactEmail() == null : this.getContactEmail().equals(other.getContactEmail()))
                 && (this.getOpen() == null ? other.getOpen() == null : this.getOpen().equals(other.getOpen()))
-                && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()));
+                && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()))
+                && (this.getWaterLevel() == null ? other.getWaterLevel() == null : this.getWaterLevel().equals(other.getWaterLevel()))
+                && (this.getFlowRate() == null ? other.getFlowRate() == null : this.getFlowRate().equals(other.getFlowRate()))
+                && (this.getFlowVolume() == null ? other.getFlowVolume() == null : this.getFlowVolume().equals(other.getFlowVolume()))
+                && (this.getWaterStorage() == null ? other.getWaterStorage() == null : this.getWaterStorage().equals(other.getWaterStorage()))
+                && (this.getAirTemperature() == null ? other.getAirTemperature() == null : this.getAirTemperature().equals(other.getAirTemperature()))
+                && (this.getCodcr() == null ? other.getCodcr() == null : this.getCodcr().equals(other.getCodcr()))
+                && (this.getBod5() == null ? other.getBod5() == null : this.getBod5().equals(other.getBod5()))
+                && (this.getAmmoniaNitrogen() == null ? other.getAmmoniaNitrogen() == null : this.getAmmoniaNitrogen().equals(other.getAmmoniaNitrogen()))
+                && (this.getCopper() == null ? other.getCopper() == null : this.getCopper().equals(other.getCopper()))
+                && (this.getZinc() == null ? other.getZinc() == null : this.getZinc().equals(other.getZinc()))
+                && (this.getFluoride() == null ? other.getFluoride() == null : this.getFluoride().equals(other.getFluoride()))
+                && (this.getSelenium() == null ? other.getSelenium() == null : this.getSelenium().equals(other.getSelenium()))
+                && (this.getArsenic() == null ? other.getArsenic() == null : this.getArsenic().equals(other.getArsenic()))
+                && (this.getMercury() == null ? other.getMercury() == null : this.getMercury().equals(other.getMercury()))
+                && (this.getCadmium() == null ? other.getCadmium() == null : this.getCadmium().equals(other.getCadmium()))
+                && (this.getCr6() == null ? other.getCr6() == null : this.getCr6().equals(other.getCr6()))
+                && (this.getPb() == null ? other.getPb() == null : this.getPb().equals(other.getPb()))
+                && (this.getCyanide() == null ? other.getCyanide() == null : this.getCyanide().equals(other.getCyanide()))
+                && (this.getVolatilePhenols() == null ? other.getVolatilePhenols() == null : this.getVolatilePhenols().equals(other.getVolatilePhenols()))
+                && (this.getOil() == null ? other.getOil() == null : this.getOil().equals(other.getOil()))
+                && (this.getLas() == null ? other.getLas() == null : this.getLas().equals(other.getLas()))
+                && (this.getS2() == null ? other.getS2() == null : this.getS2().equals(other.getS2()))
+                && (this.getFcg() == null ? other.getFcg() == null : this.getFcg().equals(other.getFcg()))
+                && (this.getSo4() == null ? other.getSo4() == null : this.getSo4().equals(other.getSo4()))
+                && (this.getCl() == null ? other.getCl() == null : this.getCl().equals(other.getCl()))
+                && (this.getNo3() == null ? other.getNo3() == null : this.getNo3().equals(other.getNo3()))
+                && (this.getFe() == null ? other.getFe() == null : this.getFe().equals(other.getFe()))
+                && (this.getMn() == null ? other.getMn() == null : this.getMn().equals(other.getMn()));
     }
 
     @Override
@@ -307,6 +505,34 @@ public class WaterPhysicochemistry implements Serializable {
         result = prime * result + ((getContactEmail() == null) ? 0 : getContactEmail().hashCode());
         result = prime * result + ((getOpen() == null) ? 0 : getOpen().hashCode());
         result = prime * result + ((getDataIntroduction() == null) ? 0 : getDataIntroduction().hashCode());
+        result = prime * result + ((getWaterLevel() == null) ? 0 : getWaterLevel().hashCode());
+        result = prime * result + ((getFlowRate() == null) ? 0 : getFlowRate().hashCode());
+        result = prime * result + ((getFlowVolume() == null) ? 0 : getFlowVolume().hashCode());
+        result = prime * result + ((getWaterStorage() == null) ? 0 : getWaterStorage().hashCode());
+        result = prime * result + ((getAirTemperature() == null) ? 0 : getAirTemperature().hashCode());
+        result = prime * result + ((getCodcr() == null) ? 0 : getCodcr().hashCode());
+        result = prime * result + ((getBod5() == null) ? 0 : getBod5().hashCode());
+        result = prime * result + ((getAmmoniaNitrogen() == null) ? 0 : getAmmoniaNitrogen().hashCode());
+        result = prime * result + ((getCopper() == null) ? 0 : getCopper().hashCode());
+        result = prime * result + ((getZinc() == null) ? 0 : getZinc().hashCode());
+        result = prime * result + ((getFluoride() == null) ? 0 : getFluoride().hashCode());
+        result = prime * result + ((getSelenium() == null) ? 0 : getSelenium().hashCode());
+        result = prime * result + ((getArsenic() == null) ? 0 : getArsenic().hashCode());
+        result = prime * result + ((getMercury() == null) ? 0 : getMercury().hashCode());
+        result = prime * result + ((getCadmium() == null) ? 0 : getCadmium().hashCode());
+        result = prime * result + ((getCr6() == null) ? 0 : getCr6().hashCode());
+        result = prime * result + ((getPb() == null) ? 0 : getPb().hashCode());
+        result = prime * result + ((getCyanide() == null) ? 0 : getCyanide().hashCode());
+        result = prime * result + ((getVolatilePhenols() == null) ? 0 : getVolatilePhenols().hashCode());
+        result = prime * result + ((getOil() == null) ? 0 : getOil().hashCode());
+        result = prime * result + ((getLas() == null) ? 0 : getLas().hashCode());
+        result = prime * result + ((getS2() == null) ? 0 : getS2().hashCode());
+        result = prime * result + ((getFcg() == null) ? 0 : getFcg().hashCode());
+        result = prime * result + ((getSo4() == null) ? 0 : getSo4().hashCode());
+        result = prime * result + ((getCl() == null) ? 0 : getCl().hashCode());
+        result = prime * result + ((getNo3() == null) ? 0 : getNo3().hashCode());
+        result = prime * result + ((getFe() == null) ? 0 : getFe().hashCode());
+        result = prime * result + ((getMn() == null) ? 0 : getMn().hashCode());
         return result;
     }
 
@@ -343,6 +569,34 @@ public class WaterPhysicochemistry implements Serializable {
         sb.append(", contactEmail=").append(contactEmail);
         sb.append(", open=").append(open);
         sb.append(", dataIntroduction=").append(dataIntroduction);
+        sb.append(", waterLevel=").append(waterLevel);
+        sb.append(", flowRate=").append(flowRate);
+        sb.append(", flowVolume=").append(flowVolume);
+        sb.append(", waterStorage=").append(waterStorage);
+        sb.append(", airTemperature=").append(airTemperature);
+        sb.append(", codcr=").append(codcr);
+        sb.append(", bod5=").append(bod5);
+        sb.append(", ammoniaNitrogen=").append(ammoniaNitrogen);
+        sb.append(", copper=").append(copper);
+        sb.append(", zinc=").append(zinc);
+        sb.append(", fluoride=").append(fluoride);
+        sb.append(", selenium=").append(selenium);
+        sb.append(", arsenic=").append(arsenic);
+        sb.append(", mercury=").append(mercury);
+        sb.append(", cadmium=").append(cadmium);
+        sb.append(", cr6=").append(cr6);
+        sb.append(", pb=").append(pb);
+        sb.append(", cyanide=").append(cyanide);
+        sb.append(", volatilePhenols=").append(volatilePhenols);
+        sb.append(", oil=").append(oil);
+        sb.append(", las=").append(las);
+        sb.append(", s2=").append(s2);
+        sb.append(", fcg=").append(fcg);
+        sb.append(", so4=").append(so4);
+        sb.append(", cl=").append(cl);
+        sb.append(", no3=").append(no3);
+        sb.append(", fe=").append(fe);
+        sb.append(", mn=").append(mn);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
