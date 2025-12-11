@@ -679,28 +679,35 @@ public class ModelFileStatusController {
     @PostMapping("/api/modelFile/download/class_stats")
     public ResponseEntity<Resource> downloadClassStats(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
-        String fileName=modelName + "_class_stats.txt";;
-
-        String userName = jsonObject.getStr("userName");
+        String userName=jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
         String relativePath="";
+        String observationTime= jsonObject.getStr("observationTime")==null?"":jsonObject.getStr("observationTime");
+        String startTime=jsonObject.getStr("firstTime")==null?"":jsonObject.getStr("firstTime");
+        String endTime=jsonObject.getStr("secondTime")==null?"":jsonObject.getStr("secondTime");
+        if (startTime==null&&endTime==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        String className = jsonObject.getStr("className");
+        if (observationTime != null && (observationTime.isEmpty() || className.isEmpty())) {
+            return ResponseEntity.status(500).build();
+        }
+        String year=observationTime.substring(0,4);
+        String month=observationTime.substring(5,7);
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        modelFileStatus.setObservationTime(observationTime);
+
         if(modelName.equals("XGB")||modelName.equals("CNN"))
         {
-            String observationTime= jsonObject.getStr("observationTime");
-            String className = jsonObject.getStr("className");
-            String year=observationTime.substring(0,4);
-            String month=observationTime.substring(5,7);
-            ModelFileStatus modelFileStatus=new ModelFileStatus();
-            modelFileStatus.setDealStatus("success");
-            modelFileStatus.setClassName(className);
-            modelFileStatus.setUserName(userName);
-            modelFileStatus.setCreateUserid(createUserId);
-            modelFileStatus.setObservationTime(observationTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
                 //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
                 String filename=filepath.replace(FileRootDirPath,"");
 
@@ -710,7 +717,32 @@ public class ModelFileStatusController {
                 return ResponseEntity.status(400).build();
             }
         }
+        else if(modelName.equals("rfV2")||modelName.equals("CNNV2"))
+        {
+            year=startTime.substring(0,4);
+            month=startTime.substring(5,7);
+            modelFileStatus.setType("multiple");
+            modelFileStatus.setStartTime(startTime);
+            modelFileStatus.setEndTime(endTime);
+            modelFileStatus.setObservationTime(null);
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace(FileRootDirPath+"land"+File.separator,"");
+                filename = filename.substring(0,filename.length()-1)+"_SAR";
+                relativePath =year+File.separator+month+File.separator+
+                        filename+File.separator;
+                modelName=filename;
+            }else {
+                return ResponseEntity.status(400).build();
+            }
+        }
+        String fileName=modelName+"_prediction_class_stats.txt";
         Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
+
         return getFileResponse(filePath, fileName, "text/plain");
     }
 

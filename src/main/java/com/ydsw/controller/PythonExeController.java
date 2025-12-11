@@ -1097,95 +1097,176 @@ public class PythonExeController {
         }
     }
 
-//    @PostMapping(value = "/api/plantCoverV2")
-//    public ResultTemplate<Object> buildplantCoverProcessV2(@RequestBody JSONObject jsonObject) {
-//        String modelName = jsonObject.getStr("modelName");
-//        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
-//        String color_map=jsonObject.getStr("color_map");
-//        String userName=jsonObject.getStr("userName");
-//        String createUserId=jsonObject.getStr("createUserId");
-//        String input_dir=jsonObject.getStr("input_dir");
-//        String funcitionSelected="null";
-//        String className="plant";
-//        String observationTime=jsonObject.getStr("observationTime");
-//        User user=new User();
-//        user.setUsername(userName);
-//        user.setStatus(0);
-//        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
-//        boolean flag=false;
-//        for (Map<String,Object> map : userList) {
-//            if(Objects.equals(map.get("id").toString(), createUserId)){
-//                flag=true;
-//            }
-//        }
-//        if(!flag){
-//            return ResultTemplate.fail("非法用户！");
-//        }
-//        user.setId(Integer.valueOf(createUserId));
-//        user.setMemo(modelName);
-//        if(!couldVisit(modelName))
-//        {
-//            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
-//        }
-//        if(preview_png.equals("True"))
-//        {
-//            funcitionSelected+="preview_png";
-//        }
-//
-////        if(funcitionSelected.startsWith(","))
-////        {
-////            funcitionSelected=funcitionSelected.substring(1);
-////        }
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-//        String formattedDate = sdf.format(new Date());
-//        if(modelName==null || modelName.isEmpty()){
-//            return ResultTemplate.fail("非法参数！");
-//        }
-//
-//        if(!modelName.equals("fanyanV2"))
-//        {
-//            return ResultTemplate.fail("未知操作！");
-//        }
-//
-//        Map<String, String> values = new HashMap<>();
-//        String filePath= codeRootPath +modelName+".py";
-//
-//        String filename="";
-//
-//        ModelFileStatus modelFileStatus=new ModelFileStatus();
-//        modelFileStatus.setDealStatus("success");
-//        modelFileStatus.setClassName(className);
-//        modelFileStatus.setUserName(userName);
-//        modelFileStatus.setCreateUserid(createUserId);
-//        List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
-//        if(!mapList.isEmpty())
-//        {
-//            String filepath=mapList.get(0).get("filepath").toString();
-//            filepath=filepath.replace("\\\\","\\");
-//            filepath=filepath.replace("//","/");
-//            //filename=className+"/"+filepath.substring(filepath.lastIndexOf("/")+1);
-//            filename=filepath.replace(FileRootDirPath,"");
-//        }else {
-//            return ResultTemplate.fail("请先提交文件！");
-//        }
-//        values.put("preview_png",preview_png);
-//        if(input_dir!=null) {
-//            values.put("input_dir", input_dir);
-//        }
-//        values.put("createUserid",createUserId);
-//        values.put("userName",userName);
-//        values.put("createTime",new Date().toString());
-//        values.put("filename",filename);
-//        try {
-//            ProcessBuilderUtils.executeInBackground(filePath,null,values);
-//        }catch (RuntimeException e){
-//            ResultTemplate.fail("程序执行失败！");
-//        }catch (Exception e){
-//            ResultTemplate.fail("未知错误!");
-//        }
-//
-//
-//        return ResultTemplate.success("程序已在后台运行!");
-//    }
+    @PostMapping(value = "/api/model/landChange")
+    public ResultTemplate<Object> getLandChange(@RequestParam("DISPLAY_MODE") String displayMode,
+                                                @RequestParam("earlyFile") MultipartFile earlyFile,
+                                                @RequestParam("lateFile") MultipartFile lateFile,
+                                                @RequestParam(value = "configFile", required = false) MultipartFile configFile,
+                                                @RequestParam(value = "change_stats", required = false) String changeStats,
+                                                @RequestParam(value = "change_image", required = false) String changeImage,
+                                                @RequestParam(value = "change_tif", required = false) String changeTif) {
+
+        // 1. 参数校验
+        displayMode = displayMode.equalsIgnoreCase("all") ? "all" : "changes_only";
+
+        if (earlyFile == null || earlyFile.isEmpty()) {
+            return ResultTemplate.fail("早期文件不能为空");
+        }
+        if (lateFile == null || lateFile.isEmpty()) {
+            return ResultTemplate.fail("后期文件不能为空");
+        }
+
+        // 2. 创建临时目录
+        String baseDir = "D:/recognition/tudifugaifenlei/shuju/";
+        String tempDir = baseDir + "land_change_temp_" + System.currentTimeMillis() + "/";
+        File dir = new File(tempDir);
+        if (!dir.exists() && !dir.mkdirs()) {
+            return ResultTemplate.fail("临时目录创建失败");
+        }
+
+        // 3. 保存上传的文件
+        File earlySave = null;
+        File lateSave = null;
+        File configSave = null;
+
+        try {
+            // 保存早期文件
+            String earlyFileName = "early_" + System.currentTimeMillis() + ".tif";
+            earlySave = new File(tempDir, earlyFileName);
+            earlyFile.transferTo(earlySave);
+            logger.info("早期文件保存成功: {}", earlySave.getAbsolutePath());
+
+            // 保存后期文件
+            String lateFileName = "late_" + System.currentTimeMillis() + ".tif";
+            lateSave = new File(tempDir, lateFileName);
+            lateFile.transferTo(lateSave);
+            logger.info("后期文件保存成功: {}", lateSave.getAbsolutePath());
+
+            // 保存配置文件（如果有）
+            if (configFile != null && !configFile.isEmpty()) {
+                String configFileName = "config_" + System.currentTimeMillis() + ".json";
+                configSave = new File(tempDir, configFileName);
+                configFile.transferTo(configSave);
+                logger.info("配置文件保存成功: {}", configSave.getAbsolutePath());
+            }
+
+            // 设置环境变量
+            Map<String, String> envVars = new HashMap<>();
+            envVars.put("TIF1_PATH", earlySave.getAbsolutePath());
+            envVars.put("TIF2_PATH", lateSave.getAbsolutePath());
+            envVars.put("OUTPUT_DIR", tempDir + "results");
+            envVars.put("DISPLAY_MODE", displayMode);
+            envVars.put("OUTPUT_JSON", "true");
+
+            if (configSave != null) {
+                envVars.put("CONFIG_PATH", configSave.getAbsolutePath());
+            }
+
+            //  执行Python脚本
+            String pythonOutput = ProcessBuilderUtils.executeAndReturnStd(
+                    codeRootPath+"land_change_detection_visualizer.py",
+                    null,
+                    envVars,
+                    "UTF-8"
+            );
+
+            logger.info("Python脚本输出: {}", pythonOutput);
+
+            //  解析Python输出（JSON格式）
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode resultJson = objectMapper.readTree(pythonOutput);
+
+            if (!resultJson.has("success") || !resultJson.get("success").asBoolean()) {
+                String errorMsg = resultJson.has("error") ? resultJson.get("error").asText() : "Python脚本执行失败";
+                return ResultTemplate.fail(errorMsg);
+            }
+
+            // 7. 构建返回结果
+            Map<String, Object> response = new LinkedHashMap<>();
+
+            // 文件路径
+            response.put("stats_file", resultJson.path("json_path").asText());
+            response.put("image_file", resultJson.path("png_path").asText());
+            response.put("tif_file", resultJson.path("tif_path").asText());
+
+            // 统计信息
+            JsonNode statsNode = resultJson.path("stats");
+            if (!statsNode.isMissingNode()) {
+                // 将整个stats对象放入response，这样前端可以访问所有统计信息
+                response.put("stats", statsNode);
+
+                // 同时提取一些关键统计数据到顶层，便于前端直接使用
+                JsonNode pixelStats = statsNode.path("pixel_statistics");
+                if (!pixelStats.isMissingNode()) {
+                    int totalValid = pixelStats.path("valid_pixels").asInt();
+                    int changed = pixelStats.path("changed_pixels").asInt();
+                    int unchanged = pixelStats.path("unchanged_pixels").asInt();
+
+                    response.put("total_pixels", pixelStats.path("total_pixels").asInt());
+                    response.put("valid_pixels", totalValid);
+                    response.put("changed_pixels", changed);
+                    response.put("unchanged_pixels", unchanged);
+                    response.put("change_percentage", totalValid > 0 ? (changed * 100.0 / totalValid) : 0);
+                    response.put("unchanged_percentage", totalValid > 0 ? (unchanged * 100.0 / totalValid) : 0);
+                }
+
+                // 变化类型统计
+                JsonNode changeTypesNode = statsNode.path("change_types");
+                if (!changeTypesNode.isMissingNode() && changeTypesNode.isArray()) {
+                    List<Map<String, Object>> changeTypes = new ArrayList<>();
+                    for (JsonNode changeNode : changeTypesNode) {
+                        Map<String, Object> changeType = new HashMap<>();
+                        changeType.put("from", changeNode.path("from").asInt());
+                        changeType.put("to", changeNode.path("to").asInt());
+                        changeType.put("from_name", changeNode.path("from_name").asText());
+                        changeType.put("to_name", changeNode.path("to_name").asText());
+                        changeType.put("count", changeNode.path("count").asInt());
+                        changeType.put("percentage", changeNode.path("percentage").asDouble());
+                        changeTypes.add(changeType);
+                    }
+                    response.put("change_types", changeTypes);
+                }
+
+                // 未变化类别统计
+                JsonNode unchangedClasses = statsNode.path("unchanged_classes");
+                if (!unchangedClasses.isMissingNode()) {
+                    Map<String, Object> unchangedStats = new HashMap<>();
+                    unchangedClasses.fields().forEachRemaining(entry -> {
+                        Map<String, Object> statDetail = new HashMap<>();
+                        statDetail.put("count", entry.getValue().asInt());
+                        // 计算百分比
+                        int totalValidPixels = pixelStats.path("valid_pixels").asInt();
+                        double percentage = totalValidPixels > 0 ? (entry.getValue().asInt() * 100.0 / totalValidPixels) : 0;
+                        statDetail.put("percentage", percentage);
+                        unchangedStats.put(entry.getKey(), statDetail);
+                    });
+                    response.put("unchanged_classes", unchangedStats);
+                }
+            }
+
+            return ResultTemplate.success(response);
+
+        } catch (Exception e) {
+            logger.error("地类变化检测失败: {}", e.getMessage(), e);
+            return ResultTemplate.fail("地类变化检测失败: " + e.getMessage());
+        } finally {
+            // 8. 清理临时文件（可以延迟清理或保留一段时间供用户下载）
+            try {
+                // 可以设置一个定时任务来清理旧文件，这里先简单删除
+                if (earlySave != null && earlySave.exists()) earlySave.delete();
+                if (lateSave != null && lateSave.exists()) lateSave.delete();
+                if (configSave != null && configSave.exists()) configSave.delete();
+
+                // 保留结果文件，可以在24小时后清理
+                File resultsDir = new File(tempDir + "results");
+                if (resultsDir.exists()) {
+                    // 这里可以记录结果文件的路径，后续通过定时任务清理
+                    logger.info("结果文件保存在: {}", resultsDir.getAbsolutePath());
+                }
+            } catch (Exception e) {
+                logger.warn("清理临时文件失败: {}", e.getMessage());
+            }
+        }
+    }
 }
 
