@@ -693,7 +693,8 @@ public class PythonExeController {
     @PostMapping("/api/waterChange")
     public ResultTemplate<Object> buildWaterChangeProcess(
             @RequestParam("earlyFile") MultipartFile earlyFile,
-            @RequestParam("lateFile") MultipartFile lateFile) {
+            @RequestParam("lateFile") MultipartFile lateFile,
+            @RequestParam("waterTagValue") String waterTagValue) {
 
         // 1. 校验文件是否为空
         if (earlyFile == null || earlyFile.isEmpty()) {
@@ -737,13 +738,13 @@ public class PythonExeController {
         // 添加环境变量
 
         try {
-// 修改 ProcessBuilder 设置
+            // 修改 ProcessBuilder 设置
             ProcessBuilder pb = new ProcessBuilder(
                     condaPYPath,
                     waterChangePYPath,
                     earlySave.getAbsolutePath(),
                     lateSave.getAbsolutePath(),
-                    "3"
+                    waterTagValue
             );
             pb.redirectErrorStream(true);
 
