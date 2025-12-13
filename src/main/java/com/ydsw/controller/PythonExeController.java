@@ -1118,7 +1118,7 @@ public class PythonExeController {
         }
 
         // 2. 创建临时目录
-        String baseDir = "D:/recognition/tudifugaifenlei/shuju/";
+        String baseDir = codeRootPath+"shuju/";
         String tempDir = baseDir + "land_change_temp_" + System.currentTimeMillis() + "/";
         File dir = new File(tempDir);
         if (!dir.exists() && !dir.mkdirs()) {
@@ -1262,6 +1262,155 @@ public class PythonExeController {
                 File resultsDir = new File(tempDir + "results");
                 if (resultsDir.exists()) {
                     // 这里可以记录结果文件的路径，后续通过定时任务清理
+                    logger.info("结果文件保存在: {}", resultsDir.getAbsolutePath());
+                }
+            } catch (Exception e) {
+                logger.warn("清理临时文件失败: {}", e.getMessage());
+            }
+        }
+    }
+
+    @PostMapping(value = "/api/model/getPlantChange")
+    public ResultTemplate<Object> getPlantChange(
+            @RequestParam("DISPLAY_MODE") String displayMode,
+            @RequestParam("earlyFile") MultipartFile earlyFile,
+            @RequestParam("lateFile") MultipartFile lateFile,
+            @RequestParam(value = "change_stats", required = false) String changeStats,
+            @RequestParam(value = "change_image", required = false) String changeImage,
+            @RequestParam(value = "classified_tif", required = false) String classifiedTif,
+            @RequestParam(value = "raw_tif", required = false) String rawTif,
+            @RequestParam(value = "CHANGE_THRESHOLDS", required = false) String changeThresholds) {
+
+        // 1. 参数校验
+        displayMode = displayMode.equalsIgnoreCase("all") ? "all" : "changes_only";
+
+        if (earlyFile == null || earlyFile.isEmpty()) {
+            return ResultTemplate.fail("早期FVC文件不能为空");
+        }
+        if (lateFile == null || lateFile.isEmpty()) {
+            return ResultTemplate.fail("后期FVC文件不能为空");
+        }
+
+        // 2. 创建临时目录
+        String baseDir = condaPYPath+"shuju/";
+        String tempDir = baseDir + "plant_change_temp_" + System.currentTimeMillis() + "/";
+        File dir = new File(tempDir);
+        if (!dir.exists() && !dir.mkdirs()) {
+            return ResultTemplate.fail("临时目录创建失败");
+        }
+
+        // 3. 保存上传的文件
+        File earlySave = null;
+        File lateSave = null;
+
+        try {
+            // 保存早期文件
+            String earlyFileName = "early_" + System.currentTimeMillis() + ".tif";
+            earlySave = new File(tempDir, earlyFileName);
+            earlyFile.transferTo(earlySave);
+            logger.info("早期FVC文件保存成功: {}", earlySave.getAbsolutePath());
+
+            // 保存后期文件
+            String lateFileName = "late_" + System.currentTimeMillis() + ".tif";
+            lateSave = new File(tempDir, lateFileName);
+            lateFile.transferTo(lateSave);
+            logger.info("后期FVC文件保存成功: {}", lateSave.getAbsolutePath());
+
+            // 设置环境变量
+            Map<String, String> envVars = new HashMap<>();
+            envVars.put("TIF1_PATH", earlySave.getAbsolutePath());
+            envVars.put("TIF2_PATH", lateSave.getAbsolutePath());
+            envVars.put("OUTPUT_DIR", tempDir + "results");
+            envVars.put("DISPLAY_MODE", displayMode);
+            envVars.put("OUTPUT_JSON", "true");
+
+            // 添加阈值配置
+            if (changeThresholds != null && !changeThresholds.trim().isEmpty()) {
+                envVars.put("CHANGE_THRESHOLDS", changeThresholds);
+            }
+
+            // 4. 执行Python脚本
+            String pythonScriptPath = codeRootPath + "plantchange.py";
+            String pythonOutput = ProcessBuilderUtils.executeAndReturnStd(
+                    pythonScriptPath,
+                    null,
+                    envVars,
+                    "UTF-8"
+            );
+
+            logger.info("Python脚本输出: {}", pythonOutput);
+
+            // 5. 解析Python输出（JSON格式）
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode resultJson = objectMapper.readTree(pythonOutput);
+
+            if (!resultJson.has("success") || !resultJson.get("success").asBoolean()) {
+                String errorMsg = resultJson.has("error") ? resultJson.get("error").asText() : "Python脚本执行失败";
+                return ResultTemplate.fail(errorMsg);
+            }
+
+            // 6. 构建返回结果
+            Map<String, Object> response = new LinkedHashMap<>();
+
+            // 文件路径
+            response.put("stats_file", resultJson.path("json_path").asText());
+            response.put("image_file", resultJson.path("png_path").asText());
+            response.put("classified_tif_file", resultJson.path("classified_tif_path").asText());
+            response.put("raw_tif_file", resultJson.path("raw_tif_path").asText());
+
+            // 统计信息
+            JsonNode statsNode = resultJson.path("stats");
+            if (!statsNode.isMissingNode()) {
+                // 将整个stats对象放入response
+                response.put("stats", statsNode);
+
+                // 提取关键统计数据
+                JsonNode pixelStats = statsNode.path("pixel_statistics");
+                if (!pixelStats.isMissingNode()) {
+                    int totalValid = pixelStats.path("valid_pixels").asInt();
+                    int changed = pixelStats.path("changed_pixels").asInt();
+                    int unchanged = pixelStats.path("unchanged_pixels").asInt();
+
+                    response.put("total_pixels", pixelStats.path("total_pixels").asInt());
+                    response.put("valid_pixels", totalValid);
+                    response.put("changed_pixels", changed);
+                    response.put("unchanged_pixels", unchanged);
+                    response.put("change_percentage", totalValid > 0 ? (changed * 100.0 / totalValid) : 0);
+                    response.put("unchanged_percentage", totalValid > 0 ? (unchanged * 100.0 / totalValid) : 0);
+                }
+
+                // 类别统计
+                JsonNode classStatsNode = statsNode.path("class_statistics");
+                JsonNode classPercentagesNode = statsNode.path("class_percentages");
+
+                if (!classStatsNode.isMissingNode()) {
+                    response.put("class_statistics", classStatsNode);
+                }
+                if (!classPercentagesNode.isMissingNode()) {
+                    response.put("class_percentages", classPercentagesNode);
+                }
+
+                // 变化统计信息
+                JsonNode changeStatsNode = statsNode.path("change_statistics");
+                if (!changeStatsNode.isMissingNode()) {
+                    response.put("change_statistics", changeStatsNode);
+                }
+            }
+
+            return ResultTemplate.success(response);
+
+        } catch (Exception e) {
+            logger.error("植被覆盖度变化检测失败: {}", e.getMessage(), e);
+            return ResultTemplate.fail("植被覆盖度变化检测失败: " + e.getMessage());
+        } finally {
+            // 7. 清理临时文件
+            try {
+                if (earlySave != null && earlySave.exists()) earlySave.delete();
+                if (lateSave != null && lateSave.exists()) lateSave.delete();
+
+                // 保留结果文件一段时间
+                File resultsDir = new File(tempDir + "results");
+                if (resultsDir.exists()) {
                     logger.info("结果文件保存在: {}", resultsDir.getAbsolutePath());
                 }
             } catch (Exception e) {
