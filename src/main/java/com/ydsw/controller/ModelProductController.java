@@ -16,12 +16,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -97,6 +102,101 @@ public class ModelProductController {
         }
         return ResultTemplate.success();
     }
+
+    @PostMapping(value = "/api/modelFile/uploadModelProducts")
+    public ResultTemplate<Object> uploadModelProducts(@RequestParam("productFile") MultipartFile file,
+                                                      @RequestParam("className") String className,
+                                                      @RequestParam("filename") String filename,
+                                                      @RequestParam("userName") String userName,
+                                                      @RequestParam("observationTime") String observationTime,
+                                                      @RequestParam("startTime") String startTime,
+                                                      @RequestParam("endTime") String endTime) {
+
+        try {
+            // 1. 获取文件类型（扩展名）
+            String originalFilename = file.getOriginalFilename();
+            String type = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                type = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            }
+
+            // 2. 构建保存路径
+            String basePath = "D:"+ File.separator+"recognition"+ File.separator+"products";
+            String savePath = basePath + File.separator + className + File.separator + type + File.separator + file.getOriginalFilename();
+
+            // 3. 创建目录（如果不存在）
+            Path directoryPath = Paths.get(basePath, className, type);
+            Files.createDirectories(directoryPath);
+
+            // 4. 保存文件
+            Path targetPath = Paths.get(savePath);
+            file.transferTo(targetPath.toFile());
+
+            // 5. 时间格式转换（假设时间格式为yyyy-MM-dd HH:mm:ss，如果不是可以调整）
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd"); // 如果只需要日期
+
+            // 根据你的时间格式选择合适的转换方式
+            Date obsTime = null;
+            Date firstDate = null;
+            Date secondDate = null;
+
+            try {
+                // 尝试解析带时间的格式
+                if (observationTime != null && !observationTime.isEmpty()) {
+                    obsTime = sdf.parse(observationTime);
+                }
+                if (startTime != null && !startTime.isEmpty()) {
+                    firstDate = sdf.parse(startTime);
+                }
+                if (endTime != null && !endTime.isEmpty()) {
+                    secondDate = sdf.parse(endTime);
+                }
+            } catch (ParseException e) {
+                // 如果解析失败，尝试只解析日期
+                try {
+                    if (observationTime != null && !observationTime.isEmpty()) {
+                        obsTime = sdfDate.parse(observationTime);
+                    }
+                    if (startTime != null && !startTime.isEmpty()) {
+                        firstDate = sdfDate.parse(startTime);
+                    }
+                    if (endTime != null && !endTime.isEmpty()) {
+                        secondDate = sdfDate.parse(endTime);
+                    }
+                } catch (ParseException ex) {
+                    return ResultTemplate.fail("时间格式错误，请使用yyyy-MM-dd或yyyy-MM-dd HH:mm:ss格式");
+                }
+            }
+
+            // 6. 创建ModelProduct对象并设置属性
+            ModelProduct modelProduct = new ModelProduct();
+            modelProduct.setClassName(className);
+            modelProduct.setType(type); // 设置文件类型
+            modelProduct.setFilename(filename);
+            modelProduct.setFilepath(savePath); // 保存文件路径
+            modelProduct.setOwner(userName);
+            modelProduct.setObservationTime(obsTime);
+            modelProduct.setStartTime(firstDate);
+            modelProduct.setEndTime(secondDate);
+            modelProduct.setCreateTime(new Date());
+
+            // 7. 保存到数据库
+            boolean saveResult = modelProductService.save(modelProduct);
+
+            if (!saveResult) {
+                return ResultTemplate.fail("保存到数据库失败");
+            }
+
+            return ResultTemplate.success();
+
+        } catch (IOException e) {
+            return ResultTemplate.fail("文件保存失败: " + e.getMessage());
+        } catch (Exception e) {
+            return ResultTemplate.fail("处理失败: " + e.getMessage());
+        }
+    }
+
     // 通用方法：获取文件下载响应（自动检测Content-Type）
     public ResponseEntity<Resource> getFileDownloadResponse(String filePath, String fileName) {
         try {
