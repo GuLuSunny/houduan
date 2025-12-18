@@ -64,6 +64,11 @@ public class LakesController {
             return ResultTemplate.fail("请提交文件！");
         }
         String fileName = fileGroup[0].getOriginalFilename();
+        String fileType = fileName.substring(fileName.lastIndexOf("."));
+        if(fileType.equals("zip"))
+        {
+            return ResultTemplate.success("压缩包上传成功");
+        }
         for (int i = 1; i < fileGroup.length; i++) {
             String finename = fileGroup[i].getOriginalFilename();
             if(!Objects.equals(finename.substring(0,finename.indexOf('.')), fileName.substring(0,finename.indexOf('.'))))

@@ -43,19 +43,19 @@ public class ModelProduct implements Serializable {
      * 观测日期
      */
     @TableField(value = "observation_time")
-    private Date observationTime;
+    private String observationTime;
 
     /**
      * 开始时间(如果有)
      */
     @TableField(value = "start_time")
-    private Date startTime;
+    private String startTime;
 
     /**
      * 结束时间(如果有)
      */
     @TableField(value = "end_time")
-    private Date endTime;
+    private String endTime;
 
     /**
      * 入库日期

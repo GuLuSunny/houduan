@@ -136,38 +136,6 @@ public class ModelProductController {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd"); // 如果只需要日期
 
-            // 根据你的时间格式选择合适的转换方式
-            Date obsTime = null;
-            Date firstDate = null;
-            Date secondDate = null;
-
-            try {
-                // 尝试解析带时间的格式
-                if (observationTime != null && !observationTime.isEmpty()) {
-                    obsTime = sdf.parse(observationTime);
-                }
-                if (startTime != null && !startTime.isEmpty()) {
-                    firstDate = sdf.parse(startTime);
-                }
-                if (endTime != null && !endTime.isEmpty()) {
-                    secondDate = sdf.parse(endTime);
-                }
-            } catch (ParseException e) {
-                // 如果解析失败，尝试只解析日期
-                try {
-                    if (observationTime != null && !observationTime.isEmpty()) {
-                        obsTime = sdfDate.parse(observationTime);
-                    }
-                    if (startTime != null && !startTime.isEmpty()) {
-                        firstDate = sdfDate.parse(startTime);
-                    }
-                    if (endTime != null && !endTime.isEmpty()) {
-                        secondDate = sdfDate.parse(endTime);
-                    }
-                } catch (ParseException ex) {
-                    return ResultTemplate.fail("时间格式错误，请使用yyyy-MM-dd或yyyy-MM-dd HH:mm:ss格式");
-                }
-            }
 
             // 6. 创建ModelProduct对象并设置属性
             ModelProduct modelProduct = new ModelProduct();
@@ -176,9 +144,9 @@ public class ModelProductController {
             modelProduct.setFilename(filename);
             modelProduct.setFilepath(savePath); // 保存文件路径
             modelProduct.setOwner(userName);
-            modelProduct.setObservationTime(obsTime);
-            modelProduct.setStartTime(firstDate);
-            modelProduct.setEndTime(secondDate);
+            modelProduct.setObservationTime(observationTime);
+            modelProduct.setStartTime(startTime);
+            modelProduct.setEndTime(endTime);
             modelProduct.setCreateTime(new Date());
 
             // 7. 保存到数据库

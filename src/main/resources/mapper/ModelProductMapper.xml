@@ -41,13 +41,13 @@
                 and filename Like '%' || #{modelProduct.filename} || '%'
             </if>
             <if test="modelProduct.observationTime != null ">
-                and date_trunc('day', observation_time) = date_trunc('day', #{modelProduct.observationTime})
+                and  observation_time like #{modelProduct.observationTime}||'%'
             </if>
             <if test="modelProduct.startTime != null">
-                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+                and start_time, 'YYYY-MM-DD'  >= #{modelProduct.startTime}
             </if>
             <if test="modelProduct.endTime != null">
-                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+                and end_time, 'YYYY-MM-DD' &lt;=  #{modelProduct.endTime}
             </if>
             <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
                 and "type" Like '%' || #{modelProduct.type} || '%'
@@ -80,13 +80,13 @@
                 and filename Like '%' || #{modelProduct.filename} || '%'
             </if>
             <if test="modelProduct.observationTime != null ">
-                and to_char(observation_time, 'YYYY-MM-DD') Like '%' ||  to_char(#{modelProduct.observationTime}::date, 'YYYY-MM-DD') || '%'
+                and observation_time Like #{modelProduct.observationTime}|| '%'
             </if>
             <if test="modelProduct.startTime != null">
-                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+                and start_time  >= #{modelProduct.startTime}
             </if>
             <if test="modelProduct.endTime != null">
-                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+                and end_time &lt;=  #{modelProduct.endTime}
             </if>
             <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
                 and "type" Like '%' || #{modelProduct.type} || '%'
@@ -98,13 +98,13 @@
         </where>
     </select>
     <select id="selectObservationTime" resultType="java.lang.String">
-        SELECT DISTINCT  to_char(observation_time, 'YYYY-MM-DD')  FROM model_product where status=0
+        SELECT DISTINCT  observation_time FROM model_product where status=0
     </select>
     <select id="fetchObservationTimeByYear" resultType="java.lang.String">
-        SELECT DISTINCT LEFT(to_char(observation_time, 'YYYY-MM-DD'), 4) FROM model_product where status=0
+        SELECT DISTINCT LEFT(observation_time, 4) FROM model_product where status=0
     </select>
     <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
-        SELECT DISTINCT LEFT(to_char(observation_time, 'YYYY-MM-DD'), 7) FROM model_product where status=0
+        SELECT DISTINCT LEFT(observation_time, 7) FROM model_product where status=0
     </select>
     <select id="getProductPageByConditions" resultType="java.util.Map">
         select id,class_name as "className",filepath,filename,observation_time as "observationTime",
@@ -123,14 +123,18 @@
             <if test="modelProduct.filename != null and modelProduct.filename.trim()!=''">
                 and filename Like '%' || #{modelProduct.filename} || '%'
             </if>
-            <if test="modelProduct.observationTime != null ">
-                and to_char(observation_time, 'YYYY-MM-DD') Like '%' ||  to_char(#{modelProduct.observationTime}::date, 'YYYY-MM-DD') || '%'
+            <if test="modelProduct.observationTime != null">
+                and observation_time like #{modelProduct.observationTime} || '%'
             </if>
+
+            <!-- 开始时间和结束时间查询（VARCHAR类型） -->
             <if test="modelProduct.startTime != null">
-                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+                <!-- 字符串比较，要求格式一致 -->
+                and start_time >= #{modelProduct.startTime}
             </if>
             <if test="modelProduct.endTime != null">
-                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+                <!-- 字符串比较，要求格式一致 -->
+                and end_time &lt;= #{modelProduct.endTime}
             </if>
             <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
                 and "type" Like '%' || #{modelProduct.type} || '%'
