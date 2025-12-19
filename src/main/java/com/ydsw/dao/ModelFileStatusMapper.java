@@ -21,6 +21,12 @@ public interface ModelFileStatusMapper extends BaseMapper<ModelFileStatus> {
     List<Map<String,Object>> selectUserAndFileStatus(@Param("modelFileStatusClass") ModelFileStatus modelFileStatus);
 
     void updateDealStatusViod(@Param("modelFileStatusClass") ModelFileStatus modelFileStatus);
+
+    List<String> selectObservationTime(@Param("className") String className);
+
+    List<String> fetchObservationTimeByYear(@Param("className") String className);
+
+    List<String> fetchObservationTimeByMonth(@Param("className") String className);
 }
 
 

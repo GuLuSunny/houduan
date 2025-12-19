@@ -127,4 +127,32 @@
             and status =0
         </where>
     </select>
+
+    <select id="selectObservationTime" resultType="java.lang.String">
+        SELECT DISTINCT  observation_time FROM model_file_status
+        <where>
+            status =0
+            <if test="className!=null and className.trim()!=''">
+                and class_name = #{className}
+            </if>
+        </where>
+    </select>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM model_file_status
+        <where>
+            status =0
+            <if test="className!=null and className.trim()!=''">
+                and class_name = #{className}
+            </if>
+        </where>
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM model_file_status
+        <where>
+            status =0
+            <if test="className!=null and className.trim()!=''">
+                and class_name = #{className}
+            </if>
+        </where>
+    </select>
 </mapper>

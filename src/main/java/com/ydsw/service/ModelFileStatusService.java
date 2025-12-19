@@ -19,4 +19,10 @@ public interface ModelFileStatusService extends IService<ModelFileStatus> {
 
     void updateDealStatusViod( ModelFileStatus modelFileStatus);
 
+    List<String> fetchObservationTime(String className);
+
+    List<String> fetchObservationTimeByYear(String className);
+
+    List<String> fetchObservationTimeByMonth(String className);
+
 }

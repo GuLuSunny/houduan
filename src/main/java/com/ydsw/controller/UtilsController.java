@@ -47,6 +47,8 @@ public class UtilsController {
     private SateliteRemoteSensingService sateliteRemoteSensingService;
     @Autowired
     private ModelProductService modelProductService;
+    @Autowired
+    private ModelFileStatusService modelFileStatusService;
     /**
      * 通过类型，查询时间列表
      *
@@ -161,6 +163,18 @@ public class UtilsController {
             {
                 stringList = modelProductService.fetchObservationTime();
             }
+        }
+        if("modelfiles".equals(type)){
+            String searchTimeType = (String) jsonObject.get("searchTimeType");
+            String className = jsonObject.get("className").toString();
+            if ("year".equals(searchTimeType)) {
+                stringList = modelFileStatusService.fetchObservationTimeByYear(className);
+            }else if ("month".equals(searchTimeType)) {
+                stringList = modelFileStatusService.fetchObservationTimeByMonth(className);
+            }else  {
+                stringList = modelFileStatusService.fetchObservationTime(className);
+            }
+
         }
         map.put("date", stringList);
         return ResultTemplate.success(map);

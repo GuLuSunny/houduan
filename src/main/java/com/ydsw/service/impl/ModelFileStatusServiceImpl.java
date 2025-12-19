@@ -38,6 +38,25 @@ public class ModelFileStatusServiceImpl extends ServiceImpl<ModelFileStatusMappe
     {
         modelFileStatusMapper.updateDealStatusViod(modelFileStatus);
     }
+
+    @Override
+    public List<String> fetchObservationTime(String className)
+    {
+        return modelFileStatusMapper.selectObservationTime(className);
+    }
+
+    @Override
+    public List<String> fetchObservationTimeByYear(String className){
+        return modelFileStatusMapper.fetchObservationTimeByYear(className);
+    }
+
+
+    @Override
+    public List<String> fetchObservationTimeByMonth(String className)
+    {
+        return modelFileStatusMapper.fetchObservationTimeByMonth(className);
+    }
+
 }
 
 
