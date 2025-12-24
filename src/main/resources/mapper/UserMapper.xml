@@ -50,7 +50,7 @@
                 username= #{userClass.username},
             </if>
             <if test="userClass.password != null and userClass.password.trim() != ''">
-                password= #{userClass.password},
+                "password"= #{userClass.password},
             </if>
             <if test="userClass.email != null and userClass.email.trim() != ''">
                 email= #{userClass.email},
@@ -79,7 +79,7 @@
                 AND tel LIKE '%' || #{userClass.tel} || '%'
             </if>
             <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
-                AND productionCompany LIKE '%' || #{userClass.productionCompany} || '%'
+                AND production_company LIKE '%' || #{userClass.productionCompany} || '%'
             </if>
         </where>
     </select>
@@ -98,7 +98,7 @@
                 AND tel LIKE '%' || #{userClass.tel} || '%'
             </if>
             <if test="userClass.productionCompany != null and userClass.productionCompany.trim() != ''">
-                AND productionCompany LIKE '%' || #{userClass.productionCompany} || '%'
+                AND production_company LIKE '%' || #{userClass.productionCompany} || '%'
             </if>
             and status=#{userClass.status}
         </where>

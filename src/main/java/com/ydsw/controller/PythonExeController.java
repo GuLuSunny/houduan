@@ -601,93 +601,6 @@ public class PythonExeController {
         return ResultTemplate.success(data);
     }
 
-
-//    @PostMapping(value = "/api/model/getResultV2_preview")
-//    public ResponseEntity<Resource> getResultV2_preview(@RequestBody JSONObject jsonObject) {
-//        String modelName = jsonObject.getStr("modelName");
-//        String fileName = modelName + "_predictAndgetResult.txt";
-//        Path filePath = Paths.get(ResultRootPath, fileName);
-//        return getFileResponse(filePath, fileName, "image/png");
-//    }
-//    @PostMapping(value = "/api/model/getResultV2_tif")
-//    public ResponseEntity<Resource> getResultV2_tif(@RequestBody JSONObject jsonObject) {
-//        String modelName = jsonObject.getStr("modelName");
-//        String fileName = modelName + "_predictAndgetResult.txt";
-//        Path filePath = Paths.get(ResultRootPath, fileName);
-//        return getFileResponse(filePath, fileName, "image/tiff");
-//    }
-
-
-//    @PostMapping(value = "/api/model/predictV2")
-//    public ResultTemplate<Object> predictV2(@RequestBody JSONObject jsonObject) {
-//        String modelName = jsonObject.getStr("modelName");
-//        List<String> commons = jsonObject.getBeanList("commons", String.class);
-//        List<String> envValues = jsonObject.getBeanList("envValues", String.class);
-//        String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
-//        String userName=jsonObject.getStr("userName");
-//        String createUserId=jsonObject.getStr("createUserId");
-//        String funcitionSelected=jsonObject.getStr("funcitionSelected");
-//        funcitionSelected=funcitionSelected.replace("null","");
-//        String className="land";
-//        if(preview_png.equals("True"))
-//        {
-//            funcitionSelected+="preview_png";
-//        }
-//        if(funcitionSelected.startsWith(","))
-//        {
-//            funcitionSelected=funcitionSelected.substring(1);
-//        }
-//        User user=new User();
-//        user.setUsername(userName);
-//        user.setStatus(0);
-//        List<Map<String,Object>> userList= userService.selectUserByCondition(user);
-//        boolean flag=false;
-//        for (Map<String,Object> map : userList) {
-//            if(Objects.equals(map.get("id").toString(), createUserId)){
-//                flag=true;
-//            }
-//        }
-//        if(!flag){
-//            return ResultTemplate.fail("非法用户！");
-//        }
-//        user.setId(Integer.valueOf(createUserId));
-//        user.setMemo(modelName);
-//        if(!couldVisit(modelName))
-//        {
-//            return ResultTemplate.fail("服务器繁忙，请稍后重试。");
-//        }
-//        Map<String, String> values = new HashMap<>();
-//        String processname="";
-//        switch (modelName){
-//            case "XGB" -> processname = "XGB_predict";
-//            case "CNN" -> processname = "CNN_predict";
-//            default -> {
-//                return ResultTemplate.fail("非法的参数名！");
-//            }
-//        }
-//        String filepath = codeRootPath + processname + ".py";
-//        try {
-//            switch (modelName) {
-//                case "XGB" -> values.put("modelSelected",modelName);
-//                case "CNN" -> values.put("modelSelected",modelName);
-//                default -> {
-//                    return ResultTemplate.fail("非法的参数名！");
-//                }
-//            }
-//            values.put("preview_png",preview_png);
-//            user.setAddress(funcitionSelected);
-//            user.setProductionCompany(className);
-//            ProcessBuilderUtils.executeInBackground(filepath,null,values,user);
-//        }catch (RuntimeException e) {
-//
-//            return ResultTemplate.fail("数据处理失败!");
-//        } catch (Exception e) {
-//            return ResultTemplate.fail("未知错误");
-//        }
-//        return ResultTemplate.success("预测已开始，请稍后查询。预计十分钟内完成。");
-//    }
-
-
     //分析水域面积变化的接口
     //@PreAuthorize("hasAnyAuthority('api_groupType_all')")
     @PostMapping("/api/waterChange")
@@ -931,7 +844,7 @@ public class PythonExeController {
 
             List<String> command = new ArrayList<>();
             command.add(condaPYPath);
-            command.add("D://recognition/code/core.py");
+            command.add(codeRootPath+"core.py");
             command.add("--model");
             command.add(model);
             if (sarSave != null) {
