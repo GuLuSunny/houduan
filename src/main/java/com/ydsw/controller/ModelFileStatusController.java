@@ -3,14 +3,12 @@ package com.ydsw.controller;
 import cn.hutool.json.JSONObject;
 import com.fengwenyi.api.result.ResultTemplate;
 import com.ydsw.domain.ModelFileStatus;
-import com.ydsw.domain.ModelStatus;
 import com.ydsw.domain.User;
 import com.ydsw.service.ModelFileStatusService;
 import com.ydsw.service.ModelListService;
 import com.ydsw.service.UserService;
 import com.ydsw.utils.ZipFileUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.geolatte.geom.M;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -27,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -156,7 +153,11 @@ public class ModelFileStatusController {
         String fileType="tif";
         for (MultipartFile file : files) {
             String originalFilename = file.getOriginalFilename();
-            fileType = originalFilename.substring(originalFilename.lastIndexOf("."));
+            if (originalFilename != null) {
+                fileType = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }else{
+                return ResultTemplate.fail("非法空文件！");
+            }
             if (!fileType.equalsIgnoreCase(".tif")&&!fileType.equalsIgnoreCase(".zip")) {
                 return ResultTemplate.fail("文件类型错误！");
             }
@@ -760,22 +761,25 @@ public class ModelFileStatusController {
     @PostMapping("/api/modelFile/download/tif")
     public ResponseEntity<Resource> downloadTifFile(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_prediction.tif";
         String userName = jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
         String relativePath="";
+        String observationTime= jsonObject.getStr("observationTime");
+        String className = jsonObject.getStr("className");
+        String startTime=jsonObject.getStr("firstTime")==null?"":jsonObject.getStr("firstTime");
+        String endTime=jsonObject.getStr("secondTime")==null?"":jsonObject.getStr("secondTime");
+
+        String year=observationTime.substring(0,4);
+        String month=observationTime.substring(5,7);
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        modelFileStatus.setObservationTime(observationTime);
+
         if(modelName.equals("XGB")||modelName.equals("CNN"))
         {
-            String observationTime= jsonObject.getStr("observationTime");
-            String className = jsonObject.getStr("className");
-            String year=observationTime.substring(0,4);
-            String month=observationTime.substring(5,7);
-            ModelFileStatus modelFileStatus=new ModelFileStatus();
-            modelFileStatus.setDealStatus("success");
-            modelFileStatus.setClassName(className);
-            modelFileStatus.setUserName(userName);
-            modelFileStatus.setCreateUserid(createUserId);
-            modelFileStatus.setObservationTime(observationTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
@@ -789,7 +793,30 @@ public class ModelFileStatusController {
             }else {
                 return ResponseEntity.status(400).build();
             }
+        } else if(modelName.equals("rfV2")||modelName.equals("CNNV2"))
+        {
+            year=startTime.substring(0,4);
+            month=startTime.substring(5,7);
+            modelFileStatus.setType("multiple");
+            modelFileStatus.setStartTime(startTime);
+            modelFileStatus.setEndTime(endTime);
+            modelFileStatus.setObservationTime(null);
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace(FileRootDirPath+"land"+File.separator,"");
+                filename = filename.substring(0,filename.length()-1)+"_SAR";
+                relativePath =year+File.separator+month+File.separator+
+                        filename+File.separator;
+                modelName=filename;
+            }else {
+                return ResponseEntity.status(400).build();
+            }
         }
+        String fileName = modelName + "_prediction.tif";
         Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
         return getFileResponse(filePath, fileName, "image/tiff");
     }
@@ -860,7 +887,12 @@ public class ModelFileStatusController {
             fileName+="_"+pngType+"."+type;
             filePath =  Paths.get(plantResultPath+relativePath, fileName);
             return getImageResponse(filePath, fileName);
-        }else{
+        }else if(Objects.equals(type, "txt")) {
+            fileName+="_class_stats.txt";
+            filePath =  Paths.get(plantResultPath+relativePath, fileName);
+            return  getFileResponse(filePath,fileName,"text/plain");
+        }
+        else{
             return ResponseEntity.status(500).body(null);
         }
     }

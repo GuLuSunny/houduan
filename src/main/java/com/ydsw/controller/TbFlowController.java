@@ -97,7 +97,7 @@ public class TbFlowController {
                 mapFlowMonthMax.put(month, monthFlowMax);
                 Double monthFlowMin = mapFlowMonthMin.get(month);//每个月的最低流量
                 monthFlowMin = monthFlowMin != null ? monthFlowMin : flow;
-                monthFlowMin = monthFlowMin < flow ? flow : monthFlowMin;
+                monthFlowMin = monthFlowMin > flow ? flow : monthFlowMin;
                 mapFlowMonthMin.put(month, monthFlowMin);
                 yearFlowSum = yearFlowSum + flow;//年总流量
                 yearFlowMax = yearFlowMax != null ? yearFlowMax : flow;//年最高流量

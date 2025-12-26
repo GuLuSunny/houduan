@@ -11,13 +11,9 @@ import com.ydsw.domain.User;
 import com.ydsw.service.ModelFileStatusService;
 import com.ydsw.service.ModelStatusService;
 import com.ydsw.service.UserService;
-import com.ydsw.service.impl.ModelFileStatusServiceImpl;
 import com.ydsw.utils.ProcessBuilderUtils;
 import org.apache.ibatis.annotations.Param;
-import org.geolatte.geom.M;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.processing.FilerException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -36,9 +31,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.ErrorManager;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -389,6 +381,7 @@ public class PythonExeController {
     public ResultTemplate<Object> buildplantCoverProcessWithoutResult(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
         String preview_png= Objects.equals(jsonObject.getStr("preview_png"), "False") ?"False" :"True";
+        String class_stats= Objects.equals(jsonObject.getStr("class_stats"), "false") ?"false":"True";
         String userName=jsonObject.getStr("userName");
         String createUserId=jsonObject.getStr("createUserId");
         String className="plant";
@@ -455,6 +448,7 @@ public class PythonExeController {
             return ResultTemplate.fail("请先提交文件！");
         }
         values.put("preview_png",preview_png);
+        values.put("class_stats",class_stats);
         values.put("input_dir", input_dir);
         values.put("createUserid",createUserId);
         values.put("userName",userName);
