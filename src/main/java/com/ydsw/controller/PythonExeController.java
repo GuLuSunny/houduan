@@ -386,6 +386,7 @@ public class PythonExeController {
         String createUserId=jsonObject.getStr("createUserId");
         String className="plant";
         String observationTime=jsonObject.getStr("observationTime");
+        String funcitionSelected = "";
         User user=new User();
         user.setUsername(userName);
         user.setStatus(0);
@@ -406,7 +407,14 @@ public class PythonExeController {
         {
             return ResultTemplate.fail("服务器繁忙，请稍后重试。");
         }
-
+        if(preview_png.equals("True"))
+        {
+            funcitionSelected+="preview_png";
+        }
+        if(class_stats.equals("True"))
+        {
+            funcitionSelected+=",class_stats";
+        }
 //        if(funcitionSelected.startsWith(","))
 //        {
 //            funcitionSelected=funcitionSelected.substring(1);
@@ -457,7 +465,7 @@ public class PythonExeController {
         try {
             if (!modelName.equals("fanyanV2"))
             {
-                user.setAddress("preview_png");
+                user.setAddress(funcitionSelected);
                 user.setProductionCompany(className);
                 ProcessBuilderUtils.executeInBackground(filePath,null,values,user);
             }else  {
@@ -469,6 +477,7 @@ public class PythonExeController {
                 modelStatus.setClassName(className);
                 modelStatus.setUpdateTime(new Date());
                 modelStatus.setCreateTime(new Date());
+                modelStatus.setFunctionSelected(funcitionSelected);
                 modelStatus.setType("lower");
                 ProcessBuilderUtils.executeInBackground(filePath,null,values,modelStatus);
             }
