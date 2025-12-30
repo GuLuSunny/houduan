@@ -1,4 +1,5 @@
 package com.ydsw.utils;
+
 import com.ydsw.domain.Sluice;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -7,16 +8,142 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import static com.ydsw.utils.ZipFileUtils.extractShpFilesFromZip;
 
 public class ShpfileUtils {
+
+    /**
+     * 解析基于File的SHP文件组
+     */
+    public static <T> List<T> parseShpFiles(File[] shpFiles, Class<T> targetClass) throws IOException {
+        List<T> allEntities = new ArrayList<>();
+
+        for (File shpFile : shpFiles) {
+            if (!shpFile.getName().toLowerCase().endsWith(".shp")) {
+                continue;
+            }
+
+            // 获取配套文件
+            File[] auxiliaryFiles = getAuxiliaryFiles(shpFile);
+
+            // 解析单个SHP文件组
+            List<T> entities = parseShpFileGroup(shpFile, auxiliaryFiles, targetClass);
+            allEntities.addAll(entities);
+        }
+
+        return allEntities;
+    }
+
+    /**
+     * 从ZIP文件解析SHP - 使用File版本
+     */
+    public static <T> List<T> parseShpFromZipFile(File zipFile, Class<T> targetClass) throws IOException {
+        // 创建临时目录
+        File tempDir = Files.createTempDirectory("shp_zip_").toFile();
+
+        try {
+            // 验证ZIP文件结构
+            List<String> validationErrors = ZipFileUtils.validateZipForShpFiles(zipFile.getAbsolutePath());
+            if (!validationErrors.isEmpty()) {
+                throw new IOException("ZIP文件验证失败: " + String.join("; ", validationErrors));
+            }
+
+            // 提取SHP文件
+            List<File> extractedFiles = extractShpFilesFromZip(zipFile.getAbsolutePath(), tempDir);
+
+            if (extractedFiles.isEmpty()) {
+                throw new IOException("ZIP文件中未找到有效的SHP文件组");
+            }
+
+            // 转换为File数组
+            List<File> shpFiles = new ArrayList<>();
+            for (File file : extractedFiles) {
+                if (file.getName().toLowerCase().endsWith(".shp")) {
+                    shpFiles.add(file);
+                }
+            }
+
+            // 使用File版本解析
+            return parseShpFiles(shpFiles.toArray(new File[0]), targetClass);
+
+        } finally {
+            // 清理临时目录
+            FileUtils.deleteDirectory(tempDir);
+        }
+    }
+
+    /**
+     * 获取SHP文件的配套文件
+     */
+    private static File[] getAuxiliaryFiles(File shpFile) {
+        File parentDir = shpFile.getParentFile();
+        String baseName = FilenameUtils.removeExtension(shpFile.getName());
+
+        // 支持的配套文件扩展名
+        String[] extensions = {".dbf", ".shx", ".prj", ".cpg", ".sbn", ".sbx"};
+        List<File> auxiliaryFiles = new ArrayList<>();
+
+        for (String ext : extensions) {
+            File auxFile = new File(parentDir, baseName + ext);
+            if (auxFile.exists()) {
+                auxiliaryFiles.add(auxFile);
+            }
+        }
+
+        return auxiliaryFiles.toArray(new File[0]);
+    }
+
+    /**
+     * 解析单个SHP文件组（基于File）
+     */
+    private static <T> List<T> parseShpFileGroup(File shpFile, File[] auxiliaryFiles, Class<T> targetClass) throws IOException {
+        // 创建临时目录
+        File tempDir = Files.createTempDirectory("shp_group_").toFile();
+
+        try {
+            // 1. 复制所有文件到临时目录（保持相同文件名）
+            File tempShpFile = new File(tempDir, shpFile.getName());
+            Files.copy(shpFile.toPath(), tempShpFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+            // 复制配套文件
+            for (File auxFile : auxiliaryFiles) {
+                File tempAuxFile = new File(tempDir, auxFile.getName());
+                Files.copy(auxFile.toPath(), tempAuxFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            // 2. 读取SHP文件
+            ShapefileDataStore dataStore = new ShapefileDataStore(tempShpFile.toURI().toURL());
+            dataStore.setCharset(StandardCharsets.UTF_8);
+
+            List<T> entities = new ArrayList<>();
+            try (SimpleFeatureIterator iterator = dataStore.getFeatureSource().getFeatures().features()) {
+                while (iterator.hasNext()) {
+                    SimpleFeature feature = iterator.next();
+                    T entity = convertFeatureToEntity(feature, targetClass);
+                    entities.add(entity);
+                }
+            } finally {
+                dataStore.dispose();
+            }
+
+            return entities;
+
+        } finally {
+            // 清理临时目录
+            FileUtils.deleteDirectory(tempDir);
+        }
+    }
 
     public static <T> List<T> parseMultipleShpGroups(MultipartFile[] fileGroups, Class<T> targetClass) throws IOException {
         List<T> allEntities = new ArrayList<>();

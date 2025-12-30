@@ -364,4 +364,170 @@ public class ZipFileUtils {
         return true; // 文件不存在视为删除成功
     }
 
+    /**
+     * 检查ZIP文件是否包含指定扩展名的文件
+     */
+    public static boolean containsFilesWithExtensions(String zipFilePath, String... extensions) throws IOException {
+        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            Set<String> extensionSet = Arrays.stream(extensions)
+                    .map(ext -> ext.toLowerCase())
+                    .collect(Collectors.toSet());
+
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (!entry.isDirectory()) {
+                    String fileName = new File(entry.getName()).getName().toLowerCase();
+                    for (String ext : extensionSet) {
+                        if (fileName.endsWith(ext)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 获取ZIP文件中所有文件的扩展名集合
+     */
+    public static Set<String> getAllFileExtensions(String zipFilePath) throws IOException {
+        Set<String> extensions = new HashSet<>();
+
+        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (!entry.isDirectory()) {
+                    String fileName = new File(entry.getName()).getName();
+                    int dotIndex = fileName.lastIndexOf('.');
+                    if (dotIndex > 0) {
+                        extensions.add(fileName.substring(dotIndex).toLowerCase());
+                    }
+                }
+            }
+        }
+
+        return extensions;
+    }
+    /**
+     * 验证ZIP文件是否包含有效的SHP文件组
+     */
+    static List<String> validateZipForShpFiles(String zipFilePath) throws IOException {
+        List<String> errors = new ArrayList<>();
+
+        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            // 按基本名分组收集文件
+            Map<String, Set<String>> baseNameGroups = new HashMap<>();
+
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (!entry.isDirectory()) {
+                    String entryName = entry.getName();
+                    String fileName = new File(entryName).getName();
+
+                    // 提取基本名（不带扩展名）
+                    int dotIndex = fileName.lastIndexOf('.');
+                    if (dotIndex > 0) {
+                        String baseName = fileName.substring(0, dotIndex);
+                        String extension = fileName.substring(dotIndex).toLowerCase();
+
+                        baseNameGroups.computeIfAbsent(baseName, k -> new HashSet<>())
+                                .add(extension);
+                    }
+                }
+            }
+
+            // 检查每个分组是否包含必要的文件
+            for (Map.Entry<String, Set<String>> entry : baseNameGroups.entrySet()) {
+                String baseName = entry.getKey();
+                Set<String> extensions = entry.getValue();
+
+                // 检查是否包含.shp文件
+                if (!extensions.contains(".shp")) {
+                    continue; // 不是SHP文件组，跳过
+                }
+
+                // 检查必要的配套文件
+                if (!extensions.contains(".dbf")) {
+                    errors.add("SHP文件组 '" + baseName + "' 缺少 .dbf 文件");
+                }
+                if (!extensions.contains(".shx")) {
+                    errors.add("SHP文件组 '" + baseName + "' 缺少 .shx 文件");
+                }
+            }
+
+            // 如果没有任何.shp文件
+            boolean hasShpFile = baseNameGroups.values().stream()
+                    .anyMatch(extensions -> extensions.contains(".shp"));
+            if (!hasShpFile) {
+                errors.add("ZIP文件中未找到.shp文件");
+            }
+        }
+
+        return errors;
+    }
+
+    /**
+     * 从ZIP文件中提取SHP文件及其配套文件
+     */
+    static List<File> extractShpFilesFromZip(String zipFilePath, File destDir) throws IOException {
+        List<File> extractedFiles = new ArrayList<>();
+
+        try (ZipFile zipFile = new ZipFile(zipFilePath)) {
+            // 先收集所有.shp文件的基本名
+            Set<String> shpBaseNames = new HashSet<>();
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (!entry.isDirectory()) {
+                    String fileName = new File(entry.getName()).getName().toLowerCase();
+                    if (fileName.endsWith(".shp")) {
+                        String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+                        shpBaseNames.add(baseName);
+                    }
+                }
+            }
+
+            // 重新遍历，提取所有匹配基本名的文件
+            entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (!entry.isDirectory()) {
+                    String entryName = entry.getName();
+                    String fileName = new File(entryName).getName();
+                    String baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+
+                    if (shpBaseNames.contains(baseName.toLowerCase())) {
+                        // 提取文件
+                        File destFile = new File(destDir, fileName);
+
+                        // 确保父目录存在
+                        File parentDir = destFile.getParentFile();
+                        if (!parentDir.exists()) {
+                            parentDir.mkdirs();
+                        }
+
+                        try (java.io.InputStream is = zipFile.getInputStream(entry);
+                             java.io.FileOutputStream fos = new java.io.FileOutputStream(destFile)) {
+
+                            byte[] buffer = new byte[1024];
+                            int length;
+                            while ((length = is.read(buffer)) > 0) {
+                                fos.write(buffer, 0, length);
+                            }
+                        }
+
+                        extractedFiles.add(destFile);
+                    }
+                }
+            }
+        }
+
+        return extractedFiles;
+    }
 }
