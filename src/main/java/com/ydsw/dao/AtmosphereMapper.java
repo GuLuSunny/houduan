@@ -38,6 +38,8 @@ public interface AtmosphereMapper extends BaseMapper<Atmosphere> {
     List<String> fetchObservationTimeByMonth();
 
     IPage<Map<String,Object>> fetchFilepathByObservationTimeAndClassName(IPage<?> page,@Param("idList") List<Integer> idList,@Param("observationTimeBegin")String observationTimeBegin,@Param("observationTimeEnd")String observationTimeEnd,@Param("className")String className,@Param("filepath") String filepath,@Param("type") String type,@Param("typeDetail") String typeDetail,@Param("deviceId") String deviceId,@Param("deviceName")String deviceName);
+
+    boolean updateByCondition(@Param("atmosphereClass") Atmosphere atmosphere);
 }
 
 

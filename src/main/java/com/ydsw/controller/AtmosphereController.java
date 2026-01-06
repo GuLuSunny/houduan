@@ -6,6 +6,8 @@ import cn.hutool.core.util.ZipUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.excel.util.StringUtils;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fengwenyi.api.result.ResultTemplate;
 import com.ydsw.domain.Atmosphere;
@@ -685,6 +687,45 @@ public class AtmosphereController {
 //            return ResultTemplate.success("运行成功，文件已保存！");
 //        }
         return ResultTemplate.fail("数据入库时出错！");
+    }
+    @PostMapping(value = "/api/atmosphere/updateOnly")
+    public ResultTemplate<Object> updateOnly(@RequestBody JSONObject jsonObject){
+        Atmosphere atmosphere = jsonObject.toBean(Atmosphere.class);
+        List<String> idArray = jsonObject.getBeanList("ids", String.class);
+        List<Integer> idList = new ArrayList<>();
+        ModelFileStatusController.ArrayStrToInt(idArray,idList);
+        LambdaUpdateWrapper<Atmosphere> wrapper = new LambdaUpdateWrapper<>();
+        // 检查 idList 是否为空
+        if (!idList.isEmpty()) {
+            wrapper.in(Atmosphere::getId, idList);
+        }
+
+        if (StringUtils.isNotBlank(atmosphere.getObservationTime())) {
+            wrapper.like(Atmosphere::getObservationTime, atmosphere.getObservationTime());
+        }
+
+        if (StringUtils.isNotBlank(atmosphere.getFilepath())) {
+            wrapper.like(Atmosphere::getFilename, atmosphere.getFilepath());
+        }
+
+        if (atmosphere.getDeviceId()!=null) {
+            wrapper.eq(Atmosphere::getDeviceId, atmosphere.getDeviceId());
+        }
+
+        wrapper.eq(Atmosphere::getStatus, 0);
+
+        // 检查是否有有效的更新条件
+        if (wrapper.isNonEmptyOfWhere()&&wrapper.isNonEmptyOfEntity()||wrapper.isNonEmptyOfNormal()) {
+            boolean flag = atmosphereService.update(atmosphere, wrapper);
+            if (flag) {
+                return ResultTemplate.success();
+            }
+            return ResultTemplate.fail();
+        } else {
+            // 处理没有有效条件的情况
+            log.warn("更新条件为空，跳过更新操作");
+            return ResultTemplate.fail("无更新参数！");
+        }
     }
     /*
     * 获取文件的路径和id

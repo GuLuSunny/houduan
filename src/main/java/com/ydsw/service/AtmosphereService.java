@@ -33,4 +33,6 @@ public interface AtmosphereService extends IService<Atmosphere> {
     List<String> fetchObservationTimeByMonth();
 
     IPage<Map<String,Object>> fetchFilepathByObservationTimeAndClassName(Integer currentPage,Integer pageSize, List<Integer> idList,String observationTimeBegin,String observationTimeEnd, String className, String filepath,String type, String typeDetail,String deviceId,String deviceName);
+
+    boolean updateByCondition(Atmosphere atmosphere);
 }
