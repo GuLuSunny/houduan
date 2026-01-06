@@ -90,32 +90,18 @@ public class AtmosphereController {
         {
             return ResultTemplate.fail("站点不可为空！");
         }
-        double windSpeed=0.0;
-        double rainfall=0.0;
-        double atmosphereTemperature=0.0;
-        double soilTemperature=0.0;
-        double digitalPressure=0.0;
-        double simpleTotalRadiation=0.0;
-        double windDirection=0.0;
-        double soilHumidity=0.0;
-        double atmosphereHumidity=0.0;
-        double pm25=0.0;
-        double salinity=0.0;
-        double negativeOxygenIon=0.0;
-        double rainfallAccumulation=0.0;
-        double radiationAccumulation=0.0;
-        double pm10=0.0;
 
         List<Atmosphere> atmosphereList = atmosphereService.fetchDataByObservationTimeAndDevice(observationTime, deviceId);
         // 创建一个列表来存储结果
         Map<String, Object> atmosphereMap = new HashMap<>();
-        calculAveForAto(atmosphereList,atmosphereMap,windSpeed,rainfall,atmosphereTemperature,soilTemperature,digitalPressure,simpleTotalRadiation,windDirection,soilHumidity,atmosphereHumidity,pm25,salinity,negativeOxygenIon,rainfallAccumulation,radiationAccumulation,pm10);
-        atmosphereMap.put("year",observationTime);
+        calculAveForAto(atmosphereList, atmosphereMap);
+        atmosphereMap.put("year", observationTime);
         return ResultTemplate.success(atmosphereMap);
     }
+
     /*
-    * 按月份和设备号查询气象平均数据
-    * */
+     * 按月份和设备号查询气象平均数据
+     * */
     @PreAuthorize("hasAnyAuthority('api_atmosphere_selectByMonthAndDevice')")
     @PostMapping(value = "/api/atmosphere/selectByMonthAndDevice")
     public ResultTemplate<Object> selectByMonthAndDevice(@RequestBody Map<String, String> requestBody) {
@@ -129,87 +115,285 @@ public class AtmosphereController {
         {
             return ResultTemplate.fail("站点不可为空！");
         }
-        double windSpeed=0.0;
-        double rainfall=0.0;
-        double atmosphereTemperature=0.0;
-        double soilTemperature=0.0;
-        double digitalPressure=0.0;
-        double simpleTotalRadiation=0.0;
-        double windDirection=0.0;
-        double soilHumidity=0.0;
-        double atmosphereHumidity=0.0;
-        double pm25=0.0;
-        double salinity=0.0;
-        double negativeOxygenIon=0.0;
-        double rainfallAccumulation=0.0;
-        double radiationAccumulation=0.0;
-        double pm10=0.0;
 
         List<Atmosphere> atmosphereList = atmosphereService.fetchDataByObservationTimeAndDevice(observationTime, deviceId);
         // 创建一个列表来存储结果
         Map<String, Object> atmosphereMap = new HashMap<>();
-        calculAveForAto(atmosphereList,atmosphereMap,windSpeed,rainfall,atmosphereTemperature,soilTemperature,digitalPressure,simpleTotalRadiation,windDirection,soilHumidity,atmosphereHumidity,pm25,salinity,negativeOxygenIon,rainfallAccumulation,radiationAccumulation,pm10);
-        atmosphereMap.put("month",observationTime);
+        calculAveForAto(atmosphereList, atmosphereMap);
+        atmosphereMap.put("month", observationTime);
         return ResultTemplate.success(atmosphereMap);
     }
-    /*-
-    * 求气象数据总量和平均值
-    * */
-    private void calculAveForAto(List<Atmosphere> atmosphereList,Map<String, Object> atmosphereMap,
-                                 double windSpeed,double rainfall,
-                                 double atmosphereTemperature,double soilTemperature,double digitalPressure,double simpleTotalRadiation,
-                                 double windDirection,double soilHumidity,double atmosphereHumidity,double pm25,
-                                 double salinity,double negativeOxygenIon,double rainfallAccumulation,double radiationAccumulation,double pm10){
-        int sum=0;
-        for (Atmosphere atmosphere : atmosphereList) {
-            windSpeed+=Double.parseDouble(atmosphere.getWindSpeed());
-            rainfall+=Double.parseDouble(atmosphere.getRainfall());
-            atmosphereTemperature+=Double.parseDouble(atmosphere.getAtmosphereTemperature());
-            soilTemperature+=Double.parseDouble(atmosphere.getSoilTemperature());
-            digitalPressure+=Double.parseDouble(atmosphere.getDigitalPressure());
-            simpleTotalRadiation+=Double.parseDouble(atmosphere.getSimpleTotalRadiation());
-            windDirection+=Double.parseDouble(atmosphere.getWindDirection());
-            soilHumidity+=Double.parseDouble(atmosphere.getSoilHumidity());
-            atmosphereHumidity+=Double.parseDouble(atmosphere.getAtmosphereHumidity());
-            pm25+=Double.parseDouble(atmosphere.getPm25());
-            salinity+=Double.parseDouble(atmosphere.getSalinity());
-            negativeOxygenIon+=Double.parseDouble(atmosphere.getNegativeOxygenIon());
-            rainfallAccumulation+=Double.parseDouble(atmosphere.getRainfall());
-            radiationAccumulation+=Double.parseDouble(atmosphere.getRadiationAccumulation());
-            pm10+=Double.parseDouble(atmosphere.getPm10());
-            sum++;
+
+    /*
+     * 判断字符串是否为有效数值数据
+     */
+    private boolean isValidNumericValue(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return false;
         }
-        windSpeed=windSpeed/(double)sum;
-        rainfall=rainfall/(double)sum;
-        atmosphereTemperature=atmosphereTemperature/(double)sum;
-        soilTemperature=soilTemperature/(double)sum;
-        digitalPressure=digitalPressure/(double)sum;
-        simpleTotalRadiation=simpleTotalRadiation/(double)sum;
-        windDirection=windDirection/(double)sum;
-        soilHumidity=soilHumidity/(double)sum;
-        atmosphereHumidity=atmosphereHumidity/(double)sum;
-        pm25=pm25/(double)sum;
-        salinity=salinity/(double)sum;
-        negativeOxygenIon=negativeOxygenIon/(double)sum;
-        rainfallAccumulation=rainfallAccumulation/(double)sum;
-        radiationAccumulation=radiationAccumulation/(double)sum;
-        pm10=pm10/(double)sum;
-        atmosphereMap.put("windSpeed", String.format("%.2f",windSpeed));
-        atmosphereMap.put("rainfall", String.format("%.2f",rainfall));
-        atmosphereMap.put("atmosphereTemperature", String.format("%.2f",atmosphereTemperature));
-        atmosphereMap.put("soilTemperature", String.format("%.2f",soilTemperature));
-        atmosphereMap.put("digitalPressure", String.format("%.2f",digitalPressure));
-        atmosphereMap.put("simpleTotalRadiation", String.format("%.2f",simpleTotalRadiation));
-        atmosphereMap.put("windDirection", String.format("%.2f",windDirection));
-        atmosphereMap.put("soilHumidity", String.format("%.2f",soilHumidity));
-        atmosphereMap.put("atmosphereHumidity", String.format("%.2f",atmosphereHumidity));
-        atmosphereMap.put("pm25", String.format("%.2f",pm25));
-        atmosphereMap.put("salinity", String.format("%.2f",salinity));
-        atmosphereMap.put("negativeOxygenIon",String.format("%.2f",negativeOxygenIon));
-        atmosphereMap.put("rainfallAccumulation", String.format("%.2f",rainfallAccumulation));
-        atmosphereMap.put("radiationAccumulation", String.format("%.2f",radiationAccumulation));
-        atmosphereMap.put("pm10", String.format("%.2f",pm10));
-        atmosphereMap.put("sum", sum);
+        // 检查是否为"缺测"或类似标记
+        if ("缺测".equals(value.trim()) || "null".equalsIgnoreCase(value.trim())) {
+            return false;
+        }
+        try {
+            // 尝试转换为Double，验证是否为有效数字
+            Double.parseDouble(value.trim());
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /*
+     * 计算气象数据平均值（改进版：每个字段单独统计有效数据）
+     */
+    private void calculAveForAto(List<Atmosphere> atmosphereList, Map<String, Object> atmosphereMap) {
+        // 初始化各字段的累加值和计数
+        double windSpeedSum = 0.0;
+        int windSpeedCount = 0;
+
+        double rainfallSum = 0.0;
+        int rainfallCount = 0;
+
+        double atmosphereTemperatureSum = 0.0;
+        int atmosphereTemperatureCount = 0;
+
+        double soilTemperatureSum = 0.0;
+        int soilTemperatureCount = 0;
+
+        double digitalPressureSum = 0.0;
+        int digitalPressureCount = 0;
+
+        double simpleTotalRadiationSum = 0.0;
+        int simpleTotalRadiationCount = 0;
+
+        double windDirectionSum = 0.0;
+        int windDirectionCount = 0;
+
+        double soilHumiditySum = 0.0;
+        int soilHumidityCount = 0;
+
+        double atmosphereHumiditySum = 0.0;
+        int atmosphereHumidityCount = 0;
+
+        double pm25Sum = 0.0;
+        int pm25Count = 0;
+
+        double salinitySum = 0.0;
+        int salinityCount = 0;
+
+        double negativeOxygenIonSum = 0.0;
+        int negativeOxygenIonCount = 0;
+
+        double rainfallAccumulationSum = 0.0;
+        int rainfallAccumulationCount = 0;
+
+        double radiationAccumulationSum = 0.0;
+        int radiationAccumulationCount = 0;
+
+        double pm10Sum = 0.0;
+        int pm10Count = 0;
+
+        // 新增字段
+        double relativeHumiditySum = 0.0;
+        int relativeHumidityCount = 0;
+
+        double aqiIndexSum = 0.0;
+        int aqiIndexCount = 0;
+
+        double sulfurDioxideSum = 0.0;
+        int sulfurDioxideCount = 0;
+
+        double nitrogenDioxideSum = 0.0;
+        int nitrogenDioxideCount = 0;
+
+        double carbonMonoxideSum = 0.0;
+        int carbonMonoxideCount = 0;
+
+        double ozoneSum = 0.0;
+        int ozoneCount = 0;
+
+        double ozone8HourSum = 0.0;
+        int ozone8HourCount = 0;
+
+        // 遍历数据列表
+        for (Atmosphere atmosphere : atmosphereList) {
+            // 处理每个字段，只累加有效数据
+            if (isValidNumericValue(atmosphere.getWindSpeed())) {
+                windSpeedSum += Double.parseDouble(atmosphere.getWindSpeed());
+                windSpeedCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getRainfall())) {
+                rainfallSum += Double.parseDouble(atmosphere.getRainfall());
+                rainfallCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getAtmosphereTemperature())) {
+                atmosphereTemperatureSum += Double.parseDouble(atmosphere.getAtmosphereTemperature());
+                atmosphereTemperatureCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getSoilTemperature())) {
+                soilTemperatureSum += Double.parseDouble(atmosphere.getSoilTemperature());
+                soilTemperatureCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getDigitalPressure())) {
+                digitalPressureSum += Double.parseDouble(atmosphere.getDigitalPressure());
+                digitalPressureCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getSimpleTotalRadiation())) {
+                simpleTotalRadiationSum += Double.parseDouble(atmosphere.getSimpleTotalRadiation());
+                simpleTotalRadiationCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getWindDirection())) {
+                windDirectionSum += Double.parseDouble(atmosphere.getWindDirection());
+                windDirectionCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getSoilHumidity())) {
+                soilHumiditySum += Double.parseDouble(atmosphere.getSoilHumidity());
+                soilHumidityCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getAtmosphereHumidity())) {
+                atmosphereHumiditySum += Double.parseDouble(atmosphere.getAtmosphereHumidity());
+                atmosphereHumidityCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getPm25())) {
+                pm25Sum += Double.parseDouble(atmosphere.getPm25());
+                pm25Count++;
+            }
+
+            if (isValidNumericValue(atmosphere.getSalinity())) {
+                salinitySum += Double.parseDouble(atmosphere.getSalinity());
+                salinityCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getNegativeOxygenIon())) {
+                negativeOxygenIonSum += Double.parseDouble(atmosphere.getNegativeOxygenIon());
+                negativeOxygenIonCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getRainfallAccumulation())) {
+                rainfallAccumulationSum += Double.parseDouble(atmosphere.getRainfallAccumulation());
+                rainfallAccumulationCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getRadiationAccumulation())) {
+                radiationAccumulationSum += Double.parseDouble(atmosphere.getRadiationAccumulation());
+                radiationAccumulationCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getPm10())) {
+                pm10Sum += Double.parseDouble(atmosphere.getPm10());
+                pm10Count++;
+            }
+
+            // 新增字段处理
+            if (isValidNumericValue(atmosphere.getRelativeHumidity())) {
+                relativeHumiditySum += Double.parseDouble(atmosphere.getRelativeHumidity());
+                relativeHumidityCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getAqiIndex())) {
+                aqiIndexSum += Double.parseDouble(atmosphere.getAqiIndex());
+                aqiIndexCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getSulfurDioxide())) {
+                sulfurDioxideSum += Double.parseDouble(atmosphere.getSulfurDioxide());
+                sulfurDioxideCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getNitrogenDioxide())) {
+                nitrogenDioxideSum += Double.parseDouble(atmosphere.getNitrogenDioxide());
+                nitrogenDioxideCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getCarbonMonoxide())) {
+                carbonMonoxideSum += Double.parseDouble(atmosphere.getCarbonMonoxide());
+                carbonMonoxideCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getOzone())) {
+                ozoneSum += Double.parseDouble(atmosphere.getOzone());
+                ozoneCount++;
+            }
+
+            if (isValidNumericValue(atmosphere.getOzone8Hour())) {
+                ozone8HourSum += Double.parseDouble(atmosphere.getOzone8Hour());
+                ozone8HourCount++;
+            }
+        }
+
+        // 计算各字段平均值（避免除零错误）
+        atmosphereMap.put("windSpeed", windSpeedCount > 0 ? String.format("%.2f", windSpeedSum / windSpeedCount) : "0.00");
+        atmosphereMap.put("rainfall", rainfallCount > 0 ? String.format("%.2f", rainfallSum / rainfallCount) : "0.00");
+        atmosphereMap.put("atmosphereTemperature", atmosphereTemperatureCount > 0 ? String.format("%.2f", atmosphereTemperatureSum / atmosphereTemperatureCount) : "0.00");
+        atmosphereMap.put("soilTemperature", soilTemperatureCount > 0 ? String.format("%.2f", soilTemperatureSum / soilTemperatureCount) : "0.00");
+        atmosphereMap.put("digitalPressure", digitalPressureCount > 0 ? String.format("%.2f", digitalPressureSum / digitalPressureCount) : "0.00");
+        atmosphereMap.put("simpleTotalRadiation", simpleTotalRadiationCount > 0 ? String.format("%.2f", simpleTotalRadiationSum / simpleTotalRadiationCount) : "0.00");
+        atmosphereMap.put("windDirection", windDirectionCount > 0 ? String.format("%.2f", windDirectionSum / windDirectionCount) : "0.00");
+        atmosphereMap.put("soilHumidity", soilHumidityCount > 0 ? String.format("%.2f", soilHumiditySum / soilHumidityCount) : "0.00");
+        atmosphereMap.put("atmosphereHumidity", atmosphereHumidityCount > 0 ? String.format("%.2f", atmosphereHumiditySum / atmosphereHumidityCount) : "0.00");
+        atmosphereMap.put("pm25", pm25Count > 0 ? String.format("%.2f", pm25Sum / pm25Count) : "0.00");
+        atmosphereMap.put("salinity", salinityCount > 0 ? String.format("%.2f", salinitySum / salinityCount) : "0.00");
+        atmosphereMap.put("negativeOxygenIon", negativeOxygenIonCount > 0 ? String.format("%.2f", negativeOxygenIonSum / negativeOxygenIonCount) : "0.00");
+        atmosphereMap.put("rainfallAccumulation", rainfallAccumulationCount > 0 ? String.format("%.2f", rainfallAccumulationSum / rainfallAccumulationCount) : "0.00");
+        atmosphereMap.put("radiationAccumulation", radiationAccumulationCount > 0 ? String.format("%.2f", radiationAccumulationSum / radiationAccumulationCount) : "0.00");
+        atmosphereMap.put("pm10", pm10Count > 0 ? String.format("%.2f", pm10Sum / pm10Count) : "0.00");
+
+        // 新增字段平均值
+        atmosphereMap.put("relativeHumidity", relativeHumidityCount > 0 ? String.format("%.2f", relativeHumiditySum / relativeHumidityCount) : "0.00");
+        atmosphereMap.put("aqiIndex", aqiIndexCount > 0 ? String.format("%.2f", aqiIndexSum / aqiIndexCount) : "0.00");
+        atmosphereMap.put("sulfurDioxide", sulfurDioxideCount > 0 ? String.format("%.2f", sulfurDioxideSum / sulfurDioxideCount) : "0.00");
+        atmosphereMap.put("nitrogenDioxide", nitrogenDioxideCount > 0 ? String.format("%.2f", nitrogenDioxideSum / nitrogenDioxideCount) : "0.00");
+        atmosphereMap.put("carbonMonoxide", carbonMonoxideCount > 0 ? String.format("%.2f", carbonMonoxideSum / carbonMonoxideCount) : "0.00");
+        atmosphereMap.put("ozone", ozoneCount > 0 ? String.format("%.2f", ozoneSum / ozoneCount) : "0.00");
+        atmosphereMap.put("ozone8Hour", ozone8HourCount > 0 ? String.format("%.2f", ozone8HourSum / ozone8HourCount) : "0.00");
+
+        // 字符串字段直接取最新值（如果有的话）
+        if (!atmosphereList.isEmpty()) {
+            Atmosphere latestData = atmosphereList.get(0);
+            atmosphereMap.put("primaryPollutant", latestData.getPrimaryPollutant() != null ? latestData.getPrimaryPollutant() : "");
+            atmosphereMap.put("airQualityLevel", latestData.getAirQualityLevel() != null ? latestData.getAirQualityLevel() : "");
+        } else {
+            atmosphereMap.put("primaryPollutant", "");
+            atmosphereMap.put("airQualityLevel", "");
+        }
+
+        // 各字段的有效数据数量
+        Map<String, Integer> validCounts = new HashMap<>();
+        validCounts.put("windSpeed", windSpeedCount);
+        validCounts.put("rainfall", rainfallCount);
+        validCounts.put("atmosphereTemperature", atmosphereTemperatureCount);
+        validCounts.put("soilTemperature", soilTemperatureCount);
+        validCounts.put("digitalPressure", digitalPressureCount);
+        validCounts.put("simpleTotalRadiation", simpleTotalRadiationCount);
+        validCounts.put("windDirection", windDirectionCount);
+        validCounts.put("soilHumidity", soilHumidityCount);
+        validCounts.put("atmosphereHumidity", atmosphereHumidityCount);
+        validCounts.put("pm25", pm25Count);
+        validCounts.put("salinity", salinityCount);
+        validCounts.put("negativeOxygenIon", negativeOxygenIonCount);
+        validCounts.put("rainfallAccumulation", rainfallAccumulationCount);
+        validCounts.put("radiationAccumulation", radiationAccumulationCount);
+        validCounts.put("pm10", pm10Count);
+        validCounts.put("relativeHumidity", relativeHumidityCount);
+        validCounts.put("aqiIndex", aqiIndexCount);
+        validCounts.put("sulfurDioxide", sulfurDioxideCount);
+        validCounts.put("nitrogenDioxide", nitrogenDioxideCount);
+        validCounts.put("carbonMonoxide", carbonMonoxideCount);
+        validCounts.put("ozone", ozoneCount);
+        validCounts.put("ozone8Hour", ozone8HourCount);
+
+        atmosphereMap.put("validCounts", validCounts);
+        atmosphereMap.put("totalRecords", atmosphereList.size());
     }
     /**
      * 根据观测地点查询最近一条气象数据
@@ -371,8 +555,6 @@ public class AtmosphereController {
     @PostMapping(value = "/api/atmosphere/insertOnly")
     @Transactional
     public ResultTemplate<Object> atmosphereInsertOnly(@RequestBody JSONObject jsonObject) {
-
-        // 假设JSONUtil.toList方法可以将JSONArray转换为List<Atmosphere>
         Atmosphere atmosphere = JSONUtil.toBean(jsonObject, Atmosphere.class);
 
         List<Device> deviceList=deviceService.fetchDeviceData(atmosphere.getDeviceId(), "", "03");

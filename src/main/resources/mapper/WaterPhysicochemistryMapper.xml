@@ -90,11 +90,17 @@
     <select id="getWaterPhysicochemistryDatasPage" resultType="java.util.Map">
         select id,observation_time as "observationTime",water_temperature as "waterTemperature",ph,turbidity,
                conductivity,dissolved_oxygen as "dissolvedOxygen",
-               transparency,codmn,tss,tn,tp,chlorophyll,filepath,device_id as "deviceId"
+               transparency,codmn,tss,tn,tp,chlorophyll,filepath,device_id as "deviceId",
+               water_level,flow_rate,flow_volume,water_storage,
+               air_temperature as "airTemperature",codcr,bod5,ammonia_nitrogen as "ammoniaNitrogen",copper,
+               zinc,fluoride,selenium,arsenic,mercury,
+               cadmium,cr6,pb,cyanide,volatile_phenols as "volatilePhenols",
+               oil,las,s2,fcg,so4,
+               cl,no3,fe,mn
         from water_physicochemistry
             <where>
                 <if test="waterPhysicochemistry.observationTime != null and waterPhysicochemistry.observationTime.trim() != ''">
-                    and observation_time LIKE '%' || #{waterPhysicochemistry.observationTime},  || '%'
+                    and observation_time LIKE '%' || #{waterPhysicochemistry.observationTime}  || '%'
                 </if>
                 <if test="waterPhysicochemistry.filepath!=null and waterPhysicochemistry.filepath.trim()!=''">
                     and filename  LIKE '%' ||#{waterPhysicochemistry.filepath} || '%'

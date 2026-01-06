@@ -161,7 +161,7 @@ public class WaterPhysicochemistryController {
             String newName = userName + "-" + userUid + "-" + fileNameOutOfType;
             Map<String, String> maps = ExcelParserUtils.getFileNameAndPath(newName, fileType, "shuitilihua");
             String filePathName = maps.get("savePath") + maps.get("fileName");
-            List<Sheet> sheetList = ExcelParserUtils.RETSheetsByName(inputStream, fileType, "水体理化");
+            List<Sheet> sheetList = ExcelParserUtils.RETSheetsByName(inputStream, fileType, "水质");
             if (sheetList == null || sheetList.isEmpty()) {
                 //System.out.println("未找到符合条件的sheet");
                 return ResultTemplate.fail("文件模板错误！请按正确的模板填写数据！");
@@ -177,7 +177,7 @@ public class WaterPhysicochemistryController {
             JSONArray rows = waterPhysicochemistryData.getJSONArray("classlist");
             waterPhysicochemistryList = JSONUtil.toList(rows,WaterPhysicochemistry.class);
             for (Sheet sheet : sheetList) {
-                String observationTime = sheet.getSheetName().substring(4);
+                String observationTime = sheet.getSheetName().substring(2);
                 String observationTimeOutofyear = observationTime.substring(5);
                 String mouth = observationTimeOutofyear.substring(0,observationTimeOutofyear.indexOf("-"));
                 String day = observationTimeOutofyear.substring(observationTimeOutofyear.indexOf("-")+1);
