@@ -32,7 +32,7 @@
                 </foreach>
             </if>
             <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
-                and class_name Like '%' || #{modelProduct.className} || '%'
+                and class_name = #{modelProduct.className}
             </if>
             <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
                 and filepath Like '%' || #{modelProduct.filepath} || '%'
@@ -71,7 +71,7 @@
                 </foreach>
             </if>
             <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
-                and class_name Like '%' || #{modelProduct.className} || '%'
+                and class_name =  #{modelProduct.className}
             </if>
             <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
                 and filepath Like '%' || #{modelProduct.filepath} || '%'
@@ -115,7 +115,7 @@
                 and id = #{modelProduct.id} =
             </if>
             <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
-                and class_name Like '%' || #{modelProduct.className} || '%'
+                and class_name =  #{modelProduct.className}
             </if>
             <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
                 and filepath Like '%' || #{modelProduct.filepath} || '%'
