@@ -966,4 +966,25 @@ public class ModelFileStatusController {
             return ResponseEntity.status(500).build();
         }
     }
+
+    /**
+     * 查询模型文件状态列表（多条件筛选）
+     * 支持根据userName、className、dealStatus、type等条件查询，返回和数据库表一致的结构
+     */
+    @PostMapping(value = "/api/modelFile/queryModelFileStatusList")
+    public ResultTemplate<Object> queryModelFileStatusList(@RequestBody JSONObject jsonObject) {
+        try {
+            // 1. 将前端传递的JSON参数转换为实体对象
+            ModelFileStatus modelFileStatus = jsonObject.toBean(ModelFileStatus.class);
+
+            // 2. 调用Service层的查询方法
+            List<Map<String, Object>> resultList = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+
+            // 3. 封装成功结果返回
+            return ResultTemplate.success(resultList);
+        } catch (Exception e) {
+            log.error("查询模型文件状态列表异常", e);
+            return ResultTemplate.fail("查询失败：" + e.getMessage());
+        }
+    }
 }
