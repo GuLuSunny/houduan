@@ -120,4 +120,36 @@
             and status =0
         </where>
     </select>
+
+    <select id="getModelStatusPageByConditions" resultType="java.util.Map">
+        select "user_name" as "userName","create_userid" as "createUserid",
+        "usage_status" as "usageStatus","create_time" as "createTime",
+        "function_selected" as "functionSelected","class_name" as "className",
+        "observation_time" as "observationTime","model_name" as "modelName"
+        from model_status
+        <where>
+            <if test="modelStatus.modelName!=null and modelStatus.modelName.trim()!=''">
+                model_name = #{modelStatus.modelName}
+            </if>
+            <if test="modelStatus.userName!=null and modelStatus.userName.trim()!=''">
+                and user_name = #{modelStatus.userName}
+            </if>
+            <if test="modelStatus.usageStatus!=null and modelStatus.usageStatus.trim()!=''">
+                and usage_status = #{modelStatus.usageStatus}
+            </if>
+            <if test="modelStatus.createUserid!=null and modelStatus.createUserid.trim()!=''">
+                and create_userid=#{modelStatus.createUserid}
+            </if>
+            <if test="modelStatus.observationTime!=null and modelStatus.observationTime.trim()!=''">
+                and observation_time=#{modelStatus.observationTime}
+            </if>
+            <if test="modelStatus.startTime!=null and modelStatus.startTime.trim()!=''">
+                and start_time=#{modelStatus.startTime}
+            </if>
+            <if test="modelStatus.endTime!=null and modelStatus.endTime.trim()!=''">
+                and end_time=#{modelStatus.endTime}
+            </if>
+            and status = 0
+        </where>
+    </select>
 </mapper>

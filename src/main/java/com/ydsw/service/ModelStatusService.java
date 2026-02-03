@@ -18,4 +18,6 @@ public interface ModelStatusService extends IService<ModelStatus> {
     void updateModelStatus(ModelStatus modelStatus);
 
     void dropModelLogs(List<Integer> idList,ModelStatus modelStatus);
+
+    List<Map<String, Object>> getModelStatusPageByConditions(int pageNum, int pageSize, ModelStatus modelStatus);
 }
