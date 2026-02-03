@@ -1,5 +1,5 @@
 package com.ydsw.dao;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ydsw.domain.ModelFileStatus;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -27,7 +27,15 @@ public interface ModelFileStatusMapper extends BaseMapper<ModelFileStatus> {
     List<String> fetchObservationTimeByYear(@Param("className") String className);
 
     List<String> fetchObservationTimeByMonth(@Param("className") String className);
+
+    List<Map<String, Object>> queryModelFileStatusList(@Param("modelFileStatus") ModelFileStatus modelFileStatus);
+
+    IPage<Map<String, Object>> queryModelFileStatusPage(
+            IPage<Map<String, Object>> page,
+            @Param("modelFileStatus") ModelFileStatus modelFileStatus
+    );
 }
+
 
 
 

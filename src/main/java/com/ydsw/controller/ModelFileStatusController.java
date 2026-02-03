@@ -31,6 +31,15 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.ydsw.domain.ModelFileStatus;
+import com.ydsw.service.ModelFileStatusService;
 @RestController
 @Slf4j
 public class ModelFileStatusController {
@@ -968,8 +977,8 @@ public class ModelFileStatusController {
     }
 
     /**
-     * 查询模型文件状态列表（多条件筛选）
-     * 支持根据userName、className、dealStatus、type等条件查询，返回和数据库表一致的结构
+     * 查询模型文件状态列表（多条件筛选 + 分页）
+     * 支持根据userName、className、dealStatus、type等条件查询，返回分页结果
      */
     @PostMapping(value = "/api/modelFile/queryModelFileStatusList")
     public ResultTemplate<Object> queryModelFileStatusList(@RequestBody JSONObject jsonObject) {
@@ -977,13 +986,21 @@ public class ModelFileStatusController {
             // 1. 将前端传递的JSON参数转换为实体对象
             ModelFileStatus modelFileStatus = jsonObject.toBean(ModelFileStatus.class);
 
-            // 2. 调用Service层的查询方法
-            List<Map<String, Object>> resultList = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            // 2. 调用Service分页方法
+            IPage<Map<String, Object>> pageResult = modelFileStatusService.queryModelFileStatusPage(modelFileStatus);
 
-            // 3. 封装成功结果返回
-            return ResultTemplate.success(resultList);
+            // 3. 封装分页结果
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("records", pageResult.getRecords());
+            resultMap.put("total", pageResult.getTotal());
+            resultMap.put("pages", pageResult.getPages());
+            resultMap.put("current", pageResult.getCurrent());
+            resultMap.put("size", pageResult.getSize());
+
+            // 4. 封装结果返回
+            return ResultTemplate.success(resultMap);
         } catch (Exception e) {
-            log.error("查询模型文件状态列表异常", e);
+            log.error("查询模型文件状态列表（分页）异常", e);
             return ResultTemplate.fail("查询失败：" + e.getMessage());
         }
     }

@@ -1,5 +1,5 @@
 package com.ydsw.service;
-
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ydsw.domain.ModelFileStatus;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
@@ -25,4 +25,7 @@ public interface ModelFileStatusService extends IService<ModelFileStatus> {
 
     List<String> fetchObservationTimeByMonth(String className);
 
+    List<Map<String, Object>> queryModelFileStatusList(ModelFileStatus modelFileStatus);
+
+    IPage<Map<String, Object>> queryModelFileStatusPage(ModelFileStatus modelFileStatus);
 }

@@ -1,5 +1,8 @@
 package com.ydsw.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ydsw.domain.ModelFileStatus;
 import com.ydsw.service.ModelFileStatusService;
@@ -57,6 +60,22 @@ public class ModelFileStatusServiceImpl extends ServiceImpl<ModelFileStatusMappe
         return modelFileStatusMapper.fetchObservationTimeByMonth(className);
     }
 
+    @Override
+    public List<Map<String, Object>> queryModelFileStatusList(ModelFileStatus modelFileStatus) {
+
+        return modelFileStatusMapper.queryModelFileStatusList(modelFileStatus);
+    }
+
+    @Override
+    public IPage<Map<String, Object>> queryModelFileStatusPage(ModelFileStatus modelFileStatus) {
+        // 构造分页对象，使用实体类中带默认值的分页参数
+        Page<Map<String, Object>> page = new Page<>(
+                modelFileStatus.getPageNum(),
+                modelFileStatus.getPageSize()
+        );
+        // 调用Mapper层分页方法
+        return modelFileStatusMapper.queryModelFileStatusPage(page, modelFileStatus);
+    }
 }
 
 

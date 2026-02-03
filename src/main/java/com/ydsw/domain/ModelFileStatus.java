@@ -108,6 +108,20 @@ public class ModelFileStatus implements Serializable {
     @TableField(value = "end_time")
     private String endTime;
 
+    /**
+     * 页码（默认第1页）
+     * @TableField(exist = false)：表示该字段不是数据库表的列，仅用于业务传递
+     */
+    @TableField(exist = false)
+    private Integer pageNum;
+
+    /**
+     * 每页条数（默认10条）
+     * @TableField(exist = false)：表示该字段不是数据库表的列，仅用于业务传递
+     */
+    @TableField(exist = false)
+    private Integer pageSize;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -204,5 +218,18 @@ public class ModelFileStatus implements Serializable {
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
+    }
+    /**
+     * 获取页码，默认返回1
+     */
+    public Integer getPageNum() {
+        return pageNum == null ? 1 : pageNum;
+    }
+
+    /**
+     * 获取每页条数，默认返回10
+     */
+    public Integer getPageSize() {
+        return pageSize == null ? 10 : pageSize;
     }
 }
