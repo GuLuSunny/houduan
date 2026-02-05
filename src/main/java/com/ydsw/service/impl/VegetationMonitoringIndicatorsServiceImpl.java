@@ -1,5 +1,6 @@
 package com.ydsw.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -54,6 +55,17 @@ public class VegetationMonitoringIndicatorsServiceImpl extends ServiceImpl<Veget
     public List<String> fetchObservationTimeByDay() {
         return vegetationMonitoringIndicatorsMapper.fetchObservationTimeByDay();
     }
+
+    // 新增：实现接口中定义的 getDistinctVegetationSpecies() 方法
+    @Override
+    public List<String> getDistinctVegetationSpecies() {
+        QueryWrapper<VegetationMonitoringIndicators> wrapper = new QueryWrapper<>();
+        wrapper.select("DISTINCT vegetation_species")
+                .isNotNull("vegetation_species");
+        return listObjs(wrapper, Object::toString);
+    }
+
+
 }
 
 
