@@ -3,18 +3,17 @@ package com.ydsw.controller;
 import cn.hutool.json.JSONObject;
 import com.fengwenyi.api.result.ResultTemplate;
 import com.ydsw.domain.ModelFileStatus;
-import com.ydsw.domain.ModelStatus;
 import com.ydsw.domain.User;
 import com.ydsw.service.ModelFileStatusService;
 import com.ydsw.service.ModelListService;
 import com.ydsw.service.UserService;
 import com.ydsw.utils.ZipFileUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.geolatte.geom.M;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,13 +25,21 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.ydsw.domain.ModelFileStatus;
+import com.ydsw.service.ModelFileStatusService;
 @RestController
 @Slf4j
 public class ModelFileStatusController {
@@ -52,7 +59,8 @@ public class ModelFileStatusController {
                                                   @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
-                                                  @RequestParam("observationTime")String observationTime) {
+                                                  @RequestParam("observationTime")String observationTime,
+                                                  @RequestParam("dataIntroduction") String dataIntroduction) {
 
         if (file == null || file.isEmpty()) {
             return ResultTemplate.fail("文件不能为空");
@@ -96,6 +104,7 @@ public class ModelFileStatusController {
         modelFileStatus.setCreateTime(date);
         modelFileStatus.setUpdateTime(date);
         modelFileStatus.setObservationTime(observationTime);
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         List<Map<String,Object>> list = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
         if(!list.isEmpty()){
             return ResultTemplate.fail("当天数据已经存在！");
@@ -135,8 +144,10 @@ public class ModelFileStatusController {
                                                   @RequestParam("createUserId") String userUid,
                                                   @RequestParam("userName") String userName,
                                                   @RequestParam("className") String className,
-                                                  @RequestParam("observationTime")String observationTime,
-                                                  @RequestParam("modelName") String modelName) {
+                                                  @RequestParam("modelName") String modelName,
+                                                  @RequestParam("dataIntroduction") String dataIntroduction,
+                                                  @RequestParam("firstTime")String firstTime,
+                                                  @RequestParam("secondTime")String secondTime) {
 
         if (files == null || files.length == 0) {
             return ResultTemplate.fail("文件不能为空");
@@ -151,21 +162,26 @@ public class ModelFileStatusController {
         String fileType="tif";
         for (MultipartFile file : files) {
             String originalFilename = file.getOriginalFilename();
-            fileType = originalFilename.substring(originalFilename.lastIndexOf("."));
+            if (originalFilename != null) {
+                fileType = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }else{
+                return ResultTemplate.fail("非法空文件！");
+            }
             if (!fileType.equalsIgnoreCase(".tif")&&!fileType.equalsIgnoreCase(".zip")) {
                 return ResultTemplate.fail("文件类型错误！");
             }
 
         }
 
-        if (!couldUpload(className,observationTime)) {
+        if (!couldUpload(className,firstTime,secondTime)) {
             return ResultTemplate.fail("服务器繁忙，请稍后重试");
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
         Date date = new Date();
         String formattedDate = sdf.format(date);
-        String filename = userName + "-" + userUid + "_" + observationTime +
+
+        String filename = userName + "-" + userUid + "_" + firstTime +"_" +secondTime+
                 "_" + formattedDate;
         String directoryPath = FileRootDirPath + File.separator + className+File.separator+filename+File.separator;
         ModelFileStatus modelFileStatus = new ModelFileStatus();
@@ -175,7 +191,9 @@ public class ModelFileStatusController {
         modelFileStatus.setFilepath(directoryPath);
         modelFileStatus.setCreateTime(date);
         modelFileStatus.setUpdateTime(date);
-        modelFileStatus.setObservationTime(observationTime);
+        modelFileStatus.setStartTime(firstTime);
+        modelFileStatus.setEndTime(secondTime);
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         List<Map<String,Object>> list = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
         if(!list.isEmpty()){
             return ResultTemplate.fail("当天数据已经存在！");
@@ -216,7 +234,8 @@ public class ModelFileStatusController {
                                                @RequestParam("createUserid") String userUid,
                                                @RequestParam("userName") String userName,
                                                @RequestParam("modelName") String modelMame,
-                                               @RequestParam("className") String className) {
+                                               @RequestParam("className") String className,
+                                               @RequestParam("dataIntroduction") String dataIntroduction) {
         String filename = userName + "-" + userUid+"_"+modelMame+ "_train.tif";
         String directoryPath = FileRootDirPath + File.separator + className;
         String filepath = directoryPath + File.separator + filename;
@@ -225,7 +244,10 @@ public class ModelFileStatusController {
         modelFileStatus.setUserName(userName);
         modelFileStatus.setClassName(className);
         modelFileStatus.setFilepath(filepath);
-
+        modelFileStatus.setCreateTime(new Date());
+        modelFileStatus.setUpdateTime(new Date());
+        modelFileStatus.setObservationTime(dataIntroduction);
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         try {
             // 创建目录（如果不存在）
             modelFileStatus.setDealStatus("executing");
@@ -260,7 +282,8 @@ public class ModelFileStatusController {
                                                    @RequestParam("userName") String userName,
                                                    @RequestParam("modelName") String modelMame,
                                                    @RequestParam("className") String className,
-                                                   @RequestParam("observationTime") String observationTime) {
+                                                   @RequestParam("observationTime") String observationTime,
+                                                   @RequestParam("dataIntroduction") String dataIntroduction) {
 
         String directoryPath = FileRootDirPath + className + File.separator;
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -282,7 +305,7 @@ public class ModelFileStatusController {
         modelFileStatus.setObservationTime(observationTime);
         modelFileStatus.setCreateTime(new Date());
         modelFileStatus.setUpdateTime(new Date());
-
+        modelFileStatus.setDataIntroduction(dataIntroduction);
         try {
             // 创建目录（如果不存在）
             File directory = new File(directoryPath);
@@ -517,8 +540,30 @@ public class ModelFileStatusController {
                 if(observationTime.equals(map.get("observationTime"))) {
                     return false;
                 }
-                ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
-                modelFileStatusService.dropModelFileStatus(new ArrayList<>(), modelFileStatus1);
+//                ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
+//                modelFileStatusService.dropModelFileStatus(new ArrayList<>(), modelFileStatus1);
+            }
+        }
+        return true;
+    }
+
+    private boolean couldUpload(String className,String firstTime,String secondTime)
+    {
+        ModelFileStatus modelFileStatus = new ModelFileStatus();
+        modelFileStatus.setClassName(className);
+        List<Map<String,Object>> usages = modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+        for (Map<String,Object> map : usages) {
+            if(Objects.equals(map.get("dealStatus").toString(), "executing"))
+            {
+                return false;
+            }else if(Objects.equals(map.get("dealStatus").toString(), "success"))
+            {
+                if(firstTime.equals(map.get("startTime"))&& secondTime.equals(map.get("endTime")) ||
+                firstTime.equals(map.get("endTime")) && secondTime.equals(map.get("startTime"))) {
+                    return false;
+                }
+//                ModelFileStatus modelFileStatus1 = new ModelFileStatus(map);
+//                modelFileStatusService.dropModelFileStatus(new ArrayList<>(), modelFileStatus1);
             }
         }
         return true;
@@ -538,10 +583,14 @@ public class ModelFileStatusController {
         String userName=jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
         String relativePath="";
-        String observationTime= jsonObject.getStr("observationTime");
+        String observationTime= jsonObject.getStr("observationTime")==null?"":jsonObject.getStr("observationTime");
+        String startTime=jsonObject.getStr("firstTime")==null?"":jsonObject.getStr("firstTime");
+        String endTime=jsonObject.getStr("secondTime")==null?"":jsonObject.getStr("secondTime");
+        if (startTime==null&&endTime==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
         String className = jsonObject.getStr("className");
-        if(observationTime.isEmpty() || className.isEmpty())
-        {
+        if (observationTime != null && (observationTime.isEmpty() || className.isEmpty())) {
             return ResponseEntity.status(500).build();
         }
         String year=observationTime.substring(0,4);
@@ -571,7 +620,12 @@ public class ModelFileStatusController {
         }
         else if(modelName.equals("rfV2")||modelName.equals("CNNV2"))
         {
+            year=startTime.substring(0,4);
+            month=startTime.substring(5,7);
             modelFileStatus.setType("multiple");
+            modelFileStatus.setStartTime(startTime);
+            modelFileStatus.setEndTime(endTime);
+            modelFileStatus.setObservationTime(null);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
@@ -635,28 +689,35 @@ public class ModelFileStatusController {
     @PostMapping("/api/modelFile/download/class_stats")
     public ResponseEntity<Resource> downloadClassStats(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
-        String fileName=modelName + "_class_stats.txt";;
-
-        String userName = jsonObject.getStr("userName");
+        String userName=jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
         String relativePath="";
+        String observationTime= jsonObject.getStr("observationTime")==null?"":jsonObject.getStr("observationTime");
+        String startTime=jsonObject.getStr("firstTime")==null?"":jsonObject.getStr("firstTime");
+        String endTime=jsonObject.getStr("secondTime")==null?"":jsonObject.getStr("secondTime");
+        if (startTime==null&&endTime==null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        String className = jsonObject.getStr("className");
+        if (observationTime != null && (observationTime.isEmpty() || className.isEmpty())) {
+            return ResponseEntity.status(500).build();
+        }
+        String year=observationTime.substring(0,4);
+        String month=observationTime.substring(5,7);
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        modelFileStatus.setObservationTime(observationTime);
+
         if(modelName.equals("XGB")||modelName.equals("CNN"))
         {
-            String observationTime= jsonObject.getStr("observationTime");
-            String className = jsonObject.getStr("className");
-            String year=observationTime.substring(0,4);
-            String month=observationTime.substring(5,7);
-            ModelFileStatus modelFileStatus=new ModelFileStatus();
-            modelFileStatus.setDealStatus("success");
-            modelFileStatus.setClassName(className);
-            modelFileStatus.setUserName(userName);
-            modelFileStatus.setCreateUserid(createUserId);
-            modelFileStatus.setObservationTime(observationTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
                 String filepath=mapList.get(0).get("filepath").toString();
-                filepath=filepath.replace(""+File.separator+""+File.separator+"",""+File.separator+"");
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
                 //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
                 String filename=filepath.replace(FileRootDirPath,"");
 
@@ -666,7 +727,32 @@ public class ModelFileStatusController {
                 return ResponseEntity.status(400).build();
             }
         }
+        else if(modelName.equals("rfV2")||modelName.equals("CNNV2"))
+        {
+            year=startTime.substring(0,4);
+            month=startTime.substring(5,7);
+            modelFileStatus.setType("multiple");
+            modelFileStatus.setStartTime(startTime);
+            modelFileStatus.setEndTime(endTime);
+            modelFileStatus.setObservationTime(null);
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace(FileRootDirPath+"land"+File.separator,"");
+                filename = filename.substring(0,filename.length()-1)+"_SAR";
+                relativePath =year+File.separator+month+File.separator+
+                        filename+File.separator;
+                modelName=filename;
+            }else {
+                return ResponseEntity.status(400).build();
+            }
+        }
+        String fileName=modelName+"_prediction_class_stats.txt";
         Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
+
         return getFileResponse(filePath, fileName, "text/plain");
     }
 
@@ -684,22 +770,25 @@ public class ModelFileStatusController {
     @PostMapping("/api/modelFile/download/tif")
     public ResponseEntity<Resource> downloadTifFile(@RequestBody JSONObject jsonObject) {
         String modelName = jsonObject.getStr("modelName");
-        String fileName = modelName + "_prediction.tif";
         String userName = jsonObject.getStr("userName");
         String createUserId = jsonObject.getStr("createUserId");
         String relativePath="";
+        String observationTime= jsonObject.getStr("observationTime");
+        String className = jsonObject.getStr("className");
+        String startTime=jsonObject.getStr("firstTime")==null?"":jsonObject.getStr("firstTime");
+        String endTime=jsonObject.getStr("secondTime")==null?"":jsonObject.getStr("secondTime");
+
+        String year=observationTime.substring(0,4);
+        String month=observationTime.substring(5,7);
+        ModelFileStatus modelFileStatus=new ModelFileStatus();
+        modelFileStatus.setDealStatus("success");
+        modelFileStatus.setClassName(className);
+        modelFileStatus.setUserName(userName);
+        modelFileStatus.setCreateUserid(createUserId);
+        modelFileStatus.setObservationTime(observationTime);
+
         if(modelName.equals("XGB")||modelName.equals("CNN"))
         {
-            String observationTime= jsonObject.getStr("observationTime");
-            String className = jsonObject.getStr("className");
-            String year=observationTime.substring(0,4);
-            String month=observationTime.substring(5,7);
-            ModelFileStatus modelFileStatus=new ModelFileStatus();
-            modelFileStatus.setDealStatus("success");
-            modelFileStatus.setClassName(className);
-            modelFileStatus.setUserName(userName);
-            modelFileStatus.setCreateUserid(createUserId);
-            modelFileStatus.setObservationTime(observationTime);
             List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
             if(!mapList.isEmpty())
             {
@@ -713,7 +802,30 @@ public class ModelFileStatusController {
             }else {
                 return ResponseEntity.status(400).build();
             }
+        } else if(modelName.equals("rfV2")||modelName.equals("CNNV2"))
+        {
+            year=startTime.substring(0,4);
+            month=startTime.substring(5,7);
+            modelFileStatus.setType("multiple");
+            modelFileStatus.setStartTime(startTime);
+            modelFileStatus.setEndTime(endTime);
+            modelFileStatus.setObservationTime(null);
+            List<Map<String,Object>> mapList=modelFileStatusService.selectUserAndFileStatus(modelFileStatus);
+            if(!mapList.isEmpty())
+            {
+                String filepath=mapList.get(0).get("filepath").toString();
+                filepath=filepath.replace(File.separator+File.separator, File.separator);
+                //filename=className+""+File.separator+""+filepath.substring(filepath.lastIndexOf(""+File.separator+"")+1);
+                String filename=filepath.replace(FileRootDirPath+"land"+File.separator,"");
+                filename = filename.substring(0,filename.length()-1)+"_SAR";
+                relativePath =year+File.separator+month+File.separator+
+                        filename+File.separator;
+                modelName=filename;
+            }else {
+                return ResponseEntity.status(400).build();
+            }
         }
+        String fileName = modelName + "_prediction.tif";
         Path filePath = Paths.get(ResultRootPath+relativePath, fileName);
         return getFileResponse(filePath, fileName, "image/tiff");
     }
@@ -729,6 +841,9 @@ public class ModelFileStatusController {
         String observationTime= jsonObject.getStr("observationTime");
         String className = jsonObject.getStr("className");
         String fileName = "200502_"+modelName ;
+        String type=  jsonObject.get("type").toString();
+        String pngType = (jsonObject.get("pngType")==null?"simple":jsonObject.get("pngType").toString());
+
         if(modelName.equals("fanyan"))
         {
             modelName="RF";
@@ -747,9 +862,9 @@ public class ModelFileStatusController {
             modelFileStatus.setObservationTime(observationTime);
             modelFileStatus.setModelName(modelName);
             if (modelName.equals("fanyanV2")) {
-                modelName = "Ada_XGB";
+                modelName = "Ada-XGB";
                 fileName=modelName;
-
+                pngType = "prediction_preview";
             } else if (modelName.equals("fanyanRF")) {
                 modelName = "RF";
                 fileName=modelName;
@@ -770,21 +885,23 @@ public class ModelFileStatusController {
             }
         }
 
-        String type=  jsonObject.get("type").toString();
-        String pngType = (jsonObject.get("pngType").toString().isEmpty()?"simple":jsonObject.get("pngType").toString());
-
 
         Path filePath;
         if(Objects.equals(type, "tif"))
         {
-            fileName+="."+type;
+            fileName+="_prediction."+type;
             filePath =Paths.get(plantResultPath+relativePath, fileName);
             return getFileResponse(filePath, fileName, "image/tiff");
         } else if (Objects.equals(type, "png")) {
             fileName+="_"+pngType+"."+type;
             filePath =  Paths.get(plantResultPath+relativePath, fileName);
             return getImageResponse(filePath, fileName);
-        }else{
+        }else if(Objects.equals(type, "txt")) {
+            fileName+="_class_stats.txt";
+            filePath =  Paths.get(plantResultPath+relativePath, fileName);
+            return  getFileResponse(filePath,fileName,"text/plain");
+        }
+        else{
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -856,6 +973,23 @@ public class ModelFileStatusController {
                     .body(resource);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
+        }
+    }
+
+    /**
+     * 查询模型文件状态列表（多条件筛选 + 分页）
+     * 支持根据userName、className、dealStatus、type等条件查询，返回分页结果
+     */
+    @PostMapping(value = "/api/modelFile/queryModelFileStatusList")
+    public ResultTemplate<Object> queryModelFileStatusList(@RequestBody ModelFileStatus modelFileStatus) {
+        try {
+            // 调用Service分页方法
+            IPage<Map<String, Object>> pageResult = modelFileStatusService.queryModelFileStatusPage(modelFileStatus);
+            // 返回IPage对象
+            return ResultTemplate.success(pageResult);
+        } catch (Exception e) {
+            log.error("查询模型文件状态列表（分页）异常", e);
+            return ResultTemplate.fail("查询失败：" + e.getMessage());
         }
     }
 }

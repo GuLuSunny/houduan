@@ -5,25 +5,27 @@
 <mapper namespace="com.ydsw.dao.ModelFileStatusMapper">
 
     <resultMap id="BaseResultMap" type="com.ydsw.domain.ModelFileStatus">
-            <id property="id" column="id" />
-            <result property="className" column="class_name" />
-            <result property="dealStatus" column="deal_status" />
-            <result property="filepath" column="filepath" />
-            <result property="userName" column="user_name" />
-            <result property="createUserid" column="create_userid" />
-            <result property="createTime" column="create_time" />
-            <result property="updateTime" column="update_time" />
-            <result property="status" column="status" />
-            <result property="dataIntroduction" column="data_introduction" />
-            <result property="observationTime" column="observation_time" />
-            <result property="type" column="type" />
-            <result property="modelName" column="model_name"/>
+        <id property="id" column="id" />
+        <result property="className" column="class_name" />
+        <result property="dealStatus" column="deal_status" />
+        <result property="filepath" column="filepath" />
+        <result property="userName" column="user_name" />
+        <result property="createUserid" column="create_userid" />
+        <result property="createTime" column="create_time" />
+        <result property="updateTime" column="update_time" />
+        <result property="status" column="status" />
+        <result property="dataIntroduction" column="data_introduction" />
+        <result property="observationTime" column="observation_time" />
+        <result property="type" column="type" />
+        <result property="modelName" column="model_name"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,class_name,deal_status,filepath,user_name,create_userid,
         create_time,update_time,status,data_introduction,observation_time,
-        type,model_name
+        type,model_name,start_time,end_time
     </sql>
     <update id="dropModelFileStatus">
         update model_file_status set status=1
@@ -52,6 +54,12 @@
             <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
                 and observation_time=#{modelFileStatusClass.observationTime}
             </if>
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
+            </if>
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
+            </if>
             and status =0
         </where>
     </update>
@@ -67,6 +75,15 @@
             <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
                 and create_userid=#{modelFileStatusClass.createUserid}
             </if>
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
+            </if>
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
+            </if>
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
+            </if>
             and deal_status != 'failed'
             and status=0;
         </where>
@@ -74,9 +91,10 @@
     </update>
     <select id="selectUserAndFileStatus" resultType="java.util.Map">
         select "user_name" as "userName",
-               "create_userid" as "createUserid","deal_status" as "dealStatus",
-               "observation_time" as "observationTime","create_time" as "createTime" ,
-               "filepath",model_name as "modelName"
+        "create_userid" as "createUserid","deal_status" as "dealStatus",
+        "observation_time" as "observationTime","create_time" as "createTime" ,
+        "filepath",model_name as "modelName",start_time as "startTime",
+        "end_time" as "endTime"
         from model_file_status
         <where>
             <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
@@ -100,7 +118,66 @@
             <if test="modelFileStatusClass.type!=null and modelFileStatusClass.type.trim()!=''">
                 and "type" = #{modelFileStatusClass.type}
             </if>
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
+            </if>
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
+            </if>
             and status =0
         </where>
+    </select>
+
+    <select id="selectObservationTime" resultType="java.lang.String">
+        SELECT DISTINCT  observation_time FROM model_file_status
+        <where>
+            status =0
+            <if test="className!=null and className.trim()!=''">
+                and class_name = #{className}
+            </if>
+        </where>
+    </select>
+    <select id="fetchObservationTimeByYear" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 4) FROM model_file_status
+        <where>
+            status =0
+            <if test="className!=null and className.trim()!=''">
+                and class_name = #{className}
+            </if>
+        </where>
+    </select>
+    <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
+        SELECT DISTINCT LEFT(observation_time, 7) FROM model_file_status
+        <where>
+            status =0
+            <if test="className!=null and className.trim()!=''">
+                and class_name = #{className}
+            </if>
+        </where>
+    </select>
+    <!-- ====================== 分页查询（queryModelFileStatusPage） ====================== -->
+    <select id="queryModelFileStatusPage" resultType="java.util.Map">
+        select
+        id, user_name as userName, class_name as className, deal_status as dealStatus,
+        filepath, create_userid as createUserid, type, start_time as startTime,
+        end_time as endTime, observation_time as observationTime, model_name as modelName,
+        data_introduction as dataIntroduction, create_time as createTime, update_time as updateTime
+        from model_file_status
+        <where>
+            <if test="modelFileStatus.className!=null and modelFileStatus.className.trim()!=''">
+                and class_name = #{modelFileStatus.className}
+            </if>
+            <if test="modelFileStatus.userName!=null and modelFileStatus.userName.trim()!=''">
+                and user_name = #{modelFileStatus.userName}
+            </if>
+            <if test="modelFileStatus.dealStatus!=null and modelFileStatus.dealStatus.trim()!=''">
+                and deal_status=#{modelFileStatus.dealStatus}
+            </if>
+            <if test="modelFileStatus.type!=null and modelFileStatus.type.trim()!=''">
+                and type = #{modelFileStatus.type}
+            </if>
+            and status = 0
+        </where>
+        ORDER BY update_time DESC
     </select>
 </mapper>

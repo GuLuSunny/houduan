@@ -13,7 +13,7 @@ import java.util.Map;
  * 用户表
  * @TableName user
  */
-@TableName(value ="user")
+@TableName(value ="\"user\"")
 public class User implements Serializable {
     /**
      * 用户id

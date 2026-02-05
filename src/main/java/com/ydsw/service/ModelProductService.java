@@ -28,4 +28,7 @@ public interface ModelProductService extends IService<ModelProduct> {
     List<String> fetchObservationTimeByYear();
 
     List<String> fetchObservationTimeByMonth();
+
+    //新的我的
+    List<Map<String, Object>> getModelProductWithSort(String sortType, String sortOrder);
 }

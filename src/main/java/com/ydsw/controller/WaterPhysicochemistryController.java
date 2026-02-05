@@ -37,7 +37,6 @@ public class WaterPhysicochemistryController {
     /**
      * 获取水理化学数据
      * @author yanzhimeng
-     * @param //time 观测时间
      * @return 水理化学数据列表
      */
     @PreAuthorize("hasAnyAuthority('api_water_physicochemistry')")
@@ -75,7 +74,7 @@ public class WaterPhysicochemistryController {
         }else if(pageSize < 1){
             return ResultTemplate.fail("无效单位！");
         }
-        WaterPhysicochemistry waterPhysicochemistry = JSONUtil.toBean(jsonObject, com.ydsw.domain.WaterPhysicochemistry.class);
+        WaterPhysicochemistry waterPhysicochemistry = JSONUtil.toBean(jsonObject, WaterPhysicochemistry.class);
 
         IPage<Map<String, Object>> page =waterPhysicochemistryService.fetchDataByObservationTimeAndFilepath(currentPage,pageSize,waterPhysicochemistry);
         List<Map<String, Object>> records = page.getRecords();
@@ -162,7 +161,7 @@ public class WaterPhysicochemistryController {
             String newName = userName + "-" + userUid + "-" + fileNameOutOfType;
             Map<String, String> maps = ExcelParserUtils.getFileNameAndPath(newName, fileType, "shuitilihua");
             String filePathName = maps.get("savePath") + maps.get("fileName");
-            List<Sheet> sheetList = ExcelParserUtils.RETSheetsByName(inputStream, fileType, "水体理化");
+            List<Sheet> sheetList = ExcelParserUtils.RETSheetsByName(inputStream, fileType, "水质");
             if (sheetList == null || sheetList.isEmpty()) {
                 //System.out.println("未找到符合条件的sheet");
                 return ResultTemplate.fail("文件模板错误！请按正确的模板填写数据！");
@@ -178,7 +177,7 @@ public class WaterPhysicochemistryController {
             JSONArray rows = waterPhysicochemistryData.getJSONArray("classlist");
             waterPhysicochemistryList = JSONUtil.toList(rows,WaterPhysicochemistry.class);
             for (Sheet sheet : sheetList) {
-                String observationTime = sheet.getSheetName().substring(4);
+                String observationTime = sheet.getSheetName().substring(2);
                 String observationTimeOutofyear = observationTime.substring(5);
                 String mouth = observationTimeOutofyear.substring(0,observationTimeOutofyear.indexOf("-"));
                 String day = observationTimeOutofyear.substring(observationTimeOutofyear.indexOf("-")+1);
@@ -205,15 +204,32 @@ public class WaterPhysicochemistryController {
                 }catch(Exception e){
                     return ResultTemplate.fail("请检查日期是否按模板填写！");
                 }
+                List<WaterPhysicochemistry> waterPhysicochemistryListDel = new ArrayList<>();
                 for (WaterPhysicochemistry waterPhysicochemistry : waterPhysicochemistryList) {
                     if (waterPhysicochemistry == null || waterPhysicochemistry.getDeviceId() == null || waterPhysicochemistry.getDeviceId().isEmpty()) {
-                        waterPhysicochemistryList.remove(waterPhysicochemistry);
-                        break;
+                        waterPhysicochemistryListDel.add(waterPhysicochemistry);
+                        continue;
+                    }
+                    if (waterPhysicochemistry.getWaterTemperature() == null || waterPhysicochemistry.getWaterTemperature().isEmpty()
+                    && (waterPhysicochemistry.getChlorophyll() == null || waterPhysicochemistry.getChlorophyll().isEmpty())
+                    && (waterPhysicochemistry.getCodmn() == null || waterPhysicochemistry.getCodmn().isEmpty())
+                    && (waterPhysicochemistry.getDissolvedOxygen() == null  || waterPhysicochemistry.getDissolvedOxygen().isEmpty())
+                    && (waterPhysicochemistry.getTn() == null || waterPhysicochemistry.getTn().isEmpty())
+                    && (waterPhysicochemistry.getTp() == null || waterPhysicochemistry.getTp().isEmpty())
+                    ){
+                        waterPhysicochemistryListDel.add(waterPhysicochemistry);
+                        continue;
                     }
                     String deviceId = waterPhysicochemistry.getDeviceId();
                     List<Device> deviceList= deviceService.fetchDeviceData(null,deviceId,"01");
                     deviceId = String.valueOf(deviceList.get(0).getId());
+
                     waterPhysicochemistry.setDeviceId(deviceId);
+                    if(waterPhysicochemistry.getDeviceId()==null)
+                    {
+                        waterPhysicochemistryListDel.add(waterPhysicochemistry);
+                        continue;
+                    }
                     waterPhysicochemistry.waterPhysicochemistryAdd(observationTime,new Date(),fileType,userName,filePathName,fileNameOutOfType,userUid,0,contactPhone,contactAddress,productionUnit,contactEmail,open,dataIntroduction);
                     List<WaterPhysicochemistry> waterPhysicochemistryList1=waterPhysicochemistryService.fetchDataByObservationTimeAndDevice(observationTime,deviceId);
                     for (WaterPhysicochemistry waterPhysicochemistry1:waterPhysicochemistryList1) {
@@ -226,6 +242,7 @@ public class WaterPhysicochemistryController {
                         }
                     }
                 }
+                waterPhysicochemistryList.removeAll(waterPhysicochemistryListDel);
 
             }
 

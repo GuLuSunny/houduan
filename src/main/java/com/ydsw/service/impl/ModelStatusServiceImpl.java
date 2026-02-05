@@ -1,5 +1,7 @@
 package com.ydsw.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ydsw.domain.ModelStatus;
 import com.ydsw.service.ModelStatusService;
@@ -35,6 +37,19 @@ public class ModelStatusServiceImpl extends ServiceImpl<ModelStatusMapper, Model
     public void dropModelLogs(List<Integer> idList,ModelStatus modelStatus)
     {
         modelStatusMapper.dropModelLogs(idList,modelStatus);
+    }
+
+    /**
+     * 分页查询遥感产品生产记录和状态
+     * @param pageNum 当前页码
+     * @param pageSize 每页展示多少条数据
+     * @param modelStatus 查询条件入参
+     * @return 结果集合
+     */
+    @Override
+    public List<Map<String, Object>> getModelStatusPageByConditions(int pageNum, int pageSize, ModelStatus modelStatus) {
+        IPage<Map<String,Object>> page = new Page<>(pageNum,pageSize);
+        return modelStatusMapper.getModelStatusPageByConditions(page, modelStatus);
     }
 }
 
