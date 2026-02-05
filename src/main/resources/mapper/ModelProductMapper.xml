@@ -145,4 +145,32 @@
             and status =0
         </where>
     </select>
+
+
+
+<!--新的，我的-->
+    <select id="getModelProductWithSort" resultType="java.util.Map">
+        SELECT * FROM model_product
+        <!--前端传来sort Type和Order-->
+        <if test="sortType != null and sortType != '' and sortOrder != null and sortOrder != ''">
+            ORDER BY
+                <choose>
+                    <when test="sortType == 'observation_time'">observation_time</when>
+                    <when test="sortType start_time== 'start_time'"></when>
+                    <when test="sortType == 'end_time'">end_time</when>
+                </choose>
+                ${sortOrder}
+        </if>
+        <!--前端只传了sortType则默认方法排序-->
+        <if test="sortType != null and sortType != '' and (sortOrder = null and sortOrder == '')">
+            ORDER BY
+            <choose>
+                <when test="sortType == 'observation_time'">observation_time</when>
+                <when test="sortType == 'start_time'">start_time</when>
+                <when test="sortType == 'end_time'">end_time</when>
+            </choose>
+            asc
+        </if>
+    </select>
 </mapper>
+a

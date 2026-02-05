@@ -29,7 +29,13 @@ public interface ModelProductMapper extends BaseMapper<ModelProduct> {
     List<String> fetchObservationTimeByYear();
 
     List<String> fetchObservationTimeByMonth();
+    //新的我的
+    List<Map<String, Object>> getModelProductWithSort(@Param("sortType")String sortType,
+                                               @Param("sortOrder")String sortOrder);
+
 }
+
+
 
 
 

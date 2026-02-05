@@ -58,7 +58,15 @@ public class ModelProductServiceImpl extends ServiceImpl<ModelProductMapper, Mod
         IPage<Map<String,Object>> page = new Page<>(currentPage, pageSize);
         return modelProductMapper.getProductPageByConditions(page,modelProduct);
     }
+//新的我的
+    @Override
+    public List<Map<String, Object>> getModelProductWithSort(String sortType, String sortOrder)
+    {
+        return modelProductMapper.getModelProductWithSort(sortType, sortOrder);
+    }
 }
+
+
 
 
 

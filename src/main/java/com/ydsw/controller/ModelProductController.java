@@ -200,4 +200,21 @@ public class ModelProductController {
             return ResponseEntity.status(500).build();
         }
     }
+    //新的我的
+    @PostMapping(value = "/api/modelFile/getModelProductWithSort" )
+    public ResultTemplate getModelProductWithSort(@RequestBody Map<String, Object> paramMap) {
+        try{
+            //2.新增：解析排序参数
+            String sortType = (String)paramMap.get("sortType");
+            String sortOrder = (String)paramMap.get("sortOrder");
+            //3.调用Service层
+            List<Map<String, Object>> list = modelProductService.getModelProductWithSort(sortType, sortOrder);
+            return ResultTemplate.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultTemplate.fail("排序失败" + e.getMessage());
+        }
+    }
 }
+
+
