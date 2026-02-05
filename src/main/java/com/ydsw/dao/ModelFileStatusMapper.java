@@ -28,8 +28,6 @@ public interface ModelFileStatusMapper extends BaseMapper<ModelFileStatus> {
 
     List<String> fetchObservationTimeByMonth(@Param("className") String className);
 
-    List<Map<String, Object>> queryModelFileStatusList(@Param("modelFileStatus") ModelFileStatus modelFileStatus);
-
     IPage<Map<String, Object>> queryModelFileStatusPage(
             IPage<Map<String, Object>> page,
             @Param("modelFileStatus") ModelFileStatus modelFileStatus

@@ -25,7 +25,5 @@ public interface ModelFileStatusService extends IService<ModelFileStatus> {
 
     List<String> fetchObservationTimeByMonth(String className);
 
-    List<Map<String, Object>> queryModelFileStatusList(ModelFileStatus modelFileStatus);
-
     IPage<Map<String, Object>> queryModelFileStatusPage(ModelFileStatus modelFileStatus);
 }

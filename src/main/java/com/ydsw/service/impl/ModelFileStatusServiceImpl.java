@@ -60,11 +60,6 @@ public class ModelFileStatusServiceImpl extends ServiceImpl<ModelFileStatusMappe
         return modelFileStatusMapper.fetchObservationTimeByMonth(className);
     }
 
-    @Override
-    public List<Map<String, Object>> queryModelFileStatusList(ModelFileStatus modelFileStatus) {
-
-        return modelFileStatusMapper.queryModelFileStatusList(modelFileStatus);
-    }
 
     @Override
     public IPage<Map<String, Object>> queryModelFileStatusPage(ModelFileStatus modelFileStatus) {
