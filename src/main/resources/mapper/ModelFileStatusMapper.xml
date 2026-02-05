@@ -27,107 +27,102 @@
         create_time,update_time,status,data_introduction,observation_time,
         type,model_name,start_time,end_time
     </sql>
-
-    <!-- 修正：原有参数名 modelFileStatusClass → modelFileStatus（和 Mapper 接口 @Param 一致） -->
     <update id="dropModelFileStatus">
         update model_file_status set status=1
         <where>
-            <if test="ids != null and ids.size()>0">
+            <if test="idList != null and idList.size()>0">
                 and id in
-                <foreach collection="ids" open="(" close=")" item="item" separator="," index="index">
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
                     #{item}
                 </foreach>
             </if>
-            <if test="modelFileStatus.className!=null and modelFileStatus.className.trim()!=''">
-                class_name = #{modelFileStatus.className}
+            <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
+                class_name = #{modelFileStatusClass.className}
             </if>
-            <if test="modelFileStatus.userName!=null and modelFileStatus.userName.trim()!=''">
-                and user_name = #{modelFileStatus.userName}
+            <if test="modelFileStatusClass.userName!=null and modelFileStatusClass.userName.trim()!=''">
+                and user_name = #{modelFileStatusClass.userName}
             </if>
-            <if test="modelFileStatus.createUserid!=null and modelFileStatus.createUserid.trim()!=''">
-                and create_userid=#{modelFileStatus.createUserid}
+            <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
+                and create_userid=#{modelFileStatusClass.createUserid}
             </if>
-            <if test="modelFileStatus.filepath!=null and modelFileStatus.filepath.trim()!=''">
-                and filepath=#{modelFileStatus.filepath}
+            <if test="modelFileStatusClass.filepath!=null and modelFileStatusClass.filepath.trim()!=''">
+                and filepath=#{modelFileStatusClass.filepath}
             </if>
-            <if test="modelFileStatus.createTime!=null">
-                and create_time=#{modelFileStatus.createTime}
+            <if test="modelFileStatusClass.createTime!=null">
+                and create_time=#{modelFileStatusClass.createTime}
             </if>
-            <if test="modelFileStatus.observationTime!=null and modelFileStatus.observationTime.trim()!=''">
-                and observation_time=#{modelFileStatus.observationTime}
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
             </if>
-            <if test="modelFileStatus.startTime!=null and modelFileStatus.startTime.trim()!=''">
-                and start_time=#{modelFileStatus.startTime}
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
             </if>
-            <if test="modelFileStatus.endTime!=null and modelFileStatus.endTime.trim()!=''">
-                and end_time=#{modelFileStatus.endTime}
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
             </if>
             and status =0
         </where>
     </update>
-
-    <!-- 修正：1. 参数名 modelFileStatusClass → modelFileStatus  2. 去掉 type 字段的多余双引号 -->
     <update id="updateDealStatusViod">
-        update model_file_status set deal_status = #{modelFileStatus.dealStatus}, type = #{modelFileStatus.type}
+        update model_file_status set deal_status = #{modelFileStatusClass.dealStatus}, "type" = #{modelFileStatusClass.type}
         <where>
-            <if test="modelFileStatus.className!=null and modelFileStatus.className.trim()!=''">
-                class_name = #{modelFileStatus.className}
+            <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
+                class_name = #{modelFileStatusClass.className}
             </if>
-            <if test="modelFileStatus.userName!=null and modelFileStatus.userName.trim()!=''">
-                and user_name = #{modelFileStatus.userName}
+            <if test="modelFileStatusClass.userName!=null and modelFileStatusClass.userName.trim()!=''">
+                and user_name = #{modelFileStatusClass.userName}
             </if>
-            <if test="modelFileStatus.createUserid!=null and modelFileStatus.createUserid.trim()!=''">
-                and create_userid=#{modelFileStatus.createUserid}
+            <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
+                and create_userid=#{modelFileStatusClass.createUserid}
             </if>
-            <if test="modelFileStatus.observationTime!=null and modelFileStatus.observationTime.trim()!=''">
-                and observation_time=#{modelFileStatus.observationTime}
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
             </if>
-            <if test="modelFileStatus.startTime!=null and modelFileStatus.startTime.trim()!=''">
-                and start_time=#{modelFileStatus.startTime}
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
             </if>
-            <if test="modelFileStatus.endTime!=null and modelFileStatus.endTime.trim()!=''">
-                and end_time=#{modelFileStatus.endTime}
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
             </if>
             and deal_status != 'failed'
             and status=0;
         </where>
-    </update>
 
-    <!-- 修正：1. 参数名 modelFileStatusClass → modelFileStatus  2. 去掉字段的多余双引号 -->
+    </update>
     <select id="selectUserAndFileStatus" resultType="java.util.Map">
-        select user_name as userName,
-        create_userid as createUserid, deal_status as dealStatus,
-        observation_time as observationTime, create_time as createTime,
-        filepath, model_name as modelName, start_time as startTime,
-        end_time as endTime
+        select "user_name" as "userName",
+        "create_userid" as "createUserid","deal_status" as "dealStatus",
+        "observation_time" as "observationTime","create_time" as "createTime" ,
+        "filepath",model_name as "modelName",start_time as "startTime",
+        "end_time" as "endTime"
         from model_file_status
         <where>
-            <if test="modelFileStatus.className!=null and modelFileStatus.className.trim()!=''">
-                and class_name = #{modelFileStatus.className}
+            <if test="modelFileStatusClass.className!=null and modelFileStatusClass.className.trim()!=''">
+                and class_name = #{modelFileStatusClass.className}
             </if>
-            <if test="modelFileStatus.userName!=null and modelFileStatus.userName.trim()!=''">
-                and user_name = #{modelFileStatus.userName}
+            <if test="modelFileStatusClass.userName!=null and modelFileStatusClass.userName.trim()!=''">
+                and user_name = #{modelFileStatusClass.userName}
             </if>
-            <if test="modelFileStatus.createUserid!=null and modelFileStatus.createUserid.trim()!=''">
-                and create_userid=#{modelFileStatus.createUserid}
+            <if test="modelFileStatusClass.createUserid!=null and modelFileStatusClass.createUserid.trim()!=''">
+                and create_userid=#{modelFileStatusClass.createUserid}
             </if>
-            <if test="modelFileStatus.observationTime!=null and modelFileStatus.observationTime.trim()!=''">
-                and observation_time=#{modelFileStatus.observationTime}
+            <if test="modelFileStatusClass.observationTime!=null and modelFileStatusClass.observationTime.trim()!=''">
+                and observation_time=#{modelFileStatusClass.observationTime}
             </if>
-            <if test="modelFileStatus.dealStatus!=null and modelFileStatus.dealStatus.trim()!=''">
-                and deal_status=#{modelFileStatus.dealStatus}
+            <if test="modelFileStatusClass.dealStatus!=null and modelFileStatusClass.dealStatus.trim()!=''">
+                and deal_status=#{modelFileStatusClass.dealStatus}
             </if>
-            <if test="modelFileStatus.modelName!=null and modelFileStatus.modelName.trim()!=''">
-                and model_name = #{modelFileStatus.modelName}
+            <if test="modelFileStatusClass.modelName!=null and modelFileStatusClass.modelName.trim()!=''">
+                and model_name = #{modelFileStatusClass.modelName}
             </if>
-            <if test="modelFileStatus.type!=null and modelFileStatus.type.trim()!=''">
-                and type = #{modelFileStatus.type}
+            <if test="modelFileStatusClass.type!=null and modelFileStatusClass.type.trim()!=''">
+                and "type" = #{modelFileStatusClass.type}
             </if>
-            <if test="modelFileStatus.startTime!=null and modelFileStatus.startTime.trim()!=''">
-                and start_time=#{modelFileStatus.startTime}
+            <if test="modelFileStatusClass.startTime!=null and modelFileStatusClass.startTime.trim()!=''">
+                and start_time=#{modelFileStatusClass.startTime}
             </if>
-            <if test="modelFileStatus.endTime!=null and modelFileStatus.endTime.trim()!=''">
-                and end_time=#{modelFileStatus.endTime}
+            <if test="modelFileStatusClass.endTime!=null and modelFileStatusClass.endTime.trim()!=''">
+                and end_time=#{modelFileStatusClass.endTime}
             </if>
             and status =0
         </where>
@@ -142,7 +137,6 @@
             </if>
         </where>
     </select>
-
     <select id="fetchObservationTimeByYear" resultType="java.lang.String">
         SELECT DISTINCT LEFT(observation_time, 4) FROM model_file_status
         <where>
@@ -152,7 +146,6 @@
             </if>
         </where>
     </select>
-
     <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
         SELECT DISTINCT LEFT(observation_time, 7) FROM model_file_status
         <where>
@@ -162,33 +155,6 @@
             </if>
         </where>
     </select>
-
-    <!-- ====================== 普通列表查询（queryModelFileStatusList） ====================== -->
-    <select id="queryModelFileStatusList" resultType="java.util.Map">
-        select
-        id, user_name as userName, class_name as className, deal_status as dealStatus,
-        filepath, create_userid as createUserid, type, start_time as startTime,
-        end_time as endTime, observation_time as observationTime, model_name as modelName,
-        data_introduction as dataIntroduction, create_time as createTime, update_time as updateTime
-        from model_file_status
-        <where>
-            <if test="modelFileStatus.className!=null and modelFileStatus.className.trim()!=''">
-                and class_name = #{modelFileStatus.className}
-            </if>
-            <if test="modelFileStatus.userName!=null and modelFileStatus.userName.trim()!=''">
-                and user_name = #{modelFileStatus.userName}
-            </if>
-            <if test="modelFileStatus.dealStatus!=null and modelFileStatus.dealStatus.trim()!=''">
-                and deal_status=#{modelFileStatus.dealStatus}
-            </if>
-            <if test="modelFileStatus.type!=null and modelFileStatus.type.trim()!=''">
-                and type = #{modelFileStatus.type}
-            </if>
-            and status = 0
-        </where>
-        ORDER BY update_time DESC
-    </select>
-
     <!-- ====================== 分页查询（queryModelFileStatusPage） ====================== -->
     <select id="queryModelFileStatusPage" resultType="java.util.Map">
         select
@@ -214,5 +180,4 @@
         </where>
         ORDER BY update_time DESC
     </select>
-
 </mapper>
