@@ -32,7 +32,7 @@ public class VegetationMonitoringIndicatorsController {
     @Autowired
     private VegetationMonitoringIndicatorsMapper vegetationMonitoringIndicatorsMapper;
 
-    // 2. 新增接口，直接调用 Mapper 执行查询
+
     @PreAuthorize("hasAnyAuthority('api_monitoring_plantGetDistinctSpecies')")
     @PostMapping(value = "/api/monitoring/plantGetDistinctSpecies")
     public ResultTemplate<List<String>> plantGetDistinctSpecies() {

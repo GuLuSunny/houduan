@@ -96,6 +96,32 @@ public class ModelFileStatus implements Serializable {
     @TableField(value = "model_name")
     private String modelName;
 
+    /**
+     * 开始时间
+     */
+    @TableField(value = "start_time")
+    private String startTime;
+
+    /**
+     * 结束时间
+     */
+    @TableField(value = "end_time")
+    private String endTime;
+
+    /**
+     * 页码（默认第1页）
+     * @TableField(exist = false)：表示该字段不是数据库表的列，仅用于业务传递
+     */
+    @TableField(exist = false)
+    private Integer pageNum;
+
+    /**
+     * 每页条数（默认10条）
+     * @TableField(exist = false)：表示该字段不是数据库表的列，仅用于业务传递
+     */
+    @TableField(exist = false)
+    private Integer pageSize;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
@@ -130,18 +156,20 @@ public class ModelFileStatus implements Serializable {
         }
         ModelFileStatus other = (ModelFileStatus) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getClassName() == null ? other.getClassName() == null : this.getClassName().equals(other.getClassName()))
-            && (this.getDealStatus() == null ? other.getDealStatus() == null : this.getDealStatus().equals(other.getDealStatus()))
-            && (this.getFilepath() == null ? other.getFilepath() == null : this.getFilepath().equals(other.getFilepath()))
-            && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
-            && (this.getCreateUserid() == null ? other.getCreateUserid() == null : this.getCreateUserid().equals(other.getCreateUserid()))
-            && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
-            && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
-            && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()))
-            && (this.getObservationTime() == null ? other.getObservationTime() == null : this.getObservationTime().equals(other.getObservationTime()))
-            && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
-            && (this.getModelName() == null ? other.getModelName() == null : this.getModelName().equals(other.getModelName()));
+                && (this.getClassName() == null ? other.getClassName() == null : this.getClassName().equals(other.getClassName()))
+                && (this.getDealStatus() == null ? other.getDealStatus() == null : this.getDealStatus().equals(other.getDealStatus()))
+                && (this.getFilepath() == null ? other.getFilepath() == null : this.getFilepath().equals(other.getFilepath()))
+                && (this.getUserName() == null ? other.getUserName() == null : this.getUserName().equals(other.getUserName()))
+                && (this.getCreateUserid() == null ? other.getCreateUserid() == null : this.getCreateUserid().equals(other.getCreateUserid()))
+                && (this.getCreateTime() == null ? other.getCreateTime() == null : this.getCreateTime().equals(other.getCreateTime()))
+                && (this.getUpdateTime() == null ? other.getUpdateTime() == null : this.getUpdateTime().equals(other.getUpdateTime()))
+                && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
+                && (this.getDataIntroduction() == null ? other.getDataIntroduction() == null : this.getDataIntroduction().equals(other.getDataIntroduction()))
+                && (this.getObservationTime() == null ? other.getObservationTime() == null : this.getObservationTime().equals(other.getObservationTime()))
+                && (this.getType() == null ? other.getType() == null : this.getType().equals(other.getType()))
+                && (this.getModelName() == null ? other.getModelName() == null : this.getModelName().equals(other.getModelName()))
+                && (this.getStartTime() == null ? other.getStartTime() == null : this.getStartTime().equals(other.getStartTime()))
+                && (this.getEndTime() == null ? other.getEndTime() == null : this.getEndTime().equals(other.getEndTime()));
     }
 
     @Override
@@ -161,6 +189,8 @@ public class ModelFileStatus implements Serializable {
         result = prime * result + ((getObservationTime() == null) ? 0 : getObservationTime().hashCode());
         result = prime * result + ((getType() == null) ? 0 : getType().hashCode());
         result = prime * result + ((getModelName() == null) ? 0 : getModelName().hashCode());
+        result = prime * result + ((getStartTime() == null) ? 0 : getStartTime().hashCode());
+        result = prime * result + ((getEndTime() == null) ? 0 : getEndTime().hashCode());
         return result;
     }
 
@@ -183,8 +213,23 @@ public class ModelFileStatus implements Serializable {
         sb.append(", observationTime=").append(observationTime);
         sb.append(", type=").append(type);
         sb.append(", modelName=").append(modelName);
+        sb.append(", startTime=").append(startTime);
+        sb.append(", endTime=").append(endTime);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();
+    }
+    /**
+     * 获取页码，默认返回1
+     */
+    public Integer getPageNum() {
+        return pageNum == null ? 1 : pageNum;
+    }
+
+    /**
+     * 获取每页条数，默认返回10
+     */
+    public Integer getPageSize() {
+        return pageSize == null ? 10 : pageSize;
     }
 }

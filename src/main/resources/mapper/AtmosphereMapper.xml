@@ -36,6 +36,15 @@
         <result property="contactEmail" column="contact_email" />
         <result property="open" column="open" />
         <result property="dataIntroduction" column="data_introduction" />
+        <result property="relativeHumidity" column="relative_humidity" />
+        <result property="aqiIndex" column="aqi_index" />
+        <result property="primaryPollutant" column="primary_pollutant" />
+        <result property="airQualityLevel" column="air_quality_level" />
+        <result property="sulfurDioxide" column="sulfur_dioxide" />
+        <result property="nitrogenDioxide" column="nitrogen_dioxide" />
+        <result property="carbonMonoxide" column="carbon_monoxide" />
+        <result property="ozone" column="ozone" />
+        <result property="ozone8Hour" column="ozone_8_hour" />
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -44,7 +53,9 @@
         pm25,salinity,negative_oxygen_ion,rainfall_accumulation,radiation_accumulation,
         pm10,observation_time,create_time,type,user_name,
         filepath,filename,create_userid,status,contact_phone,
-        contact_address,production_unit,contact_email,open,data_introduction
+        contact_address,production_unit,contact_email,open,data_introduction,
+        relative_humidity,aqi_index,primary_pollutant,air_quality_level,sulfur_dioxide,
+        nitrogen_dioxide,carbon_monoxide,ozone,ozone_8_hour
     </sql>
     <select id="fetchFilepathByObservationTimeAndClassName" resultType="java.util.Map">
         select  min(observation_time) as "observationTimeBegin",max(observation_time) as "observationTimeEnd",
@@ -121,6 +132,55 @@
             and status=0
         </where>
     </update>
+    <update id="updateByCondition">
+        UPDATE atmosphere
+        <set>
+            <if test="atmosphereClass.status != null">status = #{atmosphereClass.status},</if>
+            <if test="atmosphereClass.windSpeed != null and atmosphereClass.windSpeed.trim() != ''">wind_speed = #{atmosphereClass.windSpeed},</if>
+            <if test="atmosphereClass.rainfall != null and atmosphereClass.rainfall.trim() != ''">rainfall = #{atmosphereClass.rainfall},</if>
+            <if test="atmosphereClass.atmosphereTemperature != null and atmosphereClass.atmosphereTemperature.trim() != ''">atmosphere_temperature = #{atmosphereClass.atmosphereTemperature},</if>
+            <if test="atmosphereClass.soilTemperature != null and atmosphereClass.soilTemperature.trim() != ''">soil_temperature = #{atmosphereClass.soilTemperature},</if>
+            <if test="atmosphereClass.digitalPressure != null and atmosphereClass.digitalPressure.trim() != ''">digital_pressure = #{atmosphereClass.digitalPressure},</if>
+            <if test="atmosphereClass.simpleTotalRadiation != null and atmosphereClass.simpleTotalRadiation.trim() != ''">simple_total_radiation = #{atmosphereClass.simpleTotalRadiation},</if>
+            <if test="atmosphereClass.windDirection != null and atmosphereClass.windDirection.trim() != ''">wind_direction = #{atmosphereClass.windDirection},</if>
+            <if test="atmosphereClass.soilHumidity != null and atmosphereClass.soilHumidity.trim() != ''">soil_humidity = #{atmosphereClass.soilHumidity},</if>
+            <if test="atmosphereClass.atmosphereHumidity != null and atmosphereClass.atmosphereHumidity.trim() != ''">atmosphere_humidity = #{atmosphereClass.atmosphereHumidity},</if>
+            <if test="atmosphereClass.pm25 != null and atmosphereClass.pm25.trim() != ''">pm25 = #{atmosphereClass.pm25},</if>
+            <if test="atmosphereClass.salinity != null and atmosphereClass.salinity.trim() != ''">salinity = #{atmosphereClass.salinity},</if>
+            <if test="atmosphereClass.negativeOxygenIon != null and atmosphereClass.negativeOxygenIon.trim() != ''">negative_oxygen_ion = #{atmosphereClass.negativeOxygenIon},</if>
+            <if test="atmosphereClass.rainfallAccumulation != null and atmosphereClass.rainfallAccumulation.trim() != ''">rainfall_accumulation = #{atmosphereClass.rainfallAccumulation},</if>
+            <if test="atmosphereClass.radiationAccumulation != null and atmosphereClass.radiationAccumulation.trim() != ''">radiation_accumulation = #{atmosphereClass.radiationAccumulation},</if>
+            <if test="atmosphereClass.pm10 != null and atmosphereClass.pm10.trim() != ''">pm10 = #{atmosphereClass.pm10},</if>
+            <if test="atmosphereClass.type != null and atmosphereClass.type.trim() != ''">"type" = #{atmosphereClass.type},</if>
+            <if test="atmosphereClass.relativeHumidity != null and atmosphereClass.relativeHumidity.trim() != ''">relative_humidity = #{atmosphereClass.relativeHumidity},</if>
+            <if test="atmosphereClass.aqiIndex != null and atmosphereClass.aqiIndex.trim() != ''">aqi_index = #{atmosphereClass.aqiIndex},</if>
+            <if test="atmosphereClass.primaryPollutant != null and atmosphereClass.primaryPollutant.trim() != ''">primary_pollutant = #{atmosphereClass.primaryPollutant},</if>
+            <if test="atmosphereClass.airQualityLevel != null and atmosphereClass.airQualityLevel.trim() != ''">air_quality_level = #{atmosphereClass.airQualityLevel},</if>
+            <if test="atmosphereClass.sulfurDioxide != null and atmosphereClass.sulfurDioxide.trim() != ''">sulfur_dioxide = #{atmosphereClass.sulfurDioxide},</if>
+            <if test="atmosphereClass.nitrogenDioxide != null and atmosphereClass.nitrogenDioxide.trim() != ''">nitrogen_dioxide = #{atmosphereClass.nitrogenDioxide},</if>
+            <if test="atmosphereClass.carbonMonoxide != null and atmosphereClass.carbonMonoxide.trim() != ''">carbon_monoxide = #{atmosphereClass.carbonMonoxide},</if>
+            <if test="atmosphereClass.ozone != null and atmosphereClass.ozone.trim() != ''">ozone = #{atmosphereClass.ozone},</if>
+            <if test="atmosphereClass.ozone8Hour != null and atmosphereClass.ozone8Hour.trim() != ''">ozone_8_hour = #{atmosphereClass.ozone8Hour},</if>
+        </set>
+        <where>
+            <if test="idList != null and idList.size() > 0">
+                AND id IN
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="atmosphereClass.observationTime != null and atmosphereClass.observationTime.trim() != ''">
+                AND observation_time LIKE '%' || #{atmosphereClass.observationTime} || '%'
+            </if>
+            <if test="atmosphereClass.filepath != null and atmosphereClass.filepath.trim() != ''">
+                AND filename LIKE '%' || #{atmosphereClass.filepath} || '%'
+            </if>
+            <if test="atmosphereClass.deviceId != null and atmosphereClass.deviceId.trim() != ''">
+                AND device_id = #{atmosphereClass.deviceId}
+            </if>
+            AND status = 0
+        </where>
+    </update>
 
     <select id="selectByTimeAndDevice" resultType="com.ydsw.domain.Atmosphere">
         SELECT * FROM atmosphere
@@ -165,11 +225,16 @@
         rainfall_accumulation as "rainfallAccumulation",
         radiation_accumulation as "radiationAccumulation",pm10,
         observation_time as "observationTime",
-        filename as "filepath"
+        filename as "filepath",
+        relative_humidity as "relativeHumidity",
+        aqi_index as "aqiIndex",primary_pollutant as "primaryPollutant",
+        air_quality_level as "airQualityLevel",sulfur_dioxide as "sulfurDioxide",
+        nitrogen_dioxide as "nitrogenDioxide",carbon_monoxide as "carbonMonoxide",
+        ozone,ozone_8_hour as "ozone8Hour"
         FROM atmosphere
         <where>
             <if test="atmosphereClass.observationTime != null and atmosphereClass.observationTime.trim() != ''">
-                and observation_time LIKE '%' || #{atmosphereClass.observationTime},  || '%'
+                and observation_time LIKE '%' || #{atmosphereClass.observationTime}  || '%'
             </if>
             <if test="atmosphereClass.filepath!=null and atmosphereClass.filepath.trim()!=''">
                 and filename  LIKE '%' ||#{atmosphereClass.filepath} || '%'

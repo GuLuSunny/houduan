@@ -32,7 +32,7 @@
                 </foreach>
             </if>
             <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
-                and class_name Like '%' || #{modelProduct.className} || '%'
+                and class_name = #{modelProduct.className}
             </if>
             <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
                 and filepath Like '%' || #{modelProduct.filepath} || '%'
@@ -41,13 +41,13 @@
                 and filename Like '%' || #{modelProduct.filename} || '%'
             </if>
             <if test="modelProduct.observationTime != null ">
-                and date_trunc('day', observation_time) = date_trunc('day', #{modelProduct.observationTime})
+                and  observation_time like #{modelProduct.observationTime}||'%'
             </if>
             <if test="modelProduct.startTime != null">
-                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+                and start_time, 'YYYY-MM-DD'  >= #{modelProduct.startTime}
             </if>
             <if test="modelProduct.endTime != null">
-                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+                and end_time, 'YYYY-MM-DD' &lt;=  #{modelProduct.endTime}
             </if>
             <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
                 and "type" Like '%' || #{modelProduct.type} || '%'
@@ -71,7 +71,7 @@
                 </foreach>
             </if>
             <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
-                and class_name Like '%' || #{modelProduct.className} || '%'
+                and class_name =  #{modelProduct.className}
             </if>
             <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
                 and filepath Like '%' || #{modelProduct.filepath} || '%'
@@ -80,13 +80,13 @@
                 and filename Like '%' || #{modelProduct.filename} || '%'
             </if>
             <if test="modelProduct.observationTime != null ">
-                and to_char(observation_time, 'YYYY-MM-DD') Like '%' ||  to_char(#{modelProduct.observationTime}::date, 'YYYY-MM-DD') || '%'
+                and observation_time Like #{modelProduct.observationTime}|| '%'
             </if>
             <if test="modelProduct.startTime != null">
-                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+                and start_time  >= #{modelProduct.startTime}
             </if>
             <if test="modelProduct.endTime != null">
-                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+                and end_time &lt;=  #{modelProduct.endTime}
             </if>
             <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
                 and "type" Like '%' || #{modelProduct.type} || '%'
@@ -98,13 +98,13 @@
         </where>
     </select>
     <select id="selectObservationTime" resultType="java.lang.String">
-        SELECT DISTINCT  to_char(observation_time, 'YYYY-MM-DD')  FROM model_product where status=0
+        SELECT DISTINCT  observation_time FROM model_product where status=0
     </select>
     <select id="fetchObservationTimeByYear" resultType="java.lang.String">
-        SELECT DISTINCT LEFT(to_char(observation_time, 'YYYY-MM-DD'), 4) FROM model_product where status=0
+        SELECT DISTINCT LEFT(observation_time, 4) FROM model_product where status=0
     </select>
     <select id="fetchObservationTimeByMonth" resultType="java.lang.String">
-        SELECT DISTINCT LEFT(to_char(observation_time, 'YYYY-MM-DD'), 7) FROM model_product where status=0
+        SELECT DISTINCT LEFT(observation_time, 7) FROM model_product where status=0
     </select>
     <select id="getProductPageByConditions" resultType="java.util.Map">
         select id,class_name as "className",filepath,filename,observation_time as "observationTime",
@@ -115,7 +115,7 @@
                 and id = #{modelProduct.id} =
             </if>
             <if test="modelProduct.className != null and modelProduct.className.trim()!=''">
-                and class_name Like '%' || #{modelProduct.className} || '%'
+                and class_name =  #{modelProduct.className}
             </if>
             <if test="modelProduct.filepath != null and modelProduct.filepath.trim()!=''">
                 and filepath Like '%' || #{modelProduct.filepath} || '%'
@@ -123,14 +123,18 @@
             <if test="modelProduct.filename != null and modelProduct.filename.trim()!=''">
                 and filename Like '%' || #{modelProduct.filename} || '%'
             </if>
-            <if test="modelProduct.observationTime != null ">
-                and to_char(observation_time, 'YYYY-MM-DD') Like '%' ||  to_char(#{modelProduct.observationTime}::date, 'YYYY-MM-DD') || '%'
+            <if test="modelProduct.observationTime != null">
+                and observation_time like #{modelProduct.observationTime} || '%'
             </if>
+
+            <!-- 开始时间和结束时间查询（VARCHAR类型） -->
             <if test="modelProduct.startTime != null">
-                and to_char(start_time, 'YYYY-MM-DD')  >= #{modelProduct.startTime}
+                <!-- 字符串比较，要求格式一致 -->
+                and start_time >= #{modelProduct.startTime}
             </if>
             <if test="modelProduct.endTime != null">
-                and to_char(end_time, 'YYYY-MM-DD') &lt;=  #{modelProduct.endTime}
+                <!-- 字符串比较，要求格式一致 -->
+                and end_time &lt;= #{modelProduct.endTime}
             </if>
             <if test="modelProduct.type != null and modelProduct.type.trim()!=''">
                 and "type" Like '%' || #{modelProduct.type} || '%'
@@ -140,5 +144,32 @@
             </if>
             and status =0
         </where>
+    </select>
+
+
+
+<!--新的，我的-->
+    <select id="getModelProductWithSort" resultType="java.util.Map">
+        SELECT * FROM model_product
+        <!--前端传来sort Type和Order-->
+        <if test="sortType != null and sortType != '' and sortOrder != null and sortOrder != ''">
+            ORDER BY
+                <choose>
+                    <when test="sortType == 'observation_time'">observation_time</when>
+                    <when test="sortType start_time== 'start_time'"></when>
+                    <when test="sortType == 'end_time'">end_time</when>
+                </choose>
+                ${sortOrder}
+        </if>
+        <!--前端只传了sortType则默认方法排序-->
+        <if test="sortType != null and sortType != '' and (sortOrder = null and sortOrder == '')">
+            ORDER BY
+            <choose>
+                <when test="sortType == 'observation_time'">observation_time</when>
+                <when test="sortType == 'start_time'">start_time</when>
+                <when test="sortType == 'end_time'">end_time</when>
+            </choose>
+            asc
+        </if>
     </select>
 </mapper>

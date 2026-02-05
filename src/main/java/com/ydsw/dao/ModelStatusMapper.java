@@ -1,5 +1,6 @@
 package com.ydsw.dao;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ydsw.domain.ModelList;
 import com.ydsw.domain.ModelStatus;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -23,7 +24,7 @@ public interface ModelStatusMapper extends BaseMapper<ModelStatus> {
 
     void dropModelLogs(@Param("idList") List<Integer> idList,@Param("modelStatusClass")ModelStatus modelStatus);
 
-
+    List<Map<String, Object>> getModelStatusPageByConditions(IPage<?> page, @Param("modelStatus") ModelStatus modelStatus);
 }
 
 

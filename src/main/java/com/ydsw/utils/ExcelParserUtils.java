@@ -64,6 +64,35 @@ public class ExcelParserUtils {
         CTE.put("TN", "tn");
         CTE.put("TP", "tp");
         CTE.put("叶绿素", "chlorophyll");
+        CTE.put("水位", "waterLevel");
+        CTE.put("流速", "flowRate");
+        CTE.put("流量", "flowVolume");
+        CTE.put("气温", "airTemperature");
+        CTE.put("CODCR", "codcr");
+        CTE.put("BOD5", "bod5");
+        CTE.put("氨氮", "ammoniaNitrogen");
+        CTE.put("铜", "copper");
+        CTE.put("锌", "zinc");
+        CTE.put("氟化物", "fluoride");
+        CTE.put("SE", "selenium");
+        CTE.put("ARS", "arsenic");
+        CTE.put("HG", "mercury");
+        CTE.put("CD", "cadmium");
+        CTE.put("CR6", "cr6");
+        CTE.put("PB", "pb");
+        CTE.put("CN", "cyanide");
+        CTE.put("VLPH", "volatilePhenols");
+        CTE.put("OIL", "oil");
+        CTE.put("LAS", "las");
+        CTE.put("S2", "s2");
+        CTE.put("FCG", "fcg");
+        CTE.put("蓄水量", "waterStorage");
+        CTE.put("SO4", "so4");
+        CTE.put("CL", "cl");
+        CTE.put("NO3", "no3");
+        CTE.put("FE", "fe");
+        CTE.put("MN", "mn");
+
 
         //气象
         //CTE.put("序号","id");
@@ -105,6 +134,8 @@ public class ExcelParserUtils {
                 "\n", "day");
         CTE.put("伊河东湾", "data1");
         CTE.put("伊河陆浑坝下", "data2");
+        CTE.put("惠济河大王庙站", "data1");
+        CTE.put("涡河邸阁站", "data2");
     }
     /**
      * 从excel文件解析到bean
@@ -161,10 +192,9 @@ public class ExcelParserUtils {
                     }
                 }
             }
-            List<String> objectFieldNameList = Arrays.stream(fields).map(o -> o.getName()).collect(Collectors.toList());
+            List<String> objectFieldNameList = Arrays.stream(fields).map(Field::getName).toList();
             //获取excel第fieldsRowNum行作为对象的字段名
             List<String> excelFieldNameList = new ArrayList<>();
-            rownum = 0;
             // 迭代行
             for (int m = 0; m <= sheet.getLastRowNum(); m++) {
 
@@ -279,6 +309,44 @@ public class ExcelParserUtils {
         }
     }
 
+    /*
+     * 返回所有sheet的名称以及所有sheet第一个元素。用逗号分割.水位、径流、气象、水体理化用
+     * */
+    public static Map<String, String> getAllCellByRowNum(InputStream inputStream, String excelType,int rowNum) {
+        try {
+            Workbook workbook = "xls".equals(excelType) ? new HSSFWorkbook(inputStream) : new XSSFWorkbook(inputStream);
+            Map<String, String> AllCellInRow = new HashMap<>();
+
+            AllCellInRow.put("Cells", "");
+            for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                Sheet sheet = workbook.getSheetAt(i);
+                Row row = sheet.getRow(rowNum);
+
+                if (i != 0) {
+                    AllCellInRow.put("Cells", AllCellInRow.get("Cells")+"##");
+                }
+
+                if (row == null) {
+                    continue; // 如果第一行为空，跳过当前循环
+                }
+                for (int n = 0; n < row.getLastCellNum(); n++) {
+                    Cell cell = row.getCell(n);
+                    if(cell==null){
+                        break;
+                    }
+                    if (n != 0) {
+                        AllCellInRow.put("Cells", AllCellInRow.get("Cells")+",");
+                    }
+
+                    AllCellInRow.put("Cells", AllCellInRow.get("Cells") + cell.getStringCellValue());
+                }
+            }
+            return AllCellInRow;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     /*
      * 返回所有包含传入字符串的sheet
      * */
@@ -653,7 +721,7 @@ public class ExcelParserUtils {
     public static void main(String[] args) throws IOException {
         //watetlevelExcelLocalFileTest();
         //spectralReflectance();
-        ObservationBirdExcelFill();
+        //ObservationBirdExcelFill();
     }
 
 

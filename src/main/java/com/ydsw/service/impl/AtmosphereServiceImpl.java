@@ -79,6 +79,11 @@ public class AtmosphereServiceImpl extends ServiceImpl<AtmosphereMapper, Atmosph
         IPage<Map<String,Object>> page = new Page<>(currentPage, pageSize);
         return atmosphereMapper.fetchFilepathByObservationTimeAndClassName(page,idList,observationTimeBegin,observationTimeEnd,className,filepath,type,typeDetail,deviceId,deviceName);
     }
+    @Override
+    public boolean updateByCondition(Atmosphere atmosphere)
+    {
+        return atmosphereMapper.updateByCondition(atmosphere);
+    }
 }
 
 

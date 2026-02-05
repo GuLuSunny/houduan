@@ -16,12 +16,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @RestController
@@ -97,6 +102,69 @@ public class ModelProductController {
         }
         return ResultTemplate.success();
     }
+
+    @PostMapping(value = "/api/modelFile/uploadModelProducts")
+    public ResultTemplate<Object> uploadModelProducts(@RequestParam("productFile") MultipartFile file,
+                                                      @RequestParam("className") String className,
+                                                      @RequestParam("filename") String filename,
+                                                      @RequestParam("userName") String userName,
+                                                      @RequestParam("observationTime") String observationTime,
+                                                      @RequestParam("startTime") String startTime,
+                                                      @RequestParam("endTime") String endTime) {
+
+        try {
+            // 1. 获取文件类型（扩展名）
+            String originalFilename = file.getOriginalFilename();
+            String type = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                type = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            }
+
+            // 2. 构建保存路径
+            String basePath = "D:"+ File.separator+"recognition"+ File.separator+"products";
+            String savePath = basePath + File.separator + className + File.separator + type + File.separator + file.getOriginalFilename();
+
+            // 3. 创建目录（如果不存在）
+            Path directoryPath = Paths.get(basePath, className, type);
+            Files.createDirectories(directoryPath);
+
+            // 4. 保存文件
+            Path targetPath = Paths.get(savePath);
+            file.transferTo(targetPath.toFile());
+
+            // 5. 时间格式转换（假设时间格式为yyyy-MM-dd HH:mm:ss，如果不是可以调整）
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd"); // 如果只需要日期
+
+
+            // 6. 创建ModelProduct对象并设置属性
+            ModelProduct modelProduct = new ModelProduct();
+            modelProduct.setClassName(className);
+            modelProduct.setType(type); // 设置文件类型
+            modelProduct.setFilename(filename);
+            modelProduct.setFilepath(savePath); // 保存文件路径
+            modelProduct.setOwner(userName);
+            modelProduct.setObservationTime(observationTime);
+            modelProduct.setStartTime(startTime);
+            modelProduct.setEndTime(endTime);
+            modelProduct.setCreateTime(new Date());
+
+            // 7. 保存到数据库
+            boolean saveResult = modelProductService.save(modelProduct);
+
+            if (!saveResult) {
+                return ResultTemplate.fail("保存到数据库失败");
+            }
+
+            return ResultTemplate.success();
+
+        } catch (IOException e) {
+            return ResultTemplate.fail("文件保存失败: " + e.getMessage());
+        } catch (Exception e) {
+            return ResultTemplate.fail("处理失败: " + e.getMessage());
+        }
+    }
+
     // 通用方法：获取文件下载响应（自动检测Content-Type）
     public ResponseEntity<Resource> getFileDownloadResponse(String filePath, String fileName) {
         try {
@@ -132,4 +200,21 @@ public class ModelProductController {
             return ResponseEntity.status(500).build();
         }
     }
+    //新的我的
+    @PostMapping(value = "/api/modelFile/getModelProductWithSort" )
+    public ResultTemplate getModelProductWithSort(@RequestBody Map<String, Object> paramMap) {
+        try{
+            //2.新增：解析排序参数
+            String sortType = (String)paramMap.get("sortType");
+            String sortOrder = (String)paramMap.get("sortOrder");
+            //3.调用Service层
+            List<Map<String, Object>> list = modelProductService.getModelProductWithSort(sortType, sortOrder);
+            return ResultTemplate.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResultTemplate.fail("排序失败" + e.getMessage());
+        }
+    }
 }
+
+
