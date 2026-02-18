@@ -22,9 +22,32 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.ydsw.dao.VegetationMonitoringIndicatorsMapper;
+import java.util.stream.Collectors;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 @Slf4j
 @RestController
 public class VegetationMonitoringIndicatorsController {
+    @Autowired
+    private VegetationMonitoringIndicatorsMapper vegetationMonitoringIndicatorsMapper;
+
+
+    @PreAuthorize("hasAnyAuthority('api_monitoring_plantGetDistinctSpecies')")
+    @PostMapping(value = "/api/monitoring/plantGetDistinctSpecies")
+    public ResultTemplate<List<String>> plantGetDistinctSpecies() {
+        // 方式1：用 MyBatis-Plus 直接查询（无需修改Mapper）
+        QueryWrapper<VegetationMonitoringIndicators> wrapper = new QueryWrapper<>();
+        wrapper.select("DISTINCT vegetation_species")
+                .isNotNull("vegetation_species");
+        List<String> speciesList = vegetationMonitoringIndicatorsMapper.selectObjs(wrapper)
+                .stream()
+                .filter(obj -> obj != null)
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+        return ResultTemplate.success(speciesList);
+    }
     @Autowired
     private DeviceService deviceService;
     @Autowired
@@ -128,4 +151,13 @@ public class VegetationMonitoringIndicatorsController {
         }
         return ResultTemplate.fail();
     }
+
+
+
+
+
+
 }
+
+
+

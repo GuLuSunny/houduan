@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <context id="PostgreSQL" targetRuntime="MyBatis3Simple" defaultModelType="flat">
+        <!-- 关闭注释，避免冗余 -->
+        <commentGenerator>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <!-- 数据库连接信息（核对你的配置） -->
+        <jdbcConnection driverClass="org.postgresql.Driver"
+                        connectionURL="jdbc:postgresql://39.96.187.210:5432/postgres"
+                        userId="postgres"
+                        password="henu123.">
+        </jdbcConnection>
+
+        <!-- 实体类生成路径：自动放入 com.ydsw.model -->
+        <javaModelGenerator targetPackage="com.ydsw.model" targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <!-- Mapper XML 生成路径：自动放入 resources/mapper -->
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+        <!-- Mapper 接口生成路径：自动放入 com.ydsw.mapper -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.ydsw.mapper" targetProject="src/main/java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+        <!-- 指定生成 user_role_info 表（自动包含 status 字段） -->
+        <table tableName="user_role_info" domainObjectName="UserRoleInfo">
+            <property name="enableCountByExample" value="false"/>
+            <property name="enableUpdateByExample" value="false"/>
+            <property name="enableDeleteByExample" value="false"/>
+            <property name="enableSelectByExample" value="false"/>
+        </table>
+    </context>
+</generatorConfiguration>

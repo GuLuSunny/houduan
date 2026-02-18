@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ydsw.domain.VegetationMonitoringIndicators;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,9 @@ public interface VegetationMonitoringIndicatorsMapper extends BaseMapper<Vegetat
     List<String> fetchObservationTimeByMonth();
 
     List<String> fetchObservationTimeByYear();
+
+    @Select("SELECT DISTINCT vegetation_species FROM vegetation_monitoring_indicators")
+    List<String> selectDistinctVegetationSpecies();
 }
 
 

@@ -24,4 +24,7 @@ public interface VegetationMonitoringIndicatorsService extends IService<Vegetati
     List<String> fetchObservationTimeByMonth();
 
     List<String> fetchObservationTimeByDay();
+
+    List<String> getDistinctVegetationSpecies();
+
 }
