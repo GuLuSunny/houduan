@@ -62,6 +62,27 @@ public class ModelProductServiceImpl extends ServiceImpl<ModelProductMapper, Mod
     @Override
     public List<Map<String, Object>> getModelProductWithSort(String sortType, String sortOrder)
     {
+        //修饰传参
+        String dbField;
+        if("observationTime".equals(sortType))
+        {
+            dbField = "observation_time";
+        }else if("startTime".equals(sortType))
+        {
+            dbField = "start_time";
+        }else if("endTime".equals(sortType))
+        {
+            dbField = "end_time";
+        }else
+        {
+            dbField = "observation_time";
+        }
+        //修饰排序方向
+        if(!"asc".equals(sortType) && !"desc".equals(sortType))
+        {
+            sortOrder = "asc";
+        }
+
         return modelProductMapper.getModelProductWithSort(sortType, sortOrder);
     }
 }

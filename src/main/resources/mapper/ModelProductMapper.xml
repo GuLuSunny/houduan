@@ -155,19 +155,24 @@
         <if test="sortType != null and sortType != '' and sortOrder != null and sortOrder != ''">
             ORDER BY
                 <choose>
-                    <when test="sortType == 'observation_time'">observation_time</when>
-                    <when test="sortType start_time== 'start_time'"></when>
-                    <when test="sortType == 'end_time'">end_time</when>
+                    <when test="sortType == 'observationTime'">observation_time</when>
+                    <when test="sortType == 'startTime'">start_time</when>
+                    <when test="sortType == 'endTime'">end_time</when>
+                    <otherwise>observation_time</otherwise>
                 </choose>
-                ${sortOrder}
+                <choose>
+                    <when test="sortOrder == 'desc'">desc</when>
+                    <when test="sortOrder == 'asc'">asc</when>
+                </choose>
+
         </if>
         <!--前端只传了sortType则默认方法排序-->
         <if test="sortType != null and sortType != '' and (sortOrder = null and sortOrder == '')">
             ORDER BY
             <choose>
-                <when test="sortType == 'observation_time'">observation_time</when>
-                <when test="sortType == 'start_time'">start_time</when>
-                <when test="sortType == 'end_time'">end_time</when>
+                <when test="sortType == 'observationTime'">observation_time</when>
+                <when test="sortType == 'startTime'">start_time</when>
+                <when test="sortType == 'endTime'">end_time</when>
             </choose>
             asc
         </if>
