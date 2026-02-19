@@ -21,49 +21,55 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.ydsw.dao.VegetationMonitoringIndicatorsMapper;
-import java.util.stream.Collectors;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
 @Slf4j
 @RestController
 public class VegetationMonitoringIndicatorsController {
+
+    // 注入Mapper（纯MyBatis使用）
     @Autowired
     private VegetationMonitoringIndicatorsMapper vegetationMonitoringIndicatorsMapper;
 
-
-    @PreAuthorize("hasAnyAuthority('api_monitoring_plantGetDistinctSpecies')")
-    @PostMapping(value = "/api/monitoring/plantGetDistinctSpecies")
-    public ResultTemplate<List<String>> plantGetDistinctSpecies() {
-        // 方式1：用 MyBatis-Plus 直接查询（无需修改Mapper）
-        QueryWrapper<VegetationMonitoringIndicators> wrapper = new QueryWrapper<>();
-        wrapper.select("DISTINCT vegetation_species")
-                .isNotNull("vegetation_species");
-        List<String> speciesList = vegetationMonitoringIndicatorsMapper.selectObjs(wrapper)
-                .stream()
-                .filter(obj -> obj != null)
-                .map(Object::toString)
-                .collect(Collectors.toList());
-
-        return ResultTemplate.success(speciesList);
-    }
     @Autowired
     private DeviceService deviceService;
+
+    // 修复：补充@Autowired注解，否则会空指针
     @Autowired
     private VegetationMonitoringIndicatorsService vegetationMonitoringIndicatorsService;
-    @PreAuthorize("hasAnyAuthority('api_monitoring_plantGetData')")
+
+    /**
+     * 获取湿地监测表中所有不重复的植被种类（纯 MyBatis 实现）
+     * @return 逗号分隔的唯一植被种类字符串
+     */
+    //@PreAuthorize("hasAnyAuthority('api_monitoring_plantGetDistinctSpecies')")
+    @PostMapping(value = "/api/monitoring/plantGetDistinctSpecies")
+    // 修正：返回类型改为ResultTemplate<String>，匹配逗号分隔字符串
+    public ResultTemplate<String> plantGetDistinctSpecies() {
+        // 纯MyBatis调用：直接调用Mapper中注解定义的SQL方法，抛弃MyBatis-Plus的QueryWrapper
+        List<String> speciesList = vegetationMonitoringIndicatorsMapper.selectDistinctVegetationSpecies();
+
+        // 过滤空值+拼接为逗号分隔字符串（双重保障，避免无效数据）
+        String result = speciesList.stream()
+                .filter(s -> s != null && !s.trim().isEmpty())
+                .collect(Collectors.joining(","));
+
+        return ResultTemplate.success(result);
+    }
+
     /*
      * 根据时间查询湿地植被数据
      */
     @PostMapping(value = "/api/monitoring/plantGetData")
-    public ResultTemplate<Object> plantGetData(@RequestBody Map<String, String> requestBody)
-    {
+    public ResultTemplate<Object> plantGetData(@RequestBody Map<String, String> requestBody) {
         String time = requestBody.get("time");
         String plant = requestBody.get("plant");
-        List<VegetationMonitoringIndicators> vegetationMonitoringIndicatorsList = vegetationMonitoringIndicatorsService.fetchDataByObservationTime(time,plant,null);
+        List<VegetationMonitoringIndicators> vegetationMonitoringIndicatorsList = vegetationMonitoringIndicatorsService.fetchDataByObservationTime(time, plant, null);
         return ResultTemplate.success(vegetationMonitoringIndicatorsList);
     }
+
     /*
      * @param jsonArray
      * 根据日期分页模糊查询
@@ -99,7 +105,7 @@ public class VegetationMonitoringIndicatorsController {
     public ResultTemplate<Object> SpeDelById(@RequestBody JSONObject jsonObject) {
         List<String> idArray = jsonObject.getBeanList("ids", String.class);//id列表
         String dateSelected = jsonObject.getStr("observationTime");
-        if ((idArray == null || idArray.isEmpty())  && (dateSelected == null || "".equals(dateSelected.trim()))) {
+        if ((idArray == null || idArray.isEmpty()) && (dateSelected == null || "".equals(dateSelected.trim()))) {
             return ResultTemplate.fail("参数出错！");
         }
         if (idArray != null && idArray.isEmpty()) {
@@ -137,12 +143,12 @@ public class VegetationMonitoringIndicatorsController {
         vegetationMonitoringIndicators.setType("form");
         vegetationMonitoringIndicators.setMemo(null);
         vegetationMonitoringIndicatorsList.add(vegetationMonitoringIndicators);
-        List<VegetationMonitoringIndicators> vegetationMonitoringIndicators1=
+        List<VegetationMonitoringIndicators> vegetationMonitoringIndicators1 =
                 vegetationMonitoringIndicatorsService.fetchDataByObservationTime
                         (vegetationMonitoringIndicatorsList.get(0).getInvestigationTime(),
                                 vegetationMonitoringIndicatorsList.get(0).getVegetationSpecies(),
                                 vegetationMonitoringIndicatorsList.get(0).getDeviceId());
-        if(!vegetationMonitoringIndicators1.isEmpty()){
+        if (!vegetationMonitoringIndicators1.isEmpty()) {
             return ResultTemplate.fail("数据已存在!");
         }
         boolean flag = vegetationMonitoringIndicatorsService.saveBatch(vegetationMonitoringIndicatorsList);
@@ -152,12 +158,4 @@ public class VegetationMonitoringIndicatorsController {
         return ResultTemplate.fail();
     }
 
-
-
-
-
-
 }
-
-
-

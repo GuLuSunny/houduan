@@ -30,7 +30,7 @@ public interface VegetationMonitoringIndicatorsMapper extends BaseMapper<Vegetat
 
     List<String> fetchObservationTimeByYear();
 
-    @Select("SELECT DISTINCT vegetation_species FROM vegetation_monitoring_indicators")
+    @Select("SELECT DISTINCT vegetation_species FROM vegetation_monitoring_indicators WHERE vegetation_species IS NOT NULL")
     List<String> selectDistinctVegetationSpecies();
 }
 
