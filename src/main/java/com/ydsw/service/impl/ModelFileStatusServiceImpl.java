@@ -10,6 +10,9 @@ import com.ydsw.dao.ModelFileStatusMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +73,29 @@ public class ModelFileStatusServiceImpl extends ServiceImpl<ModelFileStatusMappe
         );
         // 调用Mapper层分页方法
         return modelFileStatusMapper.queryModelFileStatusPage(page, modelFileStatus);
+    }
+
+    @Override
+    public boolean updateByCondition(ModelFileStatus updateEntity, ModelFileStatus condition) {
+        // 构建更新条件，使用 UpdateWrapper
+        UpdateWrapper<ModelFileStatus> wrapper = new UpdateWrapper<>();
+
+        // 只对非空字段添加条件，适配数据库字段名
+        if (condition.getId() != null) wrapper.eq("id", condition.getId());
+        if (condition.getClassName() != null) wrapper.eq("class_name", condition.getClassName());
+        if (condition.getUserName() != null) wrapper.eq("user_name", condition.getUserName());
+        if (condition.getDealStatus() != null) wrapper.eq("deal_status", condition.getDealStatus());
+        if (condition.getType() != null) wrapper.eq("type", condition.getType());
+        if (condition.getObservationTime() != null) wrapper.eq("observation_time", condition.getObservationTime());
+        if (condition.getModelName() != null) wrapper.eq("model_name", condition.getModelName());
+        if (condition.getStartTime() != null) wrapper.eq("start_time", condition.getStartTime());
+        if (condition.getEndTime() != null) wrapper.eq("end_time", condition.getEndTime());
+
+        // 只更新未删除的记录
+        wrapper.eq("status", 0);
+
+        // 第一个参数是要更新的实体（非null字段会被更新），第二个参数是更新条件
+        return this.update(updateEntity, wrapper);
     }
 }
 

@@ -992,4 +992,43 @@ public class ModelFileStatusController {
             return ResultTemplate.fail("查询失败：" + e.getMessage());
         }
     }
+    /**
+     * 更新模型文件状态（支持按ID单条更新 / 按条件批量更新）
+     * @param jsonObject 入参
+     * @return 统一响应
+     */
+    @PostMapping(value = "/api/modelFile/updateModelFileStatus")
+    public ResultTemplate<Object> updateModelFileStatus(@RequestBody JSONObject jsonObject) {
+        try {
+            String updateType = jsonObject.getStr("updateType");
+            ModelFileStatus updateEntity = jsonObject.getBean("updateEntity", ModelFileStatus.class);
+
+            if (updateEntity == null) {
+                return ResultTemplate.fail("更新失败：updateEntity 不能为空");
+            }
+
+            boolean success;
+            if ("id".equals(updateType)) {
+                Integer id = jsonObject.getInt("id");
+                if (id == null) {
+                    return ResultTemplate.fail("按ID更新失败：id 不能为空");
+                }
+                updateEntity.setId(id);
+                success = modelFileStatusService.updateById(updateEntity);
+            } else if ("condition".equals(updateType)) {
+                ModelFileStatus condition = jsonObject.getBean("condition", ModelFileStatus.class);
+                if (condition == null) {
+                    return ResultTemplate.fail("按条件更新失败：condition 不能为空");
+                }
+                success = modelFileStatusService.updateByCondition(updateEntity, condition);
+            } else {
+                return ResultTemplate.fail("更新失败：updateType 仅支持 id/condition");
+            }
+
+            return success ? ResultTemplate.success("更新成功") : ResultTemplate.fail("更新失败：未找到记录");
+        } catch (Exception e) {
+            log.error("更新异常", e);
+            return ResultTemplate.fail("更新失败：" + e.getMessage());
+        }
+    }
 }

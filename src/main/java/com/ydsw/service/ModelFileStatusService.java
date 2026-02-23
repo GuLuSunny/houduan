@@ -26,4 +26,6 @@ public interface ModelFileStatusService extends IService<ModelFileStatus> {
     List<String> fetchObservationTimeByMonth(String className);
 
     IPage<Map<String, Object>> queryModelFileStatusPage(ModelFileStatus modelFileStatus);
+
+    boolean updateByCondition(ModelFileStatus updateEntity, ModelFileStatus condition);
 }
