@@ -6,6 +6,8 @@ import com.ydsw.service.ModelStatusService;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -19,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 @Data
 @Component
+@EnableScheduling
 public class ProcessBuilderUtils {
     // 可配置的Python路径
     private static String pythonPath = "/user/miniconda3/envs/heigangkouenv/bin/python";
@@ -31,7 +34,7 @@ public class ProcessBuilderUtils {
 
     private static String winPythonPath = "C:\\Users\\lenovo\\miniconda3\\envs\\version12\\python.exe";
     private static String lowerPythonPath = "C:\\Users\\lenovo\\miniconda3\\envs\\version8\\python.exe";
-
+    private static final String scheduledScriptPath = "D:\\开放课题\\自动化\\atomsphere_insert.py";
     @Autowired
     public void setModelStatusService(ModelStatusService modelStatusService)
     {
@@ -641,7 +644,21 @@ public class ProcessBuilderUtils {
     public static void shutdown() {
         executorService.shutdown();
     }
+    /**
+     * 定时执行获取气象脚本
+     */
+    @Scheduled(cron = "0 0 16 * * ?")
+    public void scheduledExecutePythonScript() {
+        try {
+            ProcessBuilderUtils.executeInBackground(
+                    scheduledScriptPath,
+                    new ArrayList<>(),
+                    null
+            );
+        } catch (Exception e) {
 
+        }
+    }
 
 
 }
