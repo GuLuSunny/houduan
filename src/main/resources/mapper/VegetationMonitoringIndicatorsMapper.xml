@@ -87,4 +87,11 @@
     <select id="fetchObservationTimeByYear" resultType="java.lang.String">
         SELECT DISTINCT LEFT(investigation_time, 4) FROM vegetation_monitoring_indicators where status=0
     </select>
+
+    <!-- 对应 Mapper 中的 selectDistinctVegetationSpecies 方法 -->
+    <select id="selectDistinctVegetationSpecies" resultType="java.lang.String">
+        SELECT DISTINCT vegetation_species
+        FROM vegetation_monitoring_indicators
+        WHERE vegetation_species IS NOT NULL
+    </select>
 </mapper>

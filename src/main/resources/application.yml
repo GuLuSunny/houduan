@@ -27,14 +27,15 @@ server:
   port: 8091
 #mybatis-plus配置
 mybatis-plus:
-  mapper-locations:  classpath*:/mapper/**Mapper.xml #将xml文件放进resource下的mapper中
+  mapper-locations:  classpath:mapper/**Mapper.xml #将xml文件放进resource下的mapper中
   type-aliases-package: com.ydsw.pojo;com.ydsw.domain #实体类位置，多个package用逗号或者分号分割
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: false
+
+  type-handlers-package: com.ydsw.handler
   # 或者设置日志文件的目录
   logging:
     file:
       path: /logfile/
   #  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-  type-handlers-package: com.ydsw.handler

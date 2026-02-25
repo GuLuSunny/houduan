@@ -23,15 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.ydsw.dao.VegetationMonitoringIndicatorsMapper;
+
 
 @Slf4j
 @RestController
 public class VegetationMonitoringIndicatorsController {
 
-    // 注入Mapper（纯MyBatis使用）
-    @Autowired
-    private VegetationMonitoringIndicatorsMapper vegetationMonitoringIndicatorsMapper;
+
 
     @Autowired
     private DeviceService deviceService;
@@ -48,8 +46,8 @@ public class VegetationMonitoringIndicatorsController {
     @PostMapping(value = "/api/monitoring/plantGetDistinctSpecies")
     // 修正：返回类型改为ResultTemplate<String>，匹配逗号分隔字符串
     public ResultTemplate<String> plantGetDistinctSpecies() {
-        // 纯MyBatis调用：直接调用Mapper中注解定义的SQL方法，抛弃MyBatis-Plus的QueryWrapper
-        List<String> speciesList = vegetationMonitoringIndicatorsMapper.selectDistinctVegetationSpecies();
+        // 从调用 Mapper 改为调用 Service 方法
+        List<String> speciesList = vegetationMonitoringIndicatorsService.getDistinctVegetationSpecies();
 
         // 过滤空值+拼接为逗号分隔字符串（双重保障，避免无效数据）
         String result = speciesList.stream()

@@ -13,6 +13,10 @@ import java.util.Map;
 * @createDate 2024-09-27 22:01:51
 */
 public interface VegetationMonitoringIndicatorsService extends IService<VegetationMonitoringIndicators> {
+
+    // 新增：获取去重植被种类
+    List<String> getDistinctVegetationSpecies();
+
     List<VegetationMonitoringIndicators> fetchDataByObservationTime(String time, String plant,Integer deviceId);
 
     IPage<Map<String, Object>> fetchDataByObservationTimeAndFilepath(int currentPage, int pageSize, VegetationMonitoringIndicators vegetationMonitoringIndicatorsClass);
@@ -25,6 +29,6 @@ public interface VegetationMonitoringIndicatorsService extends IService<Vegetati
 
     List<String> fetchObservationTimeByDay();
 
-    List<String> getDistinctVegetationSpecies();
+
 
 }

@@ -59,10 +59,8 @@ public class VegetationMonitoringIndicatorsServiceImpl extends ServiceImpl<Veget
     // 新增：实现接口中定义的 getDistinctVegetationSpecies() 方法
     @Override
     public List<String> getDistinctVegetationSpecies() {
-        QueryWrapper<VegetationMonitoringIndicators> wrapper = new QueryWrapper<>();
-        wrapper.select("DISTINCT vegetation_species")
-                .isNotNull("vegetation_species");
-        return listObjs(wrapper, Object::toString);
+        // 直接调用 Mapper 方法（该方法已绑定 XML 中的 SQL）
+        return vegetationMonitoringIndicatorsMapper.selectDistinctVegetationSpecies();
     }
 
 
