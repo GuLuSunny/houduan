@@ -32,6 +32,10 @@ public interface ModelFileStatusMapper extends BaseMapper<ModelFileStatus> {
             IPage<Map<String, Object>> page,
             @Param("modelFileStatus") ModelFileStatus modelFileStatus
     );
+    int updateByCondition(
+            @Param("updateEntity") ModelFileStatus updateEntity,
+            @Param("condition") ModelFileStatus condition
+    );
 }
 
 

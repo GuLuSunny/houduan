@@ -174,10 +174,84 @@
                 and deal_status=#{modelFileStatus.dealStatus}
             </if>
             <if test="modelFileStatus.type!=null and modelFileStatus.type.trim()!=''">
-                and type = #{modelFileStatus.type}
+                and "type" = #{modelFileStatus.type}
             </if>
             and status = 0
         </where>
         ORDER BY update_time DESC
     </select>
+
+    <update id="updateByCondition">
+        UPDATE model_file_status
+        <set>
+            <!-- 只更新非空字段 -->
+            <if test="updateEntity.userName != null">
+                user_name = #{updateEntity.userName},
+            </if>
+            <if test="updateEntity.className != null">
+                class_name = #{updateEntity.className},
+            </if>
+            <if test="updateEntity.dealStatus != null">
+                deal_status = #{updateEntity.dealStatus},
+            </if>
+            <if test="updateEntity.createUserid != null">
+                create_userid = #{updateEntity.createUserid},
+            </if>
+            <if test="updateEntity.dataIntroduction != null">
+                data_introduction = #{updateEntity.dataIntroduction},
+            </if>
+            <if test="updateEntity.observationTime != null">
+                observation_time = #{updateEntity.observationTime},
+            </if>
+            <if test="updateEntity.type != null">
+                type = #{updateEntity.type},
+            </if>
+            <if test="updateEntity.modelName != null">
+                model_name = #{updateEntity.modelName},
+            </if>
+            <if test="updateEntity.startTime != null">
+                start_time = #{updateEntity.startTime},
+            </if>
+            <if test="updateEntity.endTime != null">
+                end_time = #{updateEntity.endTime},
+            </if>
+            <if test="updateEntity.updateTime != null">
+                update_time = #{updateEntity.updateTime},
+            </if>
+            <!-- 其他需要更新的字段按同样方式补充 -->
+        </set>
+
+        <where>
+            <!-- 条件：只对非空字段添加等值条件 -->
+            <if test="condition.id != null">
+                AND id = #{condition.id}
+            </if>
+            <if test="condition.className != null and condition.className != ''">
+                AND class_name = #{condition.className}
+            </if>
+            <if test="condition.userName != null and condition.userName != ''">
+                AND user_name = #{condition.userName}
+            </if>
+            <if test="condition.dealStatus != null and condition.dealStatus != ''">
+                AND deal_status = #{condition.dealStatus}
+            </if>
+            <if test="condition.type != null and condition.type != ''">
+                AND type = #{condition.type}
+            </if>
+            <if test="condition.observationTime != null and condition.observationTime != ''">
+                AND observation_time = #{condition.observationTime}
+            </if>
+            <if test="condition.modelName != null and condition.modelName != ''">
+                AND model_name = #{condition.modelName}
+            </if>
+            <if test="condition.startTime != null and condition.startTime != ''">
+                AND start_time = #{condition.startTime}
+            </if>
+            <if test="condition.endTime != null and condition.endTime != ''">
+                AND end_time = #{condition.endTime}
+            </if>
+            <!-- 固定条件：只更新未删除的记录 -->
+            AND status = 0
+        </where>
+    </update>
 </mapper>
