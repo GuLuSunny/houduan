@@ -82,6 +82,24 @@ public class ModelFileStatusServiceImpl extends ServiceImpl<ModelFileStatusMappe
         // 返回是否更新成功（受影响行数 > 0 即为成功）
         return affectedRows > 0;
     }
+
+    @Override
+    public boolean batchDeleteByIds(List<Integer> idList) {
+        if (idList == null || idList.isEmpty()) {
+            return false;
+        }
+        int affectedRows = modelFileStatusMapper.batchDeleteByIds(idList);
+        return affectedRows > 0;
+    }
+
+    @Override
+    public boolean batchDeleteByCondition(ModelFileStatus condition) {
+        if (condition == null) {
+            return false;
+        }
+        int affectedRows = modelFileStatusMapper.batchDeleteByCondition(condition);
+        return affectedRows > 0;
+    }
 }
 
 

@@ -36,6 +36,10 @@ public interface ModelFileStatusMapper extends BaseMapper<ModelFileStatus> {
             @Param("updateEntity") ModelFileStatus updateEntity,
             @Param("condition") ModelFileStatus condition
     );
+
+    int batchDeleteByIds(@Param("idList") List<Integer> idList);
+
+    int batchDeleteByCondition(@Param("condition") ModelFileStatus condition);
 }
 
 

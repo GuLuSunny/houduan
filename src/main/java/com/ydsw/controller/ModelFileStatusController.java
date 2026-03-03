@@ -1031,4 +1031,43 @@ public class ModelFileStatusController {
             return ResultTemplate.fail("更新失败：" + e.getMessage());
         }
     }
+
+    /**
+     * 批量删除模型文件记录(status置1)
+     * 支持按ID列表批量删除，或按条件批量删除
+     * @param jsonObject 入参
+     * @return 统一响应
+     */
+    @PostMapping(value = "/api/modelFile/batchDeleteModelFileStatus")
+    public ResultTemplate<Object> batchDeleteModelFileStatus(@RequestBody JSONObject jsonObject) {
+        try {
+            String deleteType = jsonObject.getStr("deleteType");
+            boolean success;
+
+            if ("ids".equals(deleteType)) {
+                // 按ID列表批量删除
+                List<String> idArray = jsonObject.getBeanList("ids", String.class);
+                if (idArray == null || idArray.isEmpty()) {
+                    return ResultTemplate.fail("批量删除失败：ids 不能为空");
+                }
+                List<Integer> idList = new ArrayList<>();
+                ArrayStrToInt(idArray, idList); // 复用已有字符串转整数方法
+                success = modelFileStatusService.batchDeleteByIds(idList);
+            } else if ("condition".equals(deleteType)) {
+                // 按条件批量删除
+                ModelFileStatus condition = jsonObject.getBean("condition", ModelFileStatus.class);
+                if (condition == null) {
+                    return ResultTemplate.fail("按条件删除失败：condition 不能为空");
+                }
+                success = modelFileStatusService.batchDeleteByCondition(condition);
+            } else {
+                return ResultTemplate.fail("删除失败：deleteType 仅支持 ids/condition");
+            }
+
+            return success ? ResultTemplate.success("批量删除成功") : ResultTemplate.fail("批量删除失败：未找到记录");
+        } catch (Exception e) {
+            log.error("批量删除异常", e);
+            return ResultTemplate.fail("批量删除失败：" + e.getMessage());
+        }
+    }
 }

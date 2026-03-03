@@ -254,4 +254,47 @@
             AND status = 0
         </where>
     </update>
+    <!-- 批量删除：按ID列表逻辑删除 -->
+    <update id="batchDeleteByIds">
+        update model_file_status
+        set status=1, update_time = NOW()
+        where status = 0
+        and id in
+        <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+            #{item}
+        </foreach>
+    </update>
+
+    <!-- 批量删除：按条件逻辑删除 -->
+    <update id="batchDeleteByCondition">
+        update model_file_status
+        set status=1, update_time = NOW()
+        <where>
+            status = 0
+            <if test="condition.className!=null and condition.className.trim()!=''">
+                and class_name = #{condition.className}
+            </if>
+            <if test="condition.userName!=null and condition.userName.trim()!=''">
+                and user_name = #{condition.userName}
+            </if>
+            <if test="condition.createUserid!=null and condition.createUserid.trim()!=''">
+                and create_userid=#{condition.createUserid}
+            </if>
+            <if test="condition.dealStatus!=null and condition.dealStatus.trim()!=''">
+                and deal_status=#{condition.dealStatus}
+            </if>
+            <if test="condition.type!=null and condition.type.trim()!=''">
+                and "type" = #{condition.type}
+            </if>
+            <if test="condition.observationTime!=null and condition.observationTime.trim()!=''">
+                and observation_time=#{condition.observationTime}
+            </if>
+            <if test="condition.startTime!=null and condition.startTime.trim()!=''">
+                and start_time=#{condition.startTime}
+            </if>
+            <if test="condition.endTime!=null and condition.endTime.trim()!=''">
+                and end_time=#{condition.endTime}
+            </if>
+        </where>
+    </update>
 </mapper>

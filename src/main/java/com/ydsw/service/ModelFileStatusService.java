@@ -28,4 +28,8 @@ public interface ModelFileStatusService extends IService<ModelFileStatus> {
     IPage<Map<String, Object>> queryModelFileStatusPage(ModelFileStatus modelFileStatus);
 
     boolean updateByCondition(ModelFileStatus updateEntity, ModelFileStatus condition);
+
+    boolean batchDeleteByIds(List<Integer> idList);
+
+    boolean batchDeleteByCondition(ModelFileStatus condition);
 }
