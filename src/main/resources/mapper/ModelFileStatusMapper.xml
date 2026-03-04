@@ -204,7 +204,7 @@
                 observation_time = #{updateEntity.observationTime},
             </if>
             <if test="updateEntity.type != null">
-                type = #{updateEntity.type},
+                "type" = #{updateEntity.type},
             </if>
             <if test="updateEntity.modelName != null">
                 model_name = #{updateEntity.modelName},
@@ -236,7 +236,7 @@
                 AND deal_status = #{condition.dealStatus}
             </if>
             <if test="condition.type != null and condition.type != ''">
-                AND type = #{condition.type}
+                AND "type" = #{condition.type}
             </if>
             <if test="condition.observationTime != null and condition.observationTime != ''">
                 AND observation_time = #{condition.observationTime}
