@@ -88,6 +88,63 @@ public class UserController {
         return ResultTemplate.success();
     }
 
+    // 新增拆分接口1：更新用户基础信息（不含密码、权限）
+    // 临时注释，测试完成后恢复
+    @PreAuthorize("hasAnyAuthority('api_user_updateBaseInfo')")
+    @PostMapping({"/updateBaseInfo"})
+    @ResponseBody
+    @Transactional
+    public ResultTemplate<Object> updateBaseInfo(@RequestBody JSONObject jsonObject) {
+        // 1. 复用原有代码的参数转换方式（避免setter方法名不匹配问题）
+        User userClass = (User)JSONUtil.toBean(jsonObject, User.class);
+
+        // 2. 必传参数校验（沿用原有代码风格）
+        if (userClass.getId() == null) {
+            return ResultTemplate.fail("用户ID不能为空");
+        }
+
+        // 3. 核心：强制清空密码，禁止更新（拆分接口关键）
+        userClass.setPassword(null);
+
+        // 4. 不处理角色权限（和原有全量更新接口区分）
+        this.userService.updateUserInfo(userClass);
+
+        log.info("更新用户基础信息，用户ID：{}，更新内容：{}", userClass.getId(), jsonObject.toString());
+        return ResultTemplate.success("用户基础信息更新成功");
+    }
+
+
+    // 新增拆分接口2：重置用户密码（仅更新密码）
+
+    // 临时注释，测试完成后恢复
+    @PreAuthorize("hasAnyAuthority('api_user_resetPassword')")
+    @PostMapping({"/resetPassword"})
+    @ResponseBody
+    @Transactional
+    public ResultTemplate<Object> resetPassword(@RequestBody JSONObject jsonObject) {
+        // 1. 复用原有代码的参数转换方式
+        User userClass = (User)JSONUtil.toBean(jsonObject, User.class);
+
+        // 2. 必传参数校验（沿用原有代码风格）
+        if (userClass.getId() == null) {
+            return ResultTemplate.fail("用户ID不能为空");
+        }
+        if (userClass.getPassword() == null || "".equals(userClass.getPassword().trim())) {
+            return ResultTemplate.fail("新密码不能为空");
+        }
+
+        // 3. 仅加密密码，不处理其他字段（拆分接口关键）
+        BCryptPasswordEncoder bcryptPasswordEncoder = new BCryptPasswordEncoder();
+        userClass.setPassword(bcryptPasswordEncoder.encode(userClass.getPassword().trim()));
+
+        // 4. 仅更新密码，不处理角色权限
+        this.userService.updateUserInfo(userClass);
+
+        log.info("重置用户密码，用户ID：{}", userClass.getId());
+        return ResultTemplate.success("密码重置成功");
+    }
+
+
     /**
      * 根据用户id进行更新信息
      *
