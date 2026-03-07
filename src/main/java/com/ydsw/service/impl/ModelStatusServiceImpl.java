@@ -6,10 +6,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ydsw.domain.ModelStatus;
 import com.ydsw.service.ModelStatusService;
 import com.ydsw.dao.ModelStatusMapper;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -24,16 +24,31 @@ public class ModelStatusServiceImpl extends ServiceImpl<ModelStatusMapper, Model
 
     @Autowired
     private ModelStatusMapper modelStatusMapper;
+
+    /**
+     * 按照条件查询
+     * @param modelStatusClass
+     * @return
+     */
     public List<Map<String,Object>> selectModelStatusByConditions(ModelStatus modelStatusClass)
     {
         return modelStatusMapper.selectModelStatusByConditions(modelStatusClass);
     }
 
+    /**
+     * 仅修改状态
+     * @param modelStatus
+     */
     public void updateModelStatus(ModelStatus modelStatus)
     {
         modelStatusMapper.updateModelStatus(modelStatus);
     }
 
+    /**
+     * 删除接口--已废弃
+     * @param idList
+     * @param modelStatus
+     */
     public void dropModelLogs(List<Integer> idList,ModelStatus modelStatus)
     {
         modelStatusMapper.dropModelLogs(idList,modelStatus);
@@ -50,6 +65,37 @@ public class ModelStatusServiceImpl extends ServiceImpl<ModelStatusMapper, Model
     public List<Map<String, Object>> getModelStatusPageByConditions(int pageNum, int pageSize, ModelStatus modelStatus) {
         IPage<Map<String,Object>> page = new Page<>(pageNum,pageSize);
         return modelStatusMapper.getModelStatusPageByConditions(page, modelStatus);
+    }
+
+    /**
+     * 按照IdList进行删除
+     *
+     * @param idList     编号列表
+     * @param updateTime
+     * @return 删除结果
+     */
+    @Override
+    public boolean deleteModelStatusByIdList(List<Integer> idList, Date updateTime) {
+        int affectedRows = modelStatusMapper.deleteModelStatusByIdList(idList, updateTime);
+        return affectedRows > 0;
+    }
+
+    @Override
+    public boolean deleteModelStatusByCondition(ModelStatus condition) {
+        int affectedRows = modelStatusMapper.deleteModelStatusByCondition(condition);
+        return affectedRows > 0;
+    }
+
+    @Override
+    public boolean updateModelStatusById(ModelStatus updateEntity) {
+        int affectedRows = modelStatusMapper.updateModelStatusById(updateEntity);
+        return affectedRows > 0;
+    }
+
+    @Override
+    public boolean updateModelStatusByCondition(ModelStatus updateEntity, ModelStatus condition) {
+        int affectedRows = modelStatusMapper.updateModelStatusByCondition(updateEntity,condition);
+        return affectedRows > 0;
     }
 }
 

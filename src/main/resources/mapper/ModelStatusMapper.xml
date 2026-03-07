@@ -27,6 +27,7 @@
         user_name,create_userid,data_introduction,function_selected,class_name,
         observation_time,type,start_time,end_time
     </sql>
+
     <update id="updateModelStatus" parameterType="com.ydsw.domain.ModelStatus">
         UPDATE model_status
         SET usage_status = #{modelStatusClass.usageStatus}
@@ -63,13 +64,13 @@
         update model_status set status=1
         <where>
             <if test="idList != null and idList.size()>0">
-                and id in
+                id in
                 <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
                     #{item}
                 </foreach>
             </if>
             <if test="modelStatusClass.modelName!=null and modelStatusClass.modelName.trim()!=''">
-                model_name = #{modelStatusClass.modelName}
+                and model_name = #{modelStatusClass.modelName}
             </if>
             <if test="modelStatusClass.userName!=null and modelStatusClass.userName.trim()!=''">
                 and user_name = #{modelStatusClass.userName}
@@ -89,6 +90,125 @@
             and status =0
         </where>
     </update>
+
+    <update id="deleteModelStatusByIdList">
+        update model_status
+        set status=1, update_time = #{updateTime}
+        <where>
+            <if test="idList != null and idList.size()>0">
+                id in
+                <foreach collection="idList" open="(" close=")" item="item" separator="," index="index">
+                #{item}
+                </foreach>
+            </if>
+            and status =0
+        </where>
+    </update>
+
+    <update id="deleteModelStatusByCondition">
+        update model_status
+        set status=1, update_time = #{condition.updateTime}
+        <where>
+            <if test="condition.modelName!=null and condition.modelName.trim()!=''">
+                and model_name = #{condition.modelName}
+            </if>
+            <if test="condition.userName!=null and condition.userName.trim()!=''">
+                and user_name = #{condition.userName}
+            </if>
+            <if test="condition.createUserid!=null and condition.createUserid.trim()!=''">
+                and create_userid=#{condition.createUserid}
+            </if>
+            <if test="condition.observationTime!=null and condition.observationTime.trim()!=''">
+                and observation_time=#{condition.observationTime}
+            </if>
+            <if test="condition.startTime!=null and condition.startTime.trim()!=''">
+                and start_time=#{condition.startTime}
+            </if>
+            <if test="condition.endTime!=null and condition.endTime.trim()!=''">
+                and end_time=#{condition.endTime}
+            </if>
+            and status =0
+        </where>
+    </update>
+
+    <update id="updateModelStatusById" parameterType="com.ydsw.domain.ModelStatus">
+        UPDATE model_status
+        <set>
+            <if test="updateEntity.usageStatus != null">
+                usage_status = #{updateEntity.usageStatus},
+            </if>
+            <if test="updateEntity.observationTime != null">
+                observation_time = #{updateEntity.observationTime},
+            </if>
+            <if test="updateEntity.type != null">
+                type = #{updateEntity.type},
+            </if>
+            <if test="updateEntity.startTime != null">
+                start_time = #{updateEntity.startTime},
+            </if>
+            <if test="updateEntity.endTime != null">
+                end_time = #{updateEntity.endTime},
+            </if>
+            <if test="updateEntity.updateTime != null">
+                update_time = #{updateEntity.updateTime},
+            </if>
+        </set>
+        WHERE id = #{updateEntity.id}
+            And status = 0
+    </update>
+
+    <update id="updateModelStatusByCondition">
+        UPDATE model_status
+        <set>
+            <if test="updateEntity.usageStatus != null">
+                usage_status = #{updateEntity.usageStatus},
+            </if>
+            <if test="updateEntity.observationTime != null">
+                observation_time = #{updateEntity.observationTime},
+            </if>
+            <if test="updateEntity.type != null">
+                type = #{updateEntity.type},
+            </if>
+            <if test="updateEntity.startTime != null">
+                start_time = #{updateEntity.startTime},
+            </if>
+            <if test="updateEntity.endTime != null">
+                end_time = #{updateEntity.endTime},
+            </if>
+            <if test="updateEntity.updateTime != null">
+                update_time = #{updateEntity.updateTime},
+            </if>
+        </set>
+        WHERE id = (
+            SELECT id FROM (
+                SELECT id FROM model_status
+                <where>
+                    <if test="condition.modelName!=null and condition.modelName.trim()!=''">
+                        model_name = #{condition.modelName}
+                    </if>
+                    <if test="condition.userName!=null and condition.userName.trim()!=''">
+                        AND user_name = #{condition.userName}
+                    </if>
+                    <if test="condition.createUserid!=null and condition.createUserid.trim()!=''">
+                        AND create_userid = #{condition.createUserid}
+                    </if>
+                    <if test="condition.observationTime!=null and condition.observationTime.trim()!=''">
+                        and observation_time=#{condition.observationTime}
+                    </if>
+                    <if test="condition.startTime!=null and condition.startTime.trim()!=''">
+                        and start_time=#{condition.startTime}
+                    </if>
+                    <if test="condition.endTime!=null and condition.endTime.trim()!=''">
+                        and end_time=#{condition.endTime}
+                    </if>
+                    AND status = 0
+                </where>
+                ORDER BY id DESC
+                LIMIT 1
+            ) AS temp
+        )
+    </update>
+
     <select id="selectModelStatusByConditions" resultType="java.util.Map">
         select "user_name" as "userName","create_userid" as "createUserid",
                "usage_status" as "usageStatus","create_time" as "createTime",

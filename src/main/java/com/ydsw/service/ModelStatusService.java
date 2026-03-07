@@ -2,8 +2,8 @@ package com.ydsw.service;
 
 import com.ydsw.domain.ModelStatus;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -20,4 +20,12 @@ public interface ModelStatusService extends IService<ModelStatus> {
     void dropModelLogs(List<Integer> idList,ModelStatus modelStatus);
 
     List<Map<String, Object>> getModelStatusPageByConditions(int pageNum, int pageSize, ModelStatus modelStatus);
+
+    boolean deleteModelStatusByIdList(List<Integer> idList, Date updateTime);
+
+    boolean deleteModelStatusByCondition(ModelStatus condition);
+
+    boolean updateModelStatusById(ModelStatus updateEntity);
+
+    boolean updateModelStatusByCondition(ModelStatus updateEntity, ModelStatus condition);
 }

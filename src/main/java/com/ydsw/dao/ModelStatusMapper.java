@@ -1,12 +1,12 @@
 package com.ydsw.dao;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.ydsw.domain.ModelList;
 import com.ydsw.domain.ModelStatus;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +25,14 @@ public interface ModelStatusMapper extends BaseMapper<ModelStatus> {
     void dropModelLogs(@Param("idList") List<Integer> idList,@Param("modelStatusClass")ModelStatus modelStatus);
 
     List<Map<String, Object>> getModelStatusPageByConditions(IPage<?> page, @Param("modelStatus") ModelStatus modelStatus);
+
+    int deleteModelStatusByIdList(@Param("idList") List<Integer> idList, @Param("updateTime") Date updateTime);
+
+    int deleteModelStatusByCondition(@Param("condition") ModelStatus condition);
+
+    int updateModelStatusById(@Param("updateEntity") ModelStatus updateEntity);
+
+    int updateModelStatusByCondition(@Param("updateEntity") ModelStatus updateEntity, @Param("condition") ModelStatus condition);
 }
 
 
