@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @Component
 public class RarFileUtils {
 
-    // ==================== 你们原有业务逻辑 ====================
     public static List<String> getRequiredFilesByModel(String modelName) {
         if ("fanyanV2".equalsIgnoreCase(modelName)) {
             return Arrays.asList(
@@ -39,7 +38,6 @@ public class RarFileUtils {
         return Collections.emptyList();
     }
 
-    // ==================== 检查 RAR 包含文件（支持 RAR5） ====================
     public static boolean containsRequiredTiffFiles(String rarFilePath, List<String> requiredFiles) {
         Set<String> fileNames = new HashSet<>();
 
@@ -68,7 +66,6 @@ public class RarFileUtils {
         }
     }
 
-    // ==================== 解压指定文件（完美支持 RAR5） ====================
     public static List<String> unzipRequiredFiles(String rarFilePath, String destDir, List<String> requiredFiles) {
         List<String> extracted = new ArrayList<>();
         new File(destDir).mkdirs();
