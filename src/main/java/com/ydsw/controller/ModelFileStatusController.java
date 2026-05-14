@@ -7,6 +7,7 @@ import com.ydsw.domain.User;
 import com.ydsw.service.ModelFileStatusService;
 import com.ydsw.service.ModelListService;
 import com.ydsw.service.UserService;
+import com.ydsw.utils.RarFileUtils;
 import com.ydsw.utils.ZipFileUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -314,7 +315,20 @@ public class ModelFileStatusController {
             }
 
             // 步骤1: 先进行基本文件验证
-            List<String> validationErrors = ZipFileUtils.validateFilesBeforeSaving(files, modelMame);
+            List<String> validationErrors;
+            boolean hasRarFileInUpload = false;
+            for (MultipartFile file : files) {
+                String name = file.getOriginalFilename();
+                if (name != null && name.toLowerCase().endsWith(".rar")) {
+                    hasRarFileInUpload = true;
+                    break;
+                }
+            }
+            if (hasRarFileInUpload) {
+                validationErrors = RarFileUtils.validateRarFilesBeforeSaving(files, modelMame);
+            } else {
+                validationErrors = ZipFileUtils.validateFilesBeforeSaving(files, modelMame);
+            }
             if (!validationErrors.isEmpty()) {
                 modelFileStatus.setDealStatus("failed");
                 modelFileStatusService.save(modelFileStatus);
@@ -326,8 +340,20 @@ public class ModelFileStatusController {
 
             // 步骤3: 过滤并只保存需要的文件
             List<String> savedFilePaths = new ArrayList<>();
-            List<MultipartFile> filesToSave = ZipFileUtils.filterRequiredFiles(files, modelMame);
-
+            List<MultipartFile> filesToSave = new ArrayList<>();
+            boolean hasRar = false;
+            for (MultipartFile file : files) {
+                String name = file.getOriginalFilename();
+                if (name != null && name.toLowerCase().endsWith(".rar")) {
+                    hasRar = true;
+                    break;
+                }
+            }
+            if (hasRar) {
+                filesToSave = RarFileUtils.filterRequiredFiles(files, modelMame);
+            } else {
+                filesToSave = ZipFileUtils.filterRequiredFiles(files, modelMame);
+            }
             for (MultipartFile file : filesToSave) {
                 String filepath = directoryPath + File.separator + file.getOriginalFilename();
 
@@ -347,24 +373,31 @@ public class ModelFileStatusController {
                 }
             }
 
-            // 步骤4: 对ZIP文件进行详细验证
-            List<String> zipValidationErrors = ZipFileUtils.validateZipFilesAfterSaving(savedFilePaths, modelMame);
-            if (!zipValidationErrors.isEmpty()) {
+            // 步骤4: 对ZIP/RAR文件进行详细验证
+            List<String> FileValidationErrors = new ArrayList<>();
+            boolean hasRarFile = savedFilePaths.stream().anyMatch(p -> p.toLowerCase().endsWith(".rar"));
+            if (hasRarFile) {
+                FileValidationErrors = RarFileUtils.validateRarFilesAfterSaving(savedFilePaths, modelMame);
+            } else {
+                FileValidationErrors = ZipFileUtils.validateZipFilesAfterSaving(savedFilePaths, modelMame);
+            }
+            if (!FileValidationErrors.isEmpty()) {
                 // 删除所有已保存的文件
                 for (String savedPath : savedFilePaths) {
                     new File(savedPath).delete();
                 }
                 modelFileStatus.setDealStatus("failed");
                 modelFileStatusService.updateDealStatusViod(modelFileStatus);
-                return ResultTemplate.fail("ZIP文件内容验证失败: " + String.join(", ", zipValidationErrors));
+                return ResultTemplate.fail("压缩文件内容验证失败: " + String.join(", ", FileValidationErrors));
             }
 
-            // 步骤5: 处理ZIP文件解压
+            // 步骤5: 处理ZIP/RAR文件解压
             List<String> finalFilePaths = new ArrayList<>();
             List<String> requiredFiles = ZipFileUtils.getRequiredFilesByModel(modelMame);
 
             for (String savedPath : savedFilePaths) {
-                if (savedPath.toLowerCase().endsWith(".zip")) {
+                String lowerPath = savedPath.toLowerCase();
+                if (lowerPath.endsWith(".zip")) {
                     modelFileStatus.setType("zip");
                     try {
                         // 解压ZIP文件中的必需文件
@@ -386,11 +419,36 @@ public class ModelFileStatusController {
                         modelFileStatusService.updateDealStatusViod(modelFileStatus);
                         return ResultTemplate.fail("ZIP文件解压失败: " + e.getMessage());
                     }
-                } else {
+                }
+                else if (lowerPath.endsWith(".rar")) {
+                    modelFileStatus.setType("rar");
+                    try {
+                        // 解压RAR文件中的必需文件
+                        List<String> extractedFiles = RarFileUtils.unzipRequiredFiles(savedPath, directoryPath, requiredFiles);
+                        finalFilePaths.addAll(extractedFiles);
+
+                        // 删除RAR文件
+                        boolean deleted = RarFileUtils.deleteFile(savedPath);
+                        if (!deleted) {
+                            log.warn("RAR文件删除失败: {}", savedPath);
+                        }
+                    } catch (Exception e) {
+                        log.error("RAR文件解压失败: {}", savedPath, e);
+                        // 删除所有已保存的文件
+                        for (String path : savedFilePaths) {
+                            new File(path).delete();
+                        }
+                        modelFileStatus.setDealStatus("failed");
+                        modelFileStatusService.updateDealStatusViod(modelFileStatus);
+                        return ResultTemplate.fail("RAR文件解压失败: " + e.getMessage());
+                    }
+                }
+                else {
                     // 非ZIP文件直接保留
                     finalFilePaths.add(savedPath);
                 }
             }
+
 
             // 步骤6: 清理目录中不需要的文件（确保只保留必需的文件）
             cleanUnnecessaryFiles(directoryPath, requiredFiles);
