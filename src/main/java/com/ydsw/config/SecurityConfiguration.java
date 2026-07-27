@@ -74,7 +74,6 @@ public class SecurityConfiguration {
 //        chains.add(new AntPathRequestMatcher("/api/login"));
 //        chains.add(new AntPathRequestMatcher("/api/register"));
         //配置关闭csrf机制
-        http.csrf().disable();
         //用户认证校验失败处理器
         http.formLogin((e) -> {
             e.failureHandler(loginFailureHandler);
@@ -82,9 +81,21 @@ public class SecurityConfiguration {
         //配置请求拦截方式
         //permitAll：随意访问
         http
-                .authorizeHttpRequests((authz) -> authz.requestMatchers("/api/login","/api/logout","/api/register","/api/proxy/download","/api/proxy/preview").permitAll()
+                .authorizeHttpRequests((authz) -> authz
+                        .requestMatchers(
+                            "/api/login",
+                            "/api/logout",
+                            "/api/register",
+                            "/api/proxy/download",
+                            "/api/proxy/preview",
+                            "/api/flood/**",
+                            "/favicon.ico",
+                            "/error"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
+                // 确保禁用 CSRF，否则 POST 请求会被拦截
+                .csrf(csrf -> csrf.disable())
                 .httpBasic(withDefaults());
         //配置过滤器的执行顺序
         http.addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
@@ -99,11 +110,11 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    //网络安全配置，忽略部分路径（如静态文件路径）
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/ignore1", "/ignore2");
-    }
+    // 如果不需要其他静态资源，可以注释或删除这个方法
+    // @Bean
+    // public WebSecurityCustomizer webSecurityCustomizer() {
+    //     return (web) -> web.ignoring().requestMatchers("/ignore1", "/ignore2");
+    // }
 
     //创建BCryptPasswordEncoder注入容器
     @Bean

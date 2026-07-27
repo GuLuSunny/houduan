@@ -38,10 +38,18 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String requestURI = request.getRequestURI();///api/login
+        String requestURI = request.getRequestURI();
         log.info(requestURI);
-        if (requestURI.equals("/api/login") || requestURI.equals("/api/register")||requestURI.equals("/api/logout")||requestURI.equals("/api/proxy/download")||requestURI.equals("/api/proxy/preview")) {//登录或者注册、注销直接放行
-            filterChain.doFilter(request, response);//放行
+
+        // 放行不需要token验证的路径
+        if (requestURI.equals("/api/login") ||
+            requestURI.equals("/api/register") ||
+            requestURI.equals("/api/logout") ||
+            requestURI.equals("/api/proxy/download") ||
+            requestURI.equals("/api/proxy/preview") ||
+            requestURI.startsWith("/api/flood/") ||
+            requestURI.equals("/favicon.ico")) {
+            filterChain.doFilter(request, response);
             return;
         } else {
             try {
@@ -51,7 +59,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 return;
             }
         }
-        filterChain.doFilter(request, response);//放行
+        filterChain.doFilter(request, response);
     }
 
     /**

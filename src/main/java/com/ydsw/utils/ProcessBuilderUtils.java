@@ -32,8 +32,8 @@ public class ProcessBuilderUtils {
     private static final ExecutorService executorService =
             Executors.newFixedThreadPool(10);
 
-    private static String winPythonPath = "C:\\Users\\lenovo\\miniconda3\\envs\\version12\\python.exe";
-    private static String lowerPythonPath = "C:\\Users\\lenovo\\miniconda3\\envs\\version8\\python.exe";
+    private static String winPythonPath = "C:\\conda\\envs\\ai\\python.exe";
+    private static String lowerPythonPath = "C:\\conda\\envs\\ai\\python.exe";
     private static final String scheduledScriptPath = "D:\\开放课题\\自动化\\atomsphere_insert.py";
     @Autowired
     public void setModelStatusService(ModelStatusService modelStatusService)
