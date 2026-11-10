@@ -38,10 +38,6 @@ public class ForestController {
     @Value("${forest.tree-points-path:/data/ydsw/tree-points/}")
     private String treePointsPath;
 
-    /**
-     * 单个林地范围最多生成多少个树点（面积特别大的多边形按 density 算出来的点数会爆掉，
-     * 这里做个上限保护，超出就截断并打日志）
-     */
     private static final int MAX_POINTS_PER_RANGE = 20000;
 
     // ==================== 上传 SHP ====================
@@ -50,7 +46,6 @@ public class ForestController {
     @Transactional(rollbackFor = Exception.class)
     public ResultTemplate<Object> uploadByShpfiles(@RequestParam("shpfiles") MultipartFile[] fileGroup) {
         try {
-            // 1. 解析 SHP
             ResultTemplate<List<Forest>> parseResult = ShpUploadHelper.handleShpUpload(
                     fileGroup, Forest.class, "geom", null
             );
@@ -65,18 +60,14 @@ public class ForestController {
                 }
             }
 
-            // 2. 清空旧数据
             forestService.remove(null);
 
-            // 3. 写入新数据
             forestService.saveBatch(forestList);
 
-            // 4. 生成所有树点缓存文件
             try {
                 generateAndSaveAllTreePoints(20);
             } catch (Exception e) {
                 log.error("树点缓存生成失败，但数据已入库", e);
-                // 不阻断上传成功，缓存下次会自动生成
             }
 
             return ResultTemplate.success("提交成功！");
@@ -99,7 +90,6 @@ public class ForestController {
                 String geomStr = geomObj.toString();
                 feature.put("geometry", JSONUtil.parse(geomStr));
             } else if (geomObj instanceof String) {
-                // 有的驱动/映射会把 json 字段当字符串返回，这里补一层转换，保证前端拿到的是对象
                 feature.put("geometry", JSONUtil.parse((String) geomObj));
             }
         }
@@ -116,14 +106,12 @@ public class ForestController {
     @PostMapping("/api/forest/getTreePoints")
     public ResultTemplate<Object> getTreePoints() {
         try {
-            // 1. 尝试读缓存文件
             File cacheFile = new File(treePointsPath, "forest_trees.geojson");
             if (cacheFile.exists()) {
                 String content = FileUtil.readString(cacheFile, StandardCharsets.UTF_8);
                 return ResultTemplate.success(JSONUtil.parse(content));
             }
 
-            // 2. 缓存不存在 → 生成
             log.info("树点缓存文件不存在，开始生成...");
             generateAndSaveAllTreePoints(20);
             String content = FileUtil.readString(cacheFile, StandardCharsets.UTF_8);
@@ -163,9 +151,6 @@ public class ForestController {
 
     // ==================== 内部方法 ====================
 
-    /**
-     * 为一个 gid 生成树点
-     */
     @SuppressWarnings("unchecked")
     private Map<String, Object> generatePointsForGid(Integer gid, int density) {
         String sql = "SELECT ST_AsText(geom) as wkt, shape_area FROM forest WHERE gid = ?";
@@ -226,9 +211,6 @@ public class ForestController {
         return result;
     }
 
-    /**
-     * 遍历所有 gid 生成树点并写入缓存文件
-     */
     private void generateAndSaveAllTreePoints(int density) throws IOException {
         List<Integer> gids = jdbcTemplate.queryForList("SELECT gid FROM forest ORDER BY gid", Integer.class);
         if (gids.isEmpty()) {
@@ -253,12 +235,10 @@ public class ForestController {
             }
         }
 
-        // 合并成完整 GeoJSON
         Map<String, Object> geoJson = new HashMap<>();
         geoJson.put("type", "FeatureCollection");
         geoJson.put("features", allFeatures);
 
-        // 写文件（确保目录存在）
         File dir = new File(treePointsPath);
         if (!dir.exists()) {
             dir.mkdirs();

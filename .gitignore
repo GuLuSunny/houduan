@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### 林地树点缓存 ###
+tree-points/
