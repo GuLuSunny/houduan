@@ -39,3 +39,6 @@ mybatis-plus:
     file:
       path: /logfile/
   #  log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# 林地树点缓存文件路径
+forest:
+  tree-points-path: D:\\ahouduan\\tree-points\\
